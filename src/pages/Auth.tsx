@@ -2,7 +2,6 @@ import { useState } from "react";
 import { Link } from "react-router-dom";
 import { ArrowRight } from "lucide-react";
 import authImg from "@/assets/auth-side.jpg";
-import dexterLogo from "@/assets/dexter-logo.png";
 import { toast } from "sonner";
 
 const Auth = () => {
@@ -15,7 +14,7 @@ const Auth = () => {
         <img src={authImg} alt="DEXTER" className="absolute inset-0 w-full h-full object-cover opacity-80" />
         <div className="absolute inset-0 bg-gradient-to-br from-ink/70 via-ink/30 to-transparent" />
         <div className="relative h-full flex flex-col justify-between p-12 text-primary-foreground">
-          <Link to="/" aria-label="DEXTER home"><img src={dexterLogo} alt="DEXTER" className="h-12 w-auto object-contain" style={{ filter: "invert(1) brightness(2)" }} /></Link>
+          <Link to="/" className="font-display text-2xl tracking-[0.3em] font-bold">DEXTER</Link>
           <div>
             <p className="text-xs uppercase tracking-[0.4em] text-gold mb-4">Member Privileges</p>
             <h2 className="font-display text-4xl xl:text-5xl font-bold leading-tight">
@@ -31,7 +30,7 @@ const Auth = () => {
       {/* Form side */}
       <div className="flex items-center justify-center p-6 sm:p-12 bg-background">
         <div className="w-full max-w-md animate-fade-in-up">
-          <Link to="/" className="lg:hidden block mb-12"><img src={dexterLogo} alt="DEXTER" className="h-10 w-auto object-contain" /></Link>
+          <Link to="/" className="lg:hidden font-display text-xl tracking-[0.3em] font-bold block mb-12">DEXTER</Link>
 
           <div className="flex gap-1 mb-10 border-b border-border">
             {(["login", "signup"] as const).map(m => (
