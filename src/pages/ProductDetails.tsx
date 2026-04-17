@@ -67,7 +67,17 @@ const ProductDetails = () => {
               </div>
               <span className="text-xs text-muted-foreground">128 reviews</span>
             </div>
-            <p className="text-3xl font-semibold mt-6">{formatINR(product.price)}</p>
+            <div className="mt-6 flex items-baseline gap-3 flex-wrap">
+              <p className="text-3xl font-semibold">{formatINR(product.price)}</p>
+              {product.mrp && product.mrp > product.price && (
+                <>
+                  <p className="text-lg text-muted-foreground line-through">{formatINR(product.mrp)}</p>
+                  <span className="text-xs font-semibold text-gold uppercase tracking-wider bg-gold/10 px-2 py-1">
+                    {Math.round(((product.mrp - product.price) / product.mrp) * 100)}% Off
+                  </span>
+                </>
+              )}
+            </div>
             <p className="mt-6 text-muted-foreground leading-relaxed">{product.description}</p>
 
             <div className="mt-8">
