@@ -3,6 +3,7 @@ import { Search, Heart, ShoppingBag, User, Menu, X } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useCart } from "@/context/CartContext";
 import { cn } from "@/lib/utils";
+import dexterLogo from "@/assets/dexter-logo.png";
 
 const links = [
   { to: "/shop", label: "Shop" },
@@ -41,8 +42,8 @@ const Navbar = () => {
           <Menu className="h-5 w-5" />
         </button>
 
-        <Link to="/" className="font-display text-2xl tracking-[0.3em] font-bold">
-          DEXTER
+        <Link to="/" aria-label="DEXTER home" className="flex items-center">
+          <img src={dexterLogo} alt="DEXTER" className="h-9 sm:h-10 w-auto object-contain" />
         </Link>
 
         <nav className="hidden lg:flex items-center gap-8 text-[13px] uppercase tracking-[0.18em] font-medium">
@@ -93,7 +94,7 @@ const Navbar = () => {
           <div className="absolute inset-0 bg-black/60" onClick={() => setOpen(false)} />
           <aside className="absolute top-0 left-0 h-full w-[80%] max-w-xs bg-background p-6 animate-fade-in">
             <div className="flex items-center justify-between mb-8">
-              <span className="font-display text-xl tracking-[0.3em] font-bold">DEXTER</span>
+              <img src={dexterLogo} alt="DEXTER" className="h-8 w-auto object-contain" />
               <button onClick={() => setOpen(false)}><X className="h-5 w-5" /></button>
             </div>
             <nav className="flex flex-col gap-5 text-sm uppercase tracking-[0.2em]">

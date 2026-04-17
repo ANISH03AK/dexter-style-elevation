@@ -1,11 +1,14 @@
 import { Instagram, Facebook, Twitter, Youtube } from "lucide-react";
 import { Link } from "react-router-dom";
+import dexterLogo from "@/assets/dexter-logo.png";
 
 const Footer = () => (
   <footer className="bg-ink text-primary-foreground mt-24">
     <div className="container-px mx-auto max-w-[1400px] py-16 grid gap-12 md:grid-cols-4">
       <div>
-        <div className="font-display text-2xl tracking-[0.3em] font-bold mb-4">DEXTER</div>
+        <div className="bg-white inline-block px-4 py-3 rounded mb-4">
+          <img src={dexterLogo} alt="DEXTER" className="h-10 w-auto object-contain" />
+        </div>
         <p className="text-sm text-primary-foreground/60 leading-relaxed">
           Premium menswear engineered for the modern individual. Crafted with intent.
         </p>
