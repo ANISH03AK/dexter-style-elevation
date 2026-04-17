@@ -16,12 +16,12 @@ export type Product = {
 };
 
 export const products: Product[] = [
-  { id: "onyx-hoodie", name: "Onyx Oversized Hoodie", price: 129, category: "Jackets", image: hoodie, tag: "New", description: "Heavyweight 460gsm cotton fleece. Drop shoulder cut and brushed interior for an elevated everyday silhouette." },
-  { id: "atelier-shirt", name: "Atelier Linen Shirt", price: 99, category: "Shirts", image: shirt, tag: "Bestseller", description: "Tailored from premium European linen. Mother-of-pearl buttons and a relaxed modern fit." },
-  { id: "noir-overcoat", name: "Noir Wool Overcoat", price: 349, category: "Jackets", image: coat, description: "Italian virgin wool overcoat with peak lapels. A definitive statement of refined masculinity." },
-  { id: "raw-selvedge", name: "Raw Selvedge Denim", price: 189, category: "Jeans", image: jeans, tag: "Limited", description: "14oz Japanese selvedge denim. Slim straight cut that breaks in beautifully over time." },
-  { id: "essential-tee", name: "Essential Pima Tee", price: 49, category: "T-Shirts", image: tee, description: "Ultra-soft Peruvian Pima cotton with a clean crew neck. The perfect everyday white tee." },
-  { id: "rebel-leather", name: "Rebel Leather Biker", price: 599, category: "Jackets", image: jacket, tag: "Icon", description: "Hand-finished lambskin biker jacket with asymmetric zip. A timeless rebel essential." },
+  { id: "onyx-hoodie", name: "Onyx Oversized Hoodie", price: 10699, category: "Jackets", image: hoodie, tag: "New", description: "Heavyweight 460gsm cotton fleece. Drop shoulder cut and brushed interior for an elevated everyday silhouette." },
+  { id: "atelier-shirt", name: "Atelier Linen Shirt", price: 8199, category: "Shirts", image: shirt, tag: "Bestseller", description: "Tailored from premium European linen. Mother-of-pearl buttons and a relaxed modern fit." },
+  { id: "noir-overcoat", name: "Noir Wool Overcoat", price: 28999, category: "Jackets", image: coat, description: "Italian virgin wool overcoat with peak lapels. A definitive statement of refined masculinity." },
+  { id: "raw-selvedge", name: "Raw Selvedge Denim", price: 15699, category: "Jeans", image: jeans, tag: "Limited", description: "14oz Japanese selvedge denim. Slim straight cut that breaks in beautifully over time." },
+  { id: "essential-tee", name: "Essential Pima Tee", price: 4099, category: "T-Shirts", image: tee, description: "Ultra-soft Peruvian Pima cotton with a clean crew neck. The perfect everyday white tee." },
+  { id: "rebel-leather", name: "Rebel Leather Biker", price: 49799, category: "Jackets", image: jacket, tag: "Icon", description: "Hand-finished lambskin biker jacket with asymmetric zip. A timeless rebel essential." },
 ];
 
 export const getProduct = (id: string) => products.find(p => p.id === id);

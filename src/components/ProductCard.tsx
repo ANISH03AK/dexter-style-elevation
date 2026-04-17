@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import { Product } from "@/data/products";
 import { useCart } from "@/context/CartContext";
 import { toast } from "sonner";
+import { formatINR } from "@/lib/format";
 
 const ProductCard = ({ product }: { product: Product }) => {
   const { add } = useCart();
@@ -39,7 +40,7 @@ const ProductCard = ({ product }: { product: Product }) => {
         <Link to={`/product/${product.id}`} className="block mt-1 text-sm font-medium hover:text-gold transition-smooth">
           {product.name}
         </Link>
-        <p className="mt-1 text-sm font-semibold">${product.price}</p>
+        <p className="mt-1 text-sm font-semibold">{formatINR(product.price)}</p>
       </div>
     </div>
   );
