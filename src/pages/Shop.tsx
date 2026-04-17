@@ -5,15 +5,15 @@ import Layout from "@/components/Layout";
 import ProductCard from "@/components/ProductCard";
 import { products } from "@/data/products";
 
-const allCats = ["Shirts", "T-Shirts", "Jeans", "Jackets"] as const;
-const allSizes = ["S", "M", "L", "XL"];
+const allCats = ["Shirts", "T-Shirts", "Jeans", "Jackets", "Hoodies", "Suits", "Activewear", "Accessories"] as const;
+const allSizes = ["S", "M", "L", "XL", "XXL"];
 
 const Shop = () => {
   const [params, setParams] = useSearchParams();
   const initialCat = params.get("cat");
   const [cats, setCats] = useState<string[]>(initialCat ? [initialCat] : []);
   const [sizes, setSizes] = useState<string[]>([]);
-  const [maxPrice, setMaxPrice] = useState(700);
+  const [maxPrice, setMaxPrice] = useState(15000);
   const [sort, setSort] = useState("popularity");
   const [open, setOpen] = useState(false);
 
@@ -67,8 +67,8 @@ const Shop = () => {
       </div>
       <div>
         <h4 className="text-xs uppercase tracking-[0.25em] mb-4 font-semibold">Max Price</h4>
-        <input type="range" min={50} max={700} step={10} value={maxPrice} onChange={e => setMaxPrice(+e.target.value)} className="w-full accent-foreground" />
-        <p className="mt-2 text-muted-foreground">Up to <span className="font-semibold text-foreground">${maxPrice}</span></p>
+        <input type="range" min={500} max={15000} step={100} value={maxPrice} onChange={e => setMaxPrice(+e.target.value)} className="w-full accent-foreground" />
+        <p className="mt-2 text-muted-foreground">Up to <span className="font-semibold text-foreground">₹{maxPrice.toLocaleString("en-IN")}</span></p>
       </div>
     </div>
   );
