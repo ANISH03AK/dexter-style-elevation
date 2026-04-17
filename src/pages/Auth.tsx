@@ -15,8 +15,8 @@ const Auth = () => {
         <img src={authImg} alt="DEXTER" className="absolute inset-0 w-full h-full object-cover opacity-80" />
         <div className="absolute inset-0 bg-gradient-to-br from-ink/70 via-ink/30 to-transparent" />
         <div className="relative h-full flex flex-col justify-between p-12 text-primary-foreground">
-          <Link to="/" aria-label="DEXTER home" className="bg-white inline-block px-3 py-2 rounded">
-            <img src={dexterLogo} alt="DEXTER" className="h-9 w-auto object-contain" />
+          <Link to="/" aria-label="DEXTER home" className="inline-block">
+            <img src={dexterLogo} alt="DEXTER" className="h-11 w-auto object-contain brightness-0 invert" />
           </Link>
           <div>
             <p className="text-xs uppercase tracking-[0.4em] text-gold mb-4">Member Privileges</p>
