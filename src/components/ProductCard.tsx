@@ -40,7 +40,17 @@ const ProductCard = ({ product }: { product: Product }) => {
         <Link to={`/product/${product.id}`} className="block mt-1 text-sm font-medium hover:text-gold transition-smooth">
           {product.name}
         </Link>
-        <p className="mt-1 text-sm font-semibold">{formatINR(product.price)}</p>
+        <div className="mt-1 flex items-center gap-2 flex-wrap">
+          <p className="text-sm font-semibold">{formatINR(product.price)}</p>
+          {product.mrp && product.mrp > product.price && (
+            <>
+              <p className="text-xs text-muted-foreground line-through">{formatINR(product.mrp)}</p>
+              <span className="text-[10px] font-semibold text-gold uppercase tracking-wider">
+                {Math.round(((product.mrp - product.price) / product.mrp) * 100)}% Off
+              </span>
+            </>
+          )}
+        </div>
       </div>
     </div>
   );

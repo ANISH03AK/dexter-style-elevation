@@ -140,11 +140,66 @@ const Index = () => {
         </div>
       </section>
 
+      {/* THEMED OFFER GRID */}
+      <section className="container-px mx-auto max-w-[1400px] py-20">
+        <div className="text-center mb-12">
+          <p className="text-xs uppercase tracking-[0.3em] text-gold mb-3">Today's Deals</p>
+          <h2 className="font-display text-4xl md:text-5xl font-bold">Offers You Can't Miss</h2>
+        </div>
+        <div className="grid md:grid-cols-3 gap-5">
+          <div className="relative aspect-[4/3] overflow-hidden bg-ink text-primary-foreground p-8 flex flex-col justify-end">
+            <img src={catJackets} alt="Jackets sale" className="absolute inset-0 w-full h-full object-cover opacity-50" />
+            <div className="relative">
+              <p className="text-xs uppercase tracking-[0.3em] text-gold mb-2">Outerwear</p>
+              <h3 className="font-display text-3xl font-bold">Up to 50% Off</h3>
+              <p className="text-sm text-primary-foreground/80 mt-2">Bombers, biker jackets & overcoats</p>
+              <Link to="/shop?cat=Jackets" className="mt-4 inline-flex items-center gap-2 text-xs uppercase tracking-[0.25em] text-gold link-underline">Shop Now <ArrowRight className="h-3 w-3"/></Link>
+            </div>
+          </div>
+          <div className="relative aspect-[4/3] overflow-hidden bg-ink text-primary-foreground p-8 flex flex-col justify-end">
+            <img src={catJeans} alt="Denim deals" className="absolute inset-0 w-full h-full object-cover opacity-50" />
+            <div className="relative">
+              <p className="text-xs uppercase tracking-[0.3em] text-gold mb-2">Denim Days</p>
+              <h3 className="font-display text-3xl font-bold">Buy 1 Get 1</h3>
+              <p className="text-sm text-primary-foreground/80 mt-2">Free on selected denim styles</p>
+              <Link to="/shop?cat=Jeans" className="mt-4 inline-flex items-center gap-2 text-xs uppercase tracking-[0.25em] text-gold link-underline">Grab Yours <ArrowRight className="h-3 w-3"/></Link>
+            </div>
+          </div>
+          <div className="relative aspect-[4/3] overflow-hidden bg-ink text-primary-foreground p-8 flex flex-col justify-end">
+            <img src={catTees} alt="T-shirts under 999" className="absolute inset-0 w-full h-full object-cover opacity-50" />
+            <div className="relative">
+              <p className="text-xs uppercase tracking-[0.3em] text-gold mb-2">Essentials</p>
+              <h3 className="font-display text-3xl font-bold">Tees Under ₹999</h3>
+              <p className="text-sm text-primary-foreground/80 mt-2">Daily basics, premium quality</p>
+              <Link to="/shop?cat=T-Shirts" className="mt-4 inline-flex items-center gap-2 text-xs uppercase tracking-[0.25em] text-gold link-underline">Shop Tees <ArrowRight className="h-3 w-3"/></Link>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* COUPON STRIP */}
+      <section className="bg-gold text-ink py-8">
+        <div className="container-px mx-auto max-w-[1400px] grid md:grid-cols-3 gap-6 text-center md:text-left">
+          <div>
+            <p className="text-[11px] uppercase tracking-[0.3em] opacity-70">Code: DEXTER10</p>
+            <p className="font-display text-xl font-bold mt-1">Extra 10% off ₹2,999+</p>
+          </div>
+          <div className="md:border-x border-ink/20 md:px-6">
+            <p className="text-[11px] uppercase tracking-[0.3em] opacity-70">Code: NEW500</p>
+            <p className="font-display text-xl font-bold mt-1">₹500 off your first order</p>
+          </div>
+          <div>
+            <p className="text-[11px] uppercase tracking-[0.3em] opacity-70">Code: BUNDLE3</p>
+            <p className="font-display text-xl font-bold mt-1">Buy 3, Save 25% sitewide</p>
+          </div>
+        </div>
+      </section>
+
       {/* MORE PRODUCTS */}
       <section className="container-px mx-auto max-w-[1400px] py-24">
         <h2 className="font-display text-4xl md:text-5xl font-bold mb-12">Just Dropped</h2>
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-x-4 gap-y-10 md:gap-x-6">
-          {products.slice(2, 6).map(p => <ProductCard key={p.id} product={p} />)}
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-x-4 gap-y-10 md:gap-x-6">
+          {products.slice(6, 14).map(p => <ProductCard key={p.id} product={p} />)}
         </div>
       </section>
 
