@@ -6,6 +6,7 @@ import ProductCard from "@/components/ProductCard";
 import { getProduct, products } from "@/data/products";
 import { useCart } from "@/context/CartContext";
 import { toast } from "sonner";
+import { formatINR } from "@/lib/format";
 
 const sizes = ["S", "M", "L", "XL"];
 
@@ -66,7 +67,7 @@ const ProductDetails = () => {
               </div>
               <span className="text-xs text-muted-foreground">128 reviews</span>
             </div>
-            <p className="text-3xl font-semibold mt-6">${product.price}</p>
+            <p className="text-3xl font-semibold mt-6">{formatINR(product.price)}</p>
             <p className="mt-6 text-muted-foreground leading-relaxed">{product.description}</p>
 
             <div className="mt-8">

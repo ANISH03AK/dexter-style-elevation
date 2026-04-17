@@ -2,10 +2,11 @@ import { Link } from "react-router-dom";
 import { Minus, Plus, X, ArrowRight, ShoppingBag } from "lucide-react";
 import Layout from "@/components/Layout";
 import { useCart } from "@/context/CartContext";
+import { formatINR } from "@/lib/format";
 
 const Cart = () => {
   const { items, setQty, remove, total } = useCart();
-  const shipping = total > 150 || total === 0 ? 0 : 15;
+  const shipping = total > 12500 || total === 0 ? 0 : 1250;
 
   return (
     <Layout>
@@ -47,7 +48,7 @@ const Cart = () => {
                         <span className="w-9 text-center text-sm">{i.qty}</span>
                         <button onClick={() => setQty(i.product.id, i.size, i.qty + 1)} className="h-9 w-9 grid place-items-center hover:bg-secondary"><Plus className="h-3 w-3" /></button>
                       </div>
-                      <p className="font-semibold">${(i.product.price * i.qty).toFixed(2)}</p>
+                      <p className="font-semibold">{formatINR(i.product.price * i.qty)}</p>
                     </div>
                   </div>
                 </div>
@@ -57,13 +58,13 @@ const Cart = () => {
             <aside className="bg-secondary p-8 self-start sticky top-32">
               <h3 className="font-display text-2xl font-bold mb-6">Order Summary</h3>
               <div className="space-y-3 text-sm">
-                <div className="flex justify-between"><span className="text-muted-foreground">Subtotal</span><span>${total.toFixed(2)}</span></div>
-                <div className="flex justify-between"><span className="text-muted-foreground">Shipping</span><span>{shipping === 0 ? "Free" : `$${shipping}`}</span></div>
+                <div className="flex justify-between"><span className="text-muted-foreground">Subtotal</span><span>{formatINR(total)}</span></div>
+                <div className="flex justify-between"><span className="text-muted-foreground">Shipping</span><span>{shipping === 0 ? "Free" : formatINR(shipping)}</span></div>
                 <div className="flex justify-between"><span className="text-muted-foreground">Tax</span><span>Calculated at checkout</span></div>
               </div>
               <div className="mt-6 pt-6 border-t border-border flex justify-between text-lg font-semibold">
                 <span>Total</span>
-                <span>${(total + shipping).toFixed(2)}</span>
+                <span>{formatINR(total + shipping)}</span>
               </div>
               <button className="w-full mt-8 bg-ink text-primary-foreground py-4 text-xs uppercase tracking-[0.25em] font-semibold hover:bg-gold hover:text-ink transition-smooth flex items-center justify-center gap-3">
                 Checkout <ArrowRight className="h-4 w-4" />

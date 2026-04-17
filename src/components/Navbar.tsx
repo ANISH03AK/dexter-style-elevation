@@ -34,7 +34,7 @@ const Navbar = () => {
     )}>
       {/* announcement */}
       <div className="bg-ink text-primary-foreground text-[11px] tracking-[0.2em] uppercase py-2 text-center">
-        Free shipping worldwide on orders over <span className="text-gold">$150</span>
+        Free shipping across India on orders over <span className="text-gold">₹12,500</span>
       </div>
 
       <div className="container-px mx-auto max-w-[1400px] flex items-center justify-between h-16">
