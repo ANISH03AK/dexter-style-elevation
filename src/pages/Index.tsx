@@ -63,7 +63,7 @@ const Index = () => {
         <div className="flex marquee-track whitespace-nowrap text-xs uppercase tracking-[0.4em]">
           {Array.from({ length: 2 }).map((_, i) => (
             <div key={i} className="flex shrink-0">
-              {["Free Shipping Over $150", "30-Day Returns", "Crafted in Italy", "Exclusive Member Drops", "New Arrivals Weekly"].map((t, j) => (
+              {["Free Shipping Over ₹12,500", "30-Day Returns", "Crafted in Italy", "Exclusive Member Drops", "New Arrivals Weekly"].map((t, j) => (
                 <span key={j} className="px-10 flex items-center gap-10">
                   {t} <span className="text-gold">✦</span>
                 </span>
