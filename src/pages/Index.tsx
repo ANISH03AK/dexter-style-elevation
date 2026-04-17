@@ -152,7 +152,7 @@ const Index = () => {
       <section className="border-t border-border">
         <div className="container-px mx-auto max-w-[1400px] grid md:grid-cols-3 divide-y md:divide-y-0 md:divide-x divide-border">
           {[
-            { icon: Truck, title: "Complimentary Shipping", text: "On all orders over $150 worldwide." },
+            { icon: Truck, title: "Complimentary Shipping", text: "On all orders over ₹12,500 across India." },
             { icon: RotateCcw, title: "Easy Returns", text: "30-day no-questions-asked returns." },
             { icon: ShieldCheck, title: "Authentic Craft", text: "Every piece, ethically sourced & made." },
           ].map(({ icon: Icon, title, text }) => (
