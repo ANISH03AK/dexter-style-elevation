@@ -5,6 +5,7 @@ import Layout from "@/components/Layout";
 import ProductCard from "@/components/ProductCard";
 import { useProducts } from "@/context/ProductsContext";
 import { useCart } from "@/context/CartContext";
+import { useWishlist } from "@/context/WishlistContext";
 import { toast } from "sonner";
 import { formatINR } from "@/lib/format";
 
@@ -24,6 +25,7 @@ const ProductDetails = () => {
   const [qty, setQty] = useState(1);
   const [activeImg, setActiveImg] = useState(0);
   const { add } = useCart();
+  const { toggle, has } = useWishlist();
 
   if (!product) return <Layout><div className="container-px py-32 text-center">Product not found.</div></Layout>;
 
@@ -109,8 +111,12 @@ const ProductDetails = () => {
               >
                 <ShoppingBag className="h-4 w-4" /> Add to Cart
               </button>
-              <button className="h-12 w-12 grid place-items-center border border-border hover:border-foreground hover:text-gold transition-smooth" aria-label="Wishlist">
-                <Heart className="h-4 w-4" />
+              <button
+                onClick={() => { toggle(product); toast.success(has(product.id) ? "Removed from wishlist" : "Added to wishlist"); }}
+                className={`h-12 w-12 grid place-items-center border border-border hover:border-foreground transition-smooth ${has(product.id) ? "text-gold border-gold" : ""}`}
+                aria-label="Wishlist"
+              >
+                <Heart className={`h-4 w-4 ${has(product.id) ? "fill-current" : ""}`} />
               </button>
             </div>
 

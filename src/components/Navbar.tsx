@@ -1,9 +1,12 @@
 import { Link, NavLink, useNavigate } from "react-router-dom";
-import { Search, Heart, ShoppingBag, User, Menu, X } from "lucide-react";
+import { Search, Heart, ShoppingBag, User, Menu, X, ChevronDown } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useCart } from "@/context/CartContext";
+import { useWishlist } from "@/context/WishlistContext";
 import { cn } from "@/lib/utils";
 import dexterLogo from "@/assets/dexter-logo.png";
+import MegaMenu from "./MegaMenu";
+import SearchBar from "./SearchBar";
 
 const links = [
   { to: "/shop", label: "Shop" },
@@ -16,6 +19,7 @@ const links = [
 
 const Navbar = () => {
   const { count } = useCart();
+  const { count: wishCount } = useWishlist();
   const [scrolled, setScrolled] = useState(false);
   const [open, setOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
@@ -33,7 +37,6 @@ const Navbar = () => {
       "fixed top-0 inset-x-0 z-50 transition-smooth",
       scrolled ? "bg-background/85 backdrop-blur-xl border-b border-border" : "bg-transparent"
     )}>
-      {/* announcement */}
       <div className="bg-ink text-primary-foreground text-[11px] tracking-[0.2em] uppercase py-2 text-center">
         Free shipping across India on orders over <span className="text-gold">₹12,500</span>
       </div>
@@ -48,6 +51,12 @@ const Navbar = () => {
         </Link>
 
         <nav className="hidden lg:flex items-center gap-8 text-[13px] uppercase tracking-[0.18em] font-medium">
+          <div className="group relative">
+            <button className="link-underline text-foreground/80 hover:text-foreground inline-flex items-center gap-1">
+              Categories <ChevronDown className="h-3 w-3" />
+            </button>
+            <MegaMenu />
+          </div>
           {links.map(l => (
             <NavLink key={l.label} to={l.to} className="link-underline text-foreground/80 hover:text-foreground">
               {l.label}
@@ -56,15 +65,20 @@ const Navbar = () => {
         </nav>
 
         <div className="flex items-center gap-4">
-          <button onClick={() => setSearchOpen(s => !s)} aria-label="Search" className="hidden sm:block hover:text-gold transition-smooth">
+          <button onClick={() => setSearchOpen(s => !s)} aria-label="Search" className="hover:text-gold transition-smooth">
             <Search className="h-[18px] w-[18px]" />
           </button>
-          <Link to="/auth" aria-label="Account" className="hover:text-gold transition-smooth">
+          <Link to="/auth" aria-label="Account" className="hidden sm:block hover:text-gold transition-smooth">
             <User className="h-[18px] w-[18px]" />
           </Link>
-          <button aria-label="Wishlist" className="hover:text-gold transition-smooth">
+          <Link to="/wishlist" aria-label="Wishlist" className="relative hover:text-gold transition-smooth">
             <Heart className="h-[18px] w-[18px]" />
-          </button>
+            {wishCount > 0 && (
+              <span className="absolute -top-2 -right-2 h-4 min-w-4 px-1 rounded-full bg-gold text-ink text-[10px] font-bold flex items-center justify-center">
+                {wishCount}
+              </span>
+            )}
+          </Link>
           <Link to="/cart" aria-label="Cart" className="relative hover:text-gold transition-smooth">
             <ShoppingBag className="h-[18px] w-[18px]" />
             {count > 0 && (
@@ -76,20 +90,8 @@ const Navbar = () => {
         </div>
       </div>
 
-      {searchOpen && (
-        <div className="border-t border-border bg-background animate-fade-in">
-          <form
-            onSubmit={(e) => { e.preventDefault(); setSearchOpen(false); navigate("/shop"); }}
-            className="container-px mx-auto max-w-[1400px] py-4 flex items-center gap-3"
-          >
-            <Search className="h-4 w-4 text-muted-foreground" />
-            <input autoFocus placeholder="Search for products, brands and more..." className="flex-1 bg-transparent outline-none text-sm" />
-            <button onClick={() => setSearchOpen(false)} type="button"><X className="h-4 w-4" /></button>
-          </form>
-        </div>
-      )}
+      {searchOpen && <SearchBar onClose={() => setSearchOpen(false)} />}
 
-      {/* Mobile drawer */}
       {open && (
         <div className="fixed inset-0 z-50 lg:hidden">
           <div className="absolute inset-0 bg-black/60" onClick={() => setOpen(false)} />
@@ -102,6 +104,8 @@ const Navbar = () => {
               {links.map(l => (
                 <Link key={l.label} to={l.to} onClick={() => setOpen(false)}>{l.label}</Link>
               ))}
+              <Link to="/wishlist" onClick={() => setOpen(false)}>Wishlist</Link>
+              <Link to="/auth" onClick={() => setOpen(false)}>Account</Link>
             </nav>
           </aside>
         </div>

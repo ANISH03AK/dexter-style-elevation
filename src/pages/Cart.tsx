@@ -66,9 +66,9 @@ const Cart = () => {
                 <span>Total</span>
                 <span>{formatINR(total + shipping)}</span>
               </div>
-              <button className="w-full mt-8 bg-ink text-primary-foreground py-4 text-xs uppercase tracking-[0.25em] font-semibold hover:bg-gold hover:text-ink transition-smooth flex items-center justify-center gap-3">
+              <Link to="/checkout" className="w-full mt-8 bg-ink text-primary-foreground py-4 text-xs uppercase tracking-[0.25em] font-semibold hover:bg-gold hover:text-ink transition-smooth flex items-center justify-center gap-3">
                 Checkout <ArrowRight className="h-4 w-4" />
-              </button>
+              </Link>
               <Link to="/shop" className="block text-center mt-4 text-xs uppercase tracking-[0.2em] link-underline w-fit mx-auto">
                 Continue Shopping
               </Link>
