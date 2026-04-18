@@ -3,7 +3,7 @@ import { Link, useParams } from "react-router-dom";
 import { Heart, Star, ShoppingBag, Truck, RotateCcw, ShieldCheck, Minus, Plus } from "lucide-react";
 import Layout from "@/components/Layout";
 import ProductCard from "@/components/ProductCard";
-import { getProduct, products } from "@/data/products";
+import { useProducts } from "@/context/ProductsContext";
 import { useCart } from "@/context/CartContext";
 import { toast } from "sonner";
 import { formatINR } from "@/lib/format";
@@ -18,6 +18,7 @@ const reviews = [
 
 const ProductDetails = () => {
   const { id } = useParams();
+  const { getProduct, products } = useProducts();
   const product = getProduct(id || "");
   const [size, setSize] = useState("M");
   const [qty, setQty] = useState(1);
