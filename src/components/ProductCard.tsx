@@ -3,12 +3,15 @@ import { Link } from "react-router-dom";
 import { useState } from "react";
 import { Product } from "@/data/products";
 import { useCart } from "@/context/CartContext";
+import { useWishlist } from "@/context/WishlistContext";
 import { toast } from "sonner";
 import { formatINR } from "@/lib/format";
 
 const ProductCard = ({ product }: { product: Product }) => {
   const { add } = useCart();
+  const { toggle, has } = useWishlist();
   const [loaded, setLoaded] = useState(false);
+  const wished = has(product.id);
 
   const discount = product.mrp && product.mrp > product.price
     ? Math.round(((product.mrp - product.price) / product.mrp) * 100)
@@ -25,7 +28,7 @@ const ProductCard = ({ product }: { product: Product }) => {
           alt={product.name}
           loading="lazy"
           onLoad={() => setLoaded(true)}
-          className={`w-full h-full object-cover transition-all duration-700 ease-out group-hover:scale-110 group-hover:rotate-1 ${loaded ? "opacity-100" : "opacity-0"}`}
+          className={`w-full h-full object-cover transition-transform duration-500 ease-out group-hover:scale-105 ${loaded ? "opacity-100" : "opacity-0"}`}
         />
         {/* Gradient overlay on hover */}
         <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
@@ -41,11 +44,11 @@ const ProductCard = ({ product }: { product: Product }) => {
           </span>
         )}
         <button
-          onClick={(e) => { e.preventDefault(); toast.success("Added to wishlist"); }}
-          className="absolute bottom-14 right-3 h-9 w-9 grid place-items-center bg-background/90 backdrop-blur rounded-full opacity-0 group-hover:opacity-100 translate-y-2 group-hover:translate-y-0 transition-all duration-300 hover:text-gold hover:scale-110"
+          onClick={(e) => { e.preventDefault(); toggle(product); toast.success(wished ? "Removed from wishlist" : "Added to wishlist"); }}
+          className={`absolute top-3 right-3 h-9 w-9 grid place-items-center bg-background/90 backdrop-blur rounded-full transition-colors duration-200 hover:text-gold ${wished ? "text-gold" : ""} ${discount > 30 ? "top-12" : ""}`}
           aria-label="Wishlist"
         >
-          <Heart className="h-4 w-4" />
+          <Heart className={`h-4 w-4 ${wished ? "fill-current" : ""}`} />
         </button>
         <button
           onClick={(e) => { e.preventDefault(); add(product); toast.success(`${product.name} added to cart`); }}
