@@ -3,6 +3,7 @@ import { ArrowRight, Truck, ShieldCheck, RotateCcw } from "lucide-react";
 import Layout from "@/components/Layout";
 import ProductCard from "@/components/ProductCard";
 import CountdownDeal from "@/components/CountdownDeal";
+import HeroOffersCarousel from "@/components/HeroOffersCarousel";
 import { useProducts } from "@/context/ProductsContext";
 import hero from "@/assets/hero-model.jpg";
 import promo from "@/assets/promo-banner.jpg";
@@ -59,6 +60,9 @@ const Index = () => {
           </div>
         </div>
       </section>
+
+      {/* OFFERS CAROUSEL */}
+      <HeroOffersCarousel />
 
       {/* MARQUEE */}
       <section className="bg-ink text-primary-foreground py-5 overflow-hidden border-y border-white/10">
