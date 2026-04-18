@@ -11,6 +11,7 @@ const links = [
   { to: "/shop?cat=T-Shirts", label: "T-Shirts" },
   { to: "/shop?cat=Jeans", label: "Jeans" },
   { to: "/shop?cat=Jackets", label: "Jackets" },
+  { to: "/about", label: "About" },
 ];
 
 const Navbar = () => {

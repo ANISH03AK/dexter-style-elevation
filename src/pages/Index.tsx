@@ -2,7 +2,8 @@ import { Link } from "react-router-dom";
 import { ArrowRight, Truck, ShieldCheck, RotateCcw } from "lucide-react";
 import Layout from "@/components/Layout";
 import ProductCard from "@/components/ProductCard";
-import { products } from "@/data/products";
+import CountdownDeal from "@/components/CountdownDeal";
+import { useProducts } from "@/context/ProductsContext";
 import hero from "@/assets/hero-model.jpg";
 import promo from "@/assets/promo-banner.jpg";
 import catShirts from "@/assets/cat-shirts.jpg";
@@ -18,6 +19,7 @@ const categories = [
 ];
 
 const Index = () => {
+  const { products } = useProducts();
   return (
     <Layout transparentNav>
       {/* HERO */}
@@ -103,6 +105,9 @@ const Index = () => {
           ))}
         </div>
       </section>
+
+      {/* DEAL OF THE DAY */}
+      <CountdownDeal />
 
       {/* TRENDING */}
       <section className="container-px mx-auto max-w-[1400px] pb-24">
