@@ -13,24 +13,29 @@ const Shop = () => {
   const { products } = useProducts();
   const [params, setParams] = useSearchParams();
   const initialCat = params.get("cat");
+  const initialQ = params.get("q") || "";
   const [cats, setCats] = useState<string[]>(initialCat ? [initialCat] : []);
   const [sizes, setSizes] = useState<string[]>([]);
   const [maxPrice, setMaxPrice] = useState(15000);
   const [sort, setSort] = useState("popularity");
   const [open, setOpen] = useState(false);
   const [page, setPage] = useState(1);
+  const [q, setQ] = useState(initialQ);
 
   useEffect(() => {
     const c = params.get("cat");
     if (c) setCats([c]);
+    setQ(params.get("q") || "");
   }, [params]);
 
-  useEffect(() => { setPage(1); }, [cats, sizes, maxPrice, sort]);
+  useEffect(() => { setPage(1); }, [cats, sizes, maxPrice, sort, q]);
 
   const filtered = useMemo(() => {
+    const term = q.trim().toLowerCase();
     let list = products.filter(p =>
       (cats.length === 0 || cats.includes(p.category)) &&
-      p.price <= maxPrice
+      p.price <= maxPrice &&
+      (term === "" || p.name.toLowerCase().includes(term) || p.category.toLowerCase().includes(term))
     );
     if (sort === "price-asc") list = [...list].sort((a, b) => a.price - b.price);
     if (sort === "price-desc") list = [...list].sort((a, b) => b.price - a.price);
@@ -40,7 +45,7 @@ const Shop = () => {
       return db - da;
     });
     return list;
-  }, [cats, maxPrice, sort, sizes, products]);
+  }, [cats, maxPrice, sort, sizes, products, q]);
 
   const totalPages = Math.max(1, Math.ceil(filtered.length / PER_PAGE));
   const current = page > totalPages ? 1 : page;
