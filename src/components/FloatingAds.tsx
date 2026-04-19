@@ -66,18 +66,14 @@ const FloatingAds = () => {
         return (
           <Link
             key={ad.cat}
-            to={`/product/${ad.product.id}`}
+            to={`/shop?cat=${encodeURIComponent(ad.cat)}`}
             style={{ animationDelay: `${i * 0.4}s` }}
             className={`absolute ${ad.pos} ${ad.anim} pointer-events-auto group`}
           >
             <div className="relative">
-              {/* Glow ring */}
               <div className={`absolute -inset-1 bg-gradient-to-r ${ad.accent} opacity-50 blur-lg group-hover:opacity-90 transition-opacity rounded-2xl`} />
-
-              {/* Card */}
               <div className="relative bg-ink/90 backdrop-blur-xl border border-gold/30 rounded-2xl p-3 w-60 shadow-elevated hover:scale-105 transition-transform duration-300">
                 <div className="flex gap-3">
-                  {/* Product image */}
                   <div className="relative h-20 w-20 shrink-0 overflow-hidden rounded-lg bg-secondary">
                     <img
                       src={ad.product.image}
@@ -89,8 +85,6 @@ const FloatingAds = () => {
                       <Icon className="h-3 w-3 text-primary-foreground" />
                     </div>
                   </div>
-
-                  {/* Info */}
                   <div className="flex-1 min-w-0">
                     <p className="text-[9px] uppercase tracking-[0.25em] text-primary-foreground/60">{ad.cat}</p>
                     <h4 className="font-display text-sm font-bold text-gold leading-tight mt-0.5 truncate">{ad.badge}</h4>
@@ -104,7 +98,7 @@ const FloatingAds = () => {
                   </div>
                 </div>
                 <div className="mt-2 h-px bg-gradient-to-r from-transparent via-gold/60 to-transparent" />
-                <p className="mt-1.5 text-[10px] uppercase tracking-[0.2em] text-gold group-hover:translate-x-1 transition-transform">Shop now →</p>
+                <p className="mt-1.5 text-[10px] uppercase tracking-[0.2em] text-gold group-hover:translate-x-1 transition-transform">Shop all {ad.cat} →</p>
               </div>
             </div>
           </Link>
