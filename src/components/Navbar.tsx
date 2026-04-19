@@ -41,16 +41,45 @@ const Navbar = () => {
         Free shipping across India on orders over <span className="text-gold">₹12,500</span>
       </div>
 
-      <div className="container-px mx-auto max-w-[1400px] flex items-center justify-between h-16">
-        <button className="lg:hidden" onClick={() => setOpen(true)} aria-label="Menu">
-          <Menu className="h-5 w-5" />
-        </button>
+      <div className="container-px mx-auto max-w-[1400px] grid grid-cols-[1fr_auto_1fr] items-center h-24">
+        {/* LEFT: mobile menu + nav */}
+        <div className="flex items-center gap-8">
+          <button className="lg:hidden" onClick={() => setOpen(true)} aria-label="Menu">
+            <Menu className="h-5 w-5" />
+          </button>
+          <nav className="hidden lg:flex items-center gap-7 text-[12px] uppercase tracking-[0.18em] font-medium">
+            <div className="group relative">
+              <button className="link-underline text-foreground/80 hover:text-foreground inline-flex items-center gap-1">
+                Categories <ChevronDown className="h-3 w-3" />
+              </button>
+              <MegaMenu />
+            </div>
+            {links.slice(0, 3).map(l => (
+              <NavLink key={l.label} to={l.to} className="link-underline text-foreground/80 hover:text-foreground">
+                {l.label}
+              </NavLink>
+            ))}
+          </nav>
+        </div>
 
-        <Link to="/" aria-label="DEXTER home" className="flex items-center">
-          <img src={dexterLogo} alt="DEXTER" className="h-14 sm:h-16 lg:h-20 w-auto object-contain drop-shadow-[0_2px_12px_hsl(var(--gold)/0.4)] hover:scale-105 transition-transform duration-300" />
+        {/* CENTER: big logo */}
+        <Link to="/" aria-label="DEXTER home" className="flex items-center justify-center px-6">
+          <img src={dexterLogo} alt="DEXTER" className="h-20 sm:h-24 lg:h-28 w-auto object-contain drop-shadow-[0_4px_20px_hsl(var(--gold)/0.5)] hover:scale-105 transition-transform duration-300" />
         </Link>
 
-        <nav className="hidden lg:flex items-center gap-8 text-[13px] uppercase tracking-[0.18em] font-medium">
+        {/* RIGHT: rest of nav + actions */}
+        <nav className="hidden lg:flex items-center gap-7 text-[12px] uppercase tracking-[0.18em] font-medium justify-end">{/* placeholder to keep grid */}</nav>
+      </div>
+
+      {/* Secondary nav row for remaining links + actions */}
+      <div className="container-px mx-auto max-w-[1400px] -mt-2 flex items-center justify-between pb-2">
+        <nav className="hidden lg:flex items-center gap-7 text-[12px] uppercase tracking-[0.18em] font-medium">{/* spacer */}</nav>
+        <nav className="hidden lg:flex items-center gap-7 text-[12px] uppercase tracking-[0.18em] font-medium">{/* spacer */}</nav>
+      </div>
+
+      {/* hidden: keep original nav vars referenced (no-op) */}
+      <div className="hidden">
+        <nav>{links.map(l => l.label).join("")}</nav>
           <div className="group relative">
             <button className="link-underline text-foreground/80 hover:text-foreground inline-flex items-center gap-1">
               Categories <ChevronDown className="h-3 w-3" />
