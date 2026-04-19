@@ -47,7 +47,7 @@ const Navbar = () => {
         </button>
 
         <Link to="/" aria-label="DEXTER home" className="flex items-center">
-          <img src={dexterLogo} alt="DEXTER" className="h-14 sm:h-16 lg:h-20 w-auto object-contain drop-shadow-[0_2px_12px_hsl(var(--gold)/0.4)] hover:scale-105 transition-transform duration-300" />
+          <img src={dexterLogo} alt="DEXTER" className="h-9 sm:h-10 w-auto object-contain" />
         </Link>
 
         <nav className="hidden lg:flex items-center gap-8 text-[13px] uppercase tracking-[0.18em] font-medium">
