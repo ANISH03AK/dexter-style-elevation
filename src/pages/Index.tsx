@@ -8,6 +8,7 @@ import FloatingAds from "@/components/FloatingAds";
 import { useProducts } from "@/context/ProductsContext";
 import hero from "@/assets/hero-model.jpg";
 import promo from "@/assets/promo-banner.jpg";
+import dexterLogo from "@/assets/dexter-logo.png";
 import catShirts from "@/assets/cat-shirts.jpg";
 import catTees from "@/assets/cat-tshirts.jpg";
 import catJeans from "@/assets/cat-jeans.jpg";
@@ -39,6 +40,14 @@ const Index = () => {
         />
         <div className="absolute inset-0 gradient-hero" />
         <div className="absolute inset-0 bg-gradient-to-r from-ink via-ink/40 to-transparent" />
+
+        {/* Giant DEXTER watermark */}
+        <img
+          src={dexterLogo}
+          alt=""
+          aria-hidden="true"
+          className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[120%] max-w-none opacity-[0.06] pointer-events-none select-none mix-blend-screen"
+        />
 
         {/* Floating animated ads */}
         <FloatingAds />
