@@ -128,14 +128,30 @@ const Admin = () => {
             <p className="text-xs text-muted-foreground mb-4">Showing {filtered.length} of {products.length.toLocaleString("en-IN")}</p>
             <div className="space-y-2 max-h-[70vh] overflow-y-auto pr-2">
               {filtered.map(p => (
-                <div key={p.id} className="flex items-center gap-4 p-3 border border-border rounded-md hover:border-gold transition-smooth">
-                  <img src={p.image} alt={p.name} className="h-14 w-14 object-cover rounded-sm" loading="lazy" />
+                <div key={p.id} className="flex items-center gap-4 p-3 border border-border rounded-md hover:border-gold transition-smooth bg-background">
+                  <img src={p.image} alt={p.name} className="h-16 w-16 object-cover rounded-md" loading="lazy" />
                   <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium truncate">{p.name}</p>
-                    <p className="text-xs text-muted-foreground">{p.category} · {formatINR(p.price)}</p>
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <p className="text-sm font-semibold truncate">{p.name}</p>
+                      {p.tag && <span className="text-[9px] uppercase tracking-[0.18em] bg-gold/15 text-gold px-1.5 py-0.5 rounded">{p.tag}</span>}
+                    </div>
+                    <p className="text-[10px] font-mono text-muted-foreground/80 mt-0.5">ID: {p.id}</p>
+                    <div className="flex items-center gap-3 mt-1">
+                      <span className="text-[11px] uppercase tracking-[0.15em] text-muted-foreground">{p.category}</span>
+                      <span className="text-xs font-semibold text-foreground">{formatINR(p.price)}</span>
+                      {p.mrp && <span className="text-[11px] text-muted-foreground line-through">{formatINR(p.mrp)}</span>}
+                    </div>
                   </div>
+                  <a
+                    href={`/product/${p.id}`}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="text-[10px] uppercase tracking-[0.2em] text-gold border border-gold/40 px-2.5 py-1 rounded hover:bg-gold hover:text-ink transition-smooth"
+                  >
+                    View
+                  </a>
                   <button
-                    onClick={() => { removeProduct(p.id); toast.success("Removed"); }}
+                    onClick={() => { removeProduct(p.id); toast.success(`Removed ${p.name}`); }}
                     className="h-9 w-9 grid place-items-center text-muted-foreground hover:text-destructive hover:bg-destructive/10 rounded-md transition-smooth"
                     aria-label="Remove"
                   >
