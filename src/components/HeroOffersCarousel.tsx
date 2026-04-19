@@ -96,7 +96,7 @@ const HeroOffersCarousel = () => {
                     )}
                   </div>
                   <Link
-                    to={`/product/${s.product.id}`}
+                    to={`/shop?cat=${encodeURIComponent(s.cat)}`}
                     className="mt-5 inline-flex items-center gap-2 bg-gold text-ink px-6 py-3 text-[11px] uppercase tracking-[0.25em] font-semibold hover:bg-primary-foreground transition-colors group"
                   >
                     {s.cta} <ArrowRight className="h-3.5 w-3.5 group-hover:translate-x-1 transition-transform" />
