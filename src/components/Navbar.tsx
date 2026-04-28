@@ -36,12 +36,12 @@ const Navbar = () => {
 
   return (
     <header className={cn(
-      "fixed top-0 inset-x-0 z-50 transition-smooth bg-background border-b border-border",
+      "fixed top-0 inset-x-0 z-50 transition-smooth bg-ink text-primary-foreground border-b border-gold/20",
       scrolled
-        ? "shadow-[0_4px_24px_-8px_hsl(var(--gold)/0.25)]"
-        : "shadow-[0_2px_16px_-6px_hsl(var(--gold)/0.18)]"
+        ? "shadow-[0_4px_24px_-8px_hsl(var(--gold)/0.45)]"
+        : "shadow-[0_2px_16px_-6px_hsl(var(--gold)/0.3)]"
     )}>
-      <div className="bg-ink text-primary-foreground text-[11px] tracking-[0.2em] uppercase py-2 text-center">
+      <div className="bg-black/40 text-primary-foreground text-[11px] tracking-[0.2em] uppercase py-2 text-center border-b border-gold/10">
         Free shipping across India on orders over <span className="text-gold">₹12,500</span>
       </div>
 
@@ -52,15 +52,14 @@ const Navbar = () => {
             <Menu className="h-5 w-5" />
           </button>
           <nav className="hidden lg:flex items-center gap-5 text-[12px] uppercase tracking-[0.18em] font-medium">
-            {/* Categories with hover mega-menu — padding bridges hover gap */}
             <div className="group relative py-8 -my-8">
-              <button className="link-underline text-foreground/80 hover:text-gold inline-flex items-center gap-1 transition-colors">
+              <button className="link-underline text-primary-foreground/85 hover:text-gold inline-flex items-center gap-1 transition-colors">
                 Categories <ChevronDown className="h-3 w-3 group-hover:rotate-180 transition-transform" />
               </button>
               <MegaMenu />
             </div>
             {leftLinks.map(l => (
-              <NavLink key={l.label} to={l.to} className="link-underline text-foreground/80 hover:text-gold transition-colors">
+              <NavLink key={l.label} to={l.to} className="link-underline text-primary-foreground/85 hover:text-gold transition-colors">
                 {l.label}
               </NavLink>
             ))}
@@ -80,7 +79,7 @@ const Navbar = () => {
         <div className="flex items-center justify-end gap-6">
           <nav className="hidden lg:flex items-center gap-6 text-[12px] uppercase tracking-[0.18em] font-medium">
             {rightLinks.map(l => (
-              <NavLink key={l.label} to={l.to} className="link-underline text-foreground/80 hover:text-foreground">
+              <NavLink key={l.label} to={l.to} className="link-underline text-primary-foreground/85 hover:text-gold transition-colors">
                 {l.label}
               </NavLink>
             ))}
