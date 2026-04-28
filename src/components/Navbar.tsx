@@ -43,33 +43,34 @@ const Navbar = () => {
         Free shipping across India on orders over <span className="text-gold">₹12,500</span>
       </div>
 
-      <div className="container-px mx-auto max-w-[1400px] grid grid-cols-[1fr_auto_1fr] items-center h-24 gap-4">
+      <div className="container-px mx-auto max-w-[1400px] grid grid-cols-[1fr_auto_1fr] items-center h-28 lg:h-32 gap-4">
         {/* LEFT */}
         <div className="flex items-center gap-6">
           <button className="lg:hidden" onClick={() => setOpen(true)} aria-label="Menu">
             <Menu className="h-5 w-5" />
           </button>
-          <nav className="hidden lg:flex items-center gap-6 text-[12px] uppercase tracking-[0.18em] font-medium">
-            <div className="group relative">
-              <button className="link-underline text-foreground/80 hover:text-foreground inline-flex items-center gap-1">
-                Categories <ChevronDown className="h-3 w-3" />
+          <nav className="hidden lg:flex items-center gap-5 text-[12px] uppercase tracking-[0.18em] font-medium">
+            {/* Categories with hover mega-menu — padding bridges hover gap */}
+            <div className="group relative py-8 -my-8">
+              <button className="link-underline text-foreground/80 hover:text-gold inline-flex items-center gap-1 transition-colors">
+                Categories <ChevronDown className="h-3 w-3 group-hover:rotate-180 transition-transform" />
               </button>
               <MegaMenu />
             </div>
             {leftLinks.map(l => (
-              <NavLink key={l.label} to={l.to} className="link-underline text-foreground/80 hover:text-foreground">
+              <NavLink key={l.label} to={l.to} className="link-underline text-foreground/80 hover:text-gold transition-colors">
                 {l.label}
               </NavLink>
             ))}
           </nav>
         </div>
 
-        {/* CENTER LOGO */}
+        {/* CENTER LOGO — extra-large */}
         <Link to="/" aria-label="DEXTER home" className="flex items-center justify-center">
           <img
             src={dexterLogo}
             alt="DEXTER"
-            className="h-20 sm:h-24 lg:h-28 w-auto object-contain drop-shadow-[0_4px_24px_hsl(var(--gold)/0.55)] hover:scale-105 transition-transform duration-300"
+            className="h-24 sm:h-32 lg:h-40 w-auto object-contain drop-shadow-[0_6px_28px_hsl(var(--gold)/0.6)] hover:scale-105 transition-transform duration-300"
           />
         </Link>
 

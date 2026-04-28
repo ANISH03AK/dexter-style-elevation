@@ -71,34 +71,35 @@ const FloatingAds = () => {
             className={`absolute ${ad.pos} ${ad.anim} pointer-events-auto group`}
           >
             <div className="relative">
-              <div className={`absolute -inset-1 bg-gradient-to-r ${ad.accent} opacity-50 blur-lg group-hover:opacity-90 transition-opacity rounded-2xl`} />
-              <div className="relative bg-ink/90 backdrop-blur-xl border border-gold/30 rounded-2xl p-3 w-60 shadow-elevated hover:scale-105 transition-transform duration-300">
-                <div className="flex gap-3">
-                  <div className="relative h-20 w-20 shrink-0 overflow-hidden rounded-lg bg-secondary">
+              <div className={`absolute -inset-0.5 bg-gradient-to-r ${ad.accent} opacity-40 blur-md group-hover:opacity-80 transition-opacity rounded-xl`} />
+              <div className="relative bg-ink/95 backdrop-blur-xl border border-gold/25 rounded-xl p-2.5 w-56 shadow-elevated hover:scale-[1.04] transition-transform duration-300">
+                <div className="flex gap-2.5">
+                  <div className="relative h-16 w-16 shrink-0 overflow-hidden rounded-md bg-secondary">
                     <img
                       src={ad.product.image}
                       alt={ad.product.name}
                       loading="lazy"
                       className="h-full w-full object-cover group-hover:scale-110 transition-transform duration-500"
                     />
-                    <div className={`absolute top-1 left-1 h-6 w-6 rounded-full bg-gradient-to-br ${ad.accent} grid place-items-center animate-pulse-gold`}>
-                      <Icon className="h-3 w-3 text-primary-foreground" />
-                    </div>
                   </div>
                   <div className="flex-1 min-w-0">
-                    <p className="text-[9px] uppercase tracking-[0.25em] text-primary-foreground/60">{ad.cat}</p>
-                    <h4 className="font-display text-sm font-bold text-gold leading-tight mt-0.5 truncate">{ad.badge}</h4>
-                    <p className="text-[11px] text-primary-foreground/80 mt-0.5 truncate">{ad.product.name}</p>
-                    <p className="text-[11px] font-semibold text-primary-foreground mt-0.5">
+                    <div className="flex items-center gap-1">
+                      <Icon className="h-3 w-3 text-gold" />
+                      <p className="text-[9px] uppercase tracking-[0.2em] text-primary-foreground/60">{ad.cat}</p>
+                    </div>
+                    <h4 className="font-display text-xs font-bold text-gold leading-tight mt-0.5 truncate">{ad.badge}</h4>
+                    <p className="text-[10px] text-primary-foreground/75 mt-0.5 truncate">{ad.product.name}</p>
+                    <p className="text-[10px] font-semibold text-primary-foreground mt-0.5">
                       {formatINR(ad.product.price)}
                       {ad.product.mrp && (
-                        <span className="ml-1.5 text-[10px] text-primary-foreground/40 line-through">{formatINR(ad.product.mrp)}</span>
+                        <span className="ml-1 text-[9px] text-primary-foreground/40 line-through">{formatINR(ad.product.mrp)}</span>
                       )}
                     </p>
                   </div>
                 </div>
-                <div className="mt-2 h-px bg-gradient-to-r from-transparent via-gold/60 to-transparent" />
-                <p className="mt-1.5 text-[10px] uppercase tracking-[0.2em] text-gold group-hover:translate-x-1 transition-transform">Shop all {ad.cat} →</p>
+                <p className="mt-2 pt-2 border-t border-gold/15 text-[9px] uppercase tracking-[0.22em] text-gold text-center group-hover:tracking-[0.3em] transition-all">
+                  Shop {ad.cat} →
+                </p>
               </div>
             </div>
           </Link>
