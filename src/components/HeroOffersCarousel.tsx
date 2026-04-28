@@ -76,36 +76,36 @@ const HeroOffersCarousel = () => {
 
   return (
     <section className="container-px mx-auto max-w-[1400px] pt-6">
-      <div className="relative h-72 md:h-80 rounded-2xl overflow-hidden shadow-elevated border border-gold/20">
+      <div className="relative h-80 md:h-80 rounded-2xl overflow-hidden shadow-elevated border border-gold/20">
         {slides.map((s, i) => (
           <div
             key={s.cat}
             className={`absolute inset-0 bg-gradient-to-r ${s.bg} transition-opacity duration-700 ${i === idx ? "opacity-100" : "opacity-0 pointer-events-none"}`}
           >
-            <div className="grid grid-cols-1 md:grid-cols-2 h-full">
+            <div className="grid grid-cols-2 h-full">
               {/* Text */}
-              <div className="flex items-center px-6 md:px-12 z-10">
+              <div className="flex items-center px-4 md:px-12 z-10">
                 <div className="text-primary-foreground max-w-md animate-fade-in">
-                  <p className="text-[10px] md:text-xs uppercase tracking-[0.3em] text-gold mb-2">{s.eyebrow}</p>
-                  <h3 className="font-display text-3xl md:text-5xl font-bold leading-[1.05]">{s.title}</h3>
-                  <p className="text-xs md:text-sm text-primary-foreground/80 mt-3">{s.sub}</p>
-                  <div className="mt-3 flex items-baseline gap-2">
-                    <span className="text-base md:text-lg font-semibold text-gold">{formatINR(s.product.price)}</span>
+                  <p className="text-[9px] md:text-xs uppercase tracking-[0.25em] text-gold mb-1.5">{s.eyebrow}</p>
+                  <h3 className="font-display text-xl md:text-5xl font-bold leading-[1.05]">{s.title}</h3>
+                  <p className="text-[11px] md:text-sm text-primary-foreground/80 mt-2">{s.sub}</p>
+                  <div className="mt-2 flex items-baseline gap-2">
+                    <span className="text-sm md:text-lg font-semibold text-gold">{formatINR(s.product.price)}</span>
                     {s.product.mrp && (
-                      <span className="text-xs text-primary-foreground/50 line-through">{formatINR(s.product.mrp)}</span>
+                      <span className="text-[10px] md:text-xs text-primary-foreground/50 line-through">{formatINR(s.product.mrp)}</span>
                     )}
                   </div>
                   <Link
                     to={`/shop?cat=${encodeURIComponent(s.cat)}`}
-                    className="mt-5 inline-flex items-center gap-2 bg-gold text-ink px-6 py-3 text-[11px] uppercase tracking-[0.25em] font-semibold hover:bg-primary-foreground transition-colors group"
+                    className="mt-3 md:mt-5 inline-flex items-center gap-1.5 bg-gold text-ink px-3 md:px-6 py-2 md:py-3 text-[9px] md:text-[11px] uppercase tracking-[0.2em] font-semibold hover:bg-primary-foreground transition-colors group"
                   >
-                    {s.cta} <ArrowRight className="h-3.5 w-3.5 group-hover:translate-x-1 transition-transform" />
+                    {s.cta} <ArrowRight className="h-3 w-3 md:h-3.5 md:w-3.5 group-hover:translate-x-1 transition-transform" />
                   </Link>
                 </div>
               </div>
 
-              {/* Product Image */}
-              <Link to={`/product/${s.product.id}`} className="relative hidden md:block group overflow-hidden">
+              {/* Product Image — clickable, on every screen */}
+              <Link to={`/product/${s.product.id}`} className="relative block group overflow-hidden" aria-label={`View ${s.product.name}`}>
                 <div className={`absolute inset-0 bg-gradient-to-br ${s.accent} opacity-30 group-hover:opacity-50 transition-opacity`} />
                 <img
                   src={s.product.image}
@@ -114,8 +114,8 @@ const HeroOffersCarousel = () => {
                   className="absolute inset-0 w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
                 />
                 <div className="absolute inset-0 bg-gradient-to-l from-transparent via-transparent to-ink/40" />
-                <div className="absolute bottom-4 right-4 bg-ink/80 backdrop-blur-md border border-gold/30 px-3 py-1.5 rounded-full">
-                  <p className="text-[10px] uppercase tracking-[0.2em] text-gold font-semibold">{s.product.name}</p>
+                <div className="absolute bottom-2 right-2 md:bottom-4 md:right-4 bg-ink/85 backdrop-blur-md border border-gold/30 px-2 py-1 md:px-3 md:py-1.5 rounded-full">
+                  <p className="text-[8px] md:text-[10px] uppercase tracking-[0.18em] text-gold font-semibold truncate max-w-[120px] md:max-w-none">{s.product.name}</p>
                 </div>
               </Link>
             </div>
