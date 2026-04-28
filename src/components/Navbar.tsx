@@ -71,7 +71,7 @@ const Navbar = () => {
           <img
             src={dexterLogo}
             alt="DEXTER"
-            className="h-24 sm:h-32 lg:h-40 w-auto object-contain drop-shadow-[0_6px_28px_hsl(var(--gold)/0.6)] hover:scale-105 transition-transform duration-300"
+            className="h-24 sm:h-32 lg:h-40 w-auto object-contain hover:scale-105 transition-transform duration-300"
           />
         </Link>
 
