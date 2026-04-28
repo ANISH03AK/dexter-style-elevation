@@ -36,8 +36,10 @@ const Navbar = () => {
 
   return (
     <header className={cn(
-      "fixed top-0 inset-x-0 z-50 transition-smooth",
-      scrolled ? "bg-background/85 backdrop-blur-xl border-b border-border" : "bg-transparent"
+      "fixed top-0 inset-x-0 z-50 transition-smooth bg-background border-b border-border",
+      scrolled
+        ? "shadow-[0_4px_24px_-8px_hsl(var(--gold)/0.25)]"
+        : "shadow-[0_2px_16px_-6px_hsl(var(--gold)/0.18)]"
     )}>
       <div className="bg-ink text-primary-foreground text-[11px] tracking-[0.2em] uppercase py-2 text-center">
         Free shipping across India on orders over <span className="text-gold">₹12,500</span>
