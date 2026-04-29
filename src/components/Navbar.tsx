@@ -88,29 +88,38 @@ const Navbar = () => {
         </Link>
 
         {/* RIGHT: nav + icons */}
-        <div className="flex items-center gap-3 sm:gap-4 shrink-0">
-          <button onClick={() => setSearchOpen(s => !s)} aria-label="Search" className="hover:text-gold transition-smooth">
-            <Search className="h-[18px] w-[18px]" />
-          </button>
-          <Link to="/auth" aria-label="Account" className="hidden sm:block hover:text-gold transition-smooth">
-            <User className="h-[18px] w-[18px]" />
-          </Link>
-          <Link to="/wishlist" aria-label="Wishlist" className="relative hover:text-gold transition-smooth">
-            <Heart className="h-[18px] w-[18px]" />
-            {wishCount > 0 && (
-              <span className="absolute -top-2 -right-2 h-4 min-w-4 px-1 rounded-full bg-gold text-ink text-[10px] font-bold flex items-center justify-center">
-                {wishCount}
-              </span>
-            )}
-          </Link>
-          <Link to="/cart" aria-label="Cart" className="relative hover:text-gold transition-smooth">
-            <ShoppingBag className="h-[18px] w-[18px]" />
-            {count > 0 && (
-              <span className="absolute -top-2 -right-2 h-4 min-w-4 px-1 rounded-full bg-gold text-ink text-[10px] font-bold flex items-center justify-center">
-                {count}
-              </span>
-            )}
-          </Link>
+        <div className="flex items-center justify-end gap-5">
+          <nav className="hidden lg:flex items-center gap-5 text-[12px] uppercase tracking-[0.18em] font-medium">
+            {rightLinks.map(l => (
+              <NavLink key={l.label} to={l.to} className="link-underline text-ink/80 hover:text-gold transition-colors">
+                {l.label}
+              </NavLink>
+            ))}
+          </nav>
+          <div className="flex items-center gap-3 sm:gap-4 shrink-0">
+            <button onClick={() => setSearchOpen(s => !s)} aria-label="Search" className="hover:text-gold transition-smooth">
+              <Search className="h-[18px] w-[18px]" />
+            </button>
+            <Link to="/auth" aria-label="Account" className="hidden sm:block hover:text-gold transition-smooth">
+              <User className="h-[18px] w-[18px]" />
+            </Link>
+            <Link to="/wishlist" aria-label="Wishlist" className="relative hover:text-gold transition-smooth">
+              <Heart className="h-[18px] w-[18px]" />
+              {wishCount > 0 && (
+                <span className="absolute -top-2 -right-2 h-4 min-w-4 px-1 rounded-full bg-gold text-ink text-[10px] font-bold flex items-center justify-center">
+                  {wishCount}
+                </span>
+              )}
+            </Link>
+            <Link to="/cart" aria-label="Cart" className="relative hover:text-gold transition-smooth">
+              <ShoppingBag className="h-[18px] w-[18px]" />
+              {count > 0 && (
+                <span className="absolute -top-2 -right-2 h-4 min-w-4 px-1 rounded-full bg-gold text-ink text-[10px] font-bold flex items-center justify-center">
+                  {count}
+                </span>
+              )}
+            </Link>
+          </div>
         </div>
       </div>
 
