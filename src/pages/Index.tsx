@@ -5,6 +5,7 @@ import ProductCard from "@/components/ProductCard";
 import CountdownDeal from "@/components/CountdownDeal";
 import HeroOffersCarousel from "@/components/HeroOffersCarousel";
 import FloatingAds from "@/components/FloatingAds";
+import Ad3DShowcase from "@/components/Ad3DShowcase";
 import { useProducts } from "@/context/ProductsContext";
 import hero from "@/assets/hero-model.jpg";
 import promo from "@/assets/promo-banner.jpg";
@@ -108,6 +109,9 @@ const Index = () => {
 
       {/* OFFERS CAROUSEL */}
       <HeroOffersCarousel />
+
+      {/* 3D AD SHOWCASE */}
+      <Ad3DShowcase />
 
       {/* MARQUEE */}
       <section className="bg-ink text-primary-foreground py-5 overflow-hidden border-y border-white/10">

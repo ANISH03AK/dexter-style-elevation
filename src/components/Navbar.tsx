@@ -53,7 +53,7 @@ const Navbar = () => {
       </div>
 
       {/* Main navbar row */}
-      <div className="container-px mx-auto max-w-[1400px] grid grid-cols-[1fr_auto_1fr] items-center gap-3 h-20 sm:h-24 lg:h-28">
+      <div className="container-px mx-auto max-w-[1400px] grid grid-cols-[1fr_auto_1fr] items-center gap-3 h-24 sm:h-28 lg:h-32">
         {/* LEFT: mobile menu button + desktop nav */}
         <div className="flex items-center gap-5 min-w-0">
           <button
@@ -83,7 +83,7 @@ const Navbar = () => {
           <img
             src={dexterLogo}
             alt="DEXTER"
-            className="h-16 sm:h-20 lg:h-24 w-auto object-contain"
+            className="h-20 sm:h-24 lg:h-32 w-auto object-contain"
           />
         </Link>
 
