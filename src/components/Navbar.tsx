@@ -20,6 +20,8 @@ const rightLinks = [
   { to: "/about", label: "About" },
 ];
 
+const allLinks = [...leftLinks, ...rightLinks];
+
 const Navbar = () => {
   const { count } = useCart();
   const { count: wishCount } = useWishlist();
@@ -34,99 +36,117 @@ const Navbar = () => {
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
 
+  // Lock body scroll when mobile menu is open
+  useEffect(() => {
+    document.body.style.overflow = open ? "hidden" : "";
+    return () => { document.body.style.overflow = ""; };
+  }, [open]);
+
   return (
     <header className={cn(
-      "fixed top-0 inset-x-0 z-50 transition-smooth bg-white text-ink border-b border-gold/30",
-      scrolled
-        ? "shadow-[0_6px_28px_-10px_hsl(var(--gold)/0.55)]"
-        : "shadow-[0_3px_18px_-8px_hsl(var(--gold)/0.4)]"
+      "fixed top-0 inset-x-0 z-50 transition-smooth bg-white text-ink border-b border-border",
+      scrolled ? "shadow-md" : "shadow-sm"
     )}>
-      <div className="bg-ink text-primary-foreground text-[11px] tracking-[0.2em] uppercase py-2 text-center">
+      {/* Announcement strip */}
+      <div className="bg-ink text-primary-foreground text-[10px] sm:text-[11px] tracking-[0.2em] uppercase py-1.5 sm:py-2 text-center px-2">
         Free shipping across India on orders over <span className="text-gold">₹12,500</span>
       </div>
 
-      <div className="container-px mx-auto max-w-[1400px] grid grid-cols-[1fr_auto_1fr] items-center h-28 lg:h-32 gap-4">
-        {/* LEFT */}
-        <div className="flex items-center gap-6">
-          <button className="lg:hidden" onClick={() => setOpen(true)} aria-label="Menu">
+      {/* Main navbar row */}
+      <div className="container-px mx-auto max-w-[1400px] flex items-center justify-between gap-3 h-14 sm:h-16 lg:h-[72px]">
+        {/* LEFT: mobile menu button + logo */}
+        <div className="flex items-center gap-2 sm:gap-3 min-w-0">
+          <button
+            className="lg:hidden p-1.5 -ml-1.5 shrink-0"
+            onClick={() => setOpen(true)}
+            aria-label="Open menu"
+          >
             <Menu className="h-5 w-5" />
           </button>
-          <nav className="hidden lg:flex items-center gap-5 text-[12px] uppercase tracking-[0.18em] font-medium">
-            <div className="group relative py-8 -my-8">
-              <button className="link-underline text-ink/80 hover:text-gold inline-flex items-center gap-1 transition-colors">
-                Categories <ChevronDown className="h-3 w-3 group-hover:rotate-180 transition-transform" />
-              </button>
-              <MegaMenu />
-            </div>
-            {leftLinks.map(l => (
-              <NavLink key={l.label} to={l.to} className="link-underline text-ink/80 hover:text-gold transition-colors">
-                {l.label}
-              </NavLink>
-            ))}
-          </nav>
+          <Link to="/" aria-label="DEXTER home" className="flex items-center shrink-0">
+            <img
+              src={dexterLogo}
+              alt="DEXTER"
+              className="h-10 sm:h-12 lg:h-14 w-auto object-contain"
+            />
+          </Link>
         </div>
 
-        {/* CENTER LOGO — extra-large */}
-        <Link to="/" aria-label="DEXTER home" className="flex items-center justify-center">
-          <img
-            src={dexterLogo}
-            alt="DEXTER"
-            className="h-24 sm:h-32 lg:h-40 w-auto object-contain hover:scale-105 transition-transform duration-300"
-          />
-        </Link>
-
-        {/* RIGHT */}
-        <div className="flex items-center justify-end gap-6">
-          <nav className="hidden lg:flex items-center gap-6 text-[12px] uppercase tracking-[0.18em] font-medium">
-            {rightLinks.map(l => (
-              <NavLink key={l.label} to={l.to} className="link-underline text-ink/80 hover:text-gold transition-colors">
-                {l.label}
-              </NavLink>
-            ))}
-          </nav>
-          <div className="flex items-center gap-4">
-            <button onClick={() => setSearchOpen(s => !s)} aria-label="Search" className="hover:text-gold transition-smooth">
-              <Search className="h-[18px] w-[18px]" />
+        {/* CENTER: desktop nav */}
+        <nav className="hidden lg:flex items-center gap-6 text-[12px] uppercase tracking-[0.18em] font-medium">
+          <div className="group relative py-6 -my-6">
+            <button className="link-underline text-ink/80 hover:text-gold inline-flex items-center gap-1 transition-colors">
+              Categories <ChevronDown className="h-3 w-3 group-hover:rotate-180 transition-transform" />
             </button>
-            <Link to="/auth" aria-label="Account" className="hidden sm:block hover:text-gold transition-smooth">
-              <User className="h-[18px] w-[18px]" />
-            </Link>
-            <Link to="/wishlist" aria-label="Wishlist" className="relative hover:text-gold transition-smooth">
-              <Heart className="h-[18px] w-[18px]" />
-              {wishCount > 0 && (
-                <span className="absolute -top-2 -right-2 h-4 min-w-4 px-1 rounded-full bg-gold text-ink text-[10px] font-bold flex items-center justify-center">
-                  {wishCount}
-                </span>
-              )}
-            </Link>
-            <Link to="/cart" aria-label="Cart" className="relative hover:text-gold transition-smooth">
-              <ShoppingBag className="h-[18px] w-[18px]" />
-              {count > 0 && (
-                <span className="absolute -top-2 -right-2 h-4 min-w-4 px-1 rounded-full bg-gold text-ink text-[10px] font-bold flex items-center justify-center">
-                  {count}
-                </span>
-              )}
-            </Link>
+            <MegaMenu />
           </div>
+          {allLinks.map(l => (
+            <NavLink key={l.label} to={l.to} className="link-underline text-ink/80 hover:text-gold transition-colors">
+              {l.label}
+            </NavLink>
+          ))}
+        </nav>
+
+        {/* RIGHT: icons */}
+        <div className="flex items-center gap-3 sm:gap-4 shrink-0">
+          <button onClick={() => setSearchOpen(s => !s)} aria-label="Search" className="hover:text-gold transition-smooth">
+            <Search className="h-[18px] w-[18px]" />
+          </button>
+          <Link to="/auth" aria-label="Account" className="hidden sm:block hover:text-gold transition-smooth">
+            <User className="h-[18px] w-[18px]" />
+          </Link>
+          <Link to="/wishlist" aria-label="Wishlist" className="relative hover:text-gold transition-smooth">
+            <Heart className="h-[18px] w-[18px]" />
+            {wishCount > 0 && (
+              <span className="absolute -top-2 -right-2 h-4 min-w-4 px-1 rounded-full bg-gold text-ink text-[10px] font-bold flex items-center justify-center">
+                {wishCount}
+              </span>
+            )}
+          </Link>
+          <Link to="/cart" aria-label="Cart" className="relative hover:text-gold transition-smooth">
+            <ShoppingBag className="h-[18px] w-[18px]" />
+            {count > 0 && (
+              <span className="absolute -top-2 -right-2 h-4 min-w-4 px-1 rounded-full bg-gold text-ink text-[10px] font-bold flex items-center justify-center">
+                {count}
+              </span>
+            )}
+          </Link>
         </div>
       </div>
 
       {searchOpen && <SearchBar onClose={() => setSearchOpen(false)} />}
 
+      {/* Mobile slide-in menu (80% width) */}
       {open && (
         <div className="fixed inset-0 z-50 lg:hidden">
-          <div className="absolute inset-0 bg-black/60" onClick={() => setOpen(false)} />
-          <aside className="absolute top-0 left-0 h-full w-[80%] max-w-xs bg-background p-6 animate-fade-in">
-            <div className="flex items-center justify-between mb-8">
-              <img src={dexterLogo} alt="DEXTER" className="h-10 w-auto object-contain" />
-              <button onClick={() => setOpen(false)}><X className="h-5 w-5" /></button>
+          <div
+            className="absolute inset-0 bg-black/50 animate-fade-in"
+            onClick={() => setOpen(false)}
+          />
+          <aside className="absolute top-0 left-0 h-full w-[80%] max-w-[320px] bg-white shadow-xl flex flex-col animate-slide-in-right">
+            <div className="flex items-center justify-between px-5 py-4 border-b border-border">
+              <img src={dexterLogo} alt="DEXTER" className="h-9 w-auto object-contain" />
+              <button onClick={() => setOpen(false)} aria-label="Close menu" className="p-1">
+                <X className="h-5 w-5" />
+              </button>
             </div>
-            <nav className="flex flex-col gap-5 text-sm uppercase tracking-[0.2em]">
-              {[...leftLinks, ...rightLinks].map(l => (
-                <Link key={l.label} to={l.to} onClick={() => setOpen(false)}>{l.label}</Link>
+            <nav className="flex-1 overflow-y-auto py-3">
+              {allLinks.map(l => (
+                <Link
+                  key={l.label}
+                  to={l.to}
+                  onClick={() => setOpen(false)}
+                  className="block px-5 py-3 text-sm uppercase tracking-[0.18em] text-ink/85 hover:bg-muted hover:text-gold border-b border-border/50"
+                >
+                  {l.label}
+                </Link>
               ))}
-              <Link to="/wishlist" onClick={() => setOpen(false)}>Wishlist</Link>
-              <Link to="/auth" onClick={() => setOpen(false)}>Account</Link>
+              <Link to="/wishlist" onClick={() => setOpen(false)} className="block px-5 py-3 text-sm uppercase tracking-[0.18em] text-ink/85 hover:bg-muted hover:text-gold border-b border-border/50">
+                Wishlist
+              </Link>
+              <Link to="/auth" onClick={() => setOpen(false)} className="block px-5 py-3 text-sm uppercase tracking-[0.18em] text-ink/85 hover:bg-muted hover:text-gold">
+                Account
+              </Link>
             </nav>
           </aside>
         </div>
