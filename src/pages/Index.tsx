@@ -9,6 +9,7 @@ import { useProducts } from "@/context/ProductsContext";
 import hero from "@/assets/hero-model.jpg";
 import promo from "@/assets/promo-banner.jpg";
 import dexterLogo from "@/assets/dexter-logo.png";
+import dexterLogoTransparent from "@/assets/dexter-logo-transparent.png";
 import catShirts from "@/assets/cat-shirts.jpg";
 import catTees from "@/assets/cat-tshirts.jpg";
 import catJeans from "@/assets/cat-jeans.jpg";
@@ -41,12 +42,12 @@ const Index = () => {
         <div className="absolute inset-0 gradient-hero" />
         <div className="absolute inset-0 bg-gradient-to-r from-ink via-ink/40 to-transparent" />
 
-        {/* Giant DEXTER watermark */}
+        {/* Giant DEXTER transparent logo overlay */}
         <img
-          src={dexterLogo}
+          src={dexterLogoTransparent}
           alt=""
           aria-hidden="true"
-          className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[120%] max-w-none opacity-[0.06] pointer-events-none select-none mix-blend-screen"
+          className="absolute left-1/2 top-[38%] -translate-x-1/2 -translate-y-1/2 w-[90%] max-w-[1100px] opacity-90 pointer-events-none select-none drop-shadow-[0_8px_30px_rgba(0,0,0,0.6)] z-10"
         />
 
         {/* Floating animated ads */}
