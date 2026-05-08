@@ -1,4 +1,60 @@
 import { useState } from "react";
+import { ChevronDown } from "lucide-react";
+import type { Product, Category } from "@/data/products";
+
+const RelatedProducts = ({ currentId, category, all }: { currentId: string; category: Category; all: Product[] }) => {
+  const [expanded, setExpanded] = useState(false);
+  const sameCat = all.filter(p => p.id !== currentId && p.category === category);
+  const others = all.filter(p => p.id !== currentId && p.category !== category);
+  const related = [...sameCat, ...others];
+  const initial = related.slice(0, 4);
+  const more = related.slice(4, 16);
+
+  return (
+    <div className="mt-24">
+      <h2 className="font-display text-3xl md:text-4xl font-bold mb-10">Related Products</h2>
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-x-4 gap-y-10 md:gap-x-6">
+        {initial.map(p => <ProductCard key={p.id} product={p} />)}
+      </div>
+
+      {expanded && (
+        <div className="mt-10 flex flex-col gap-6 animate-fade-in">
+          {more.map(p => (
+            <Link key={p.id} to={`/product/${p.id}`} className="group flex gap-4 md:gap-6 border border-border p-3 md:p-4 hover:border-foreground transition-smooth">
+              <div className="w-28 h-32 md:w-40 md:h-48 bg-secondary overflow-hidden flex-shrink-0">
+                <img src={p.image} alt={p.name} className="w-full h-full object-cover group-hover:scale-105 transition-smooth" loading="lazy" />
+              </div>
+              <div className="flex-1 min-w-0 flex flex-col justify-center">
+                <p className="text-[10px] uppercase tracking-[0.25em] text-muted-foreground">{p.category}</p>
+                <h3 className="font-display text-base md:text-xl font-semibold mt-1 truncate">{p.name}</h3>
+                <div className="flex items-baseline gap-2 mt-2 flex-wrap">
+                  <span className="font-semibold">{formatINR(p.price)}</span>
+                  {p.mrp && p.mrp > p.price && (
+                    <span className="text-xs text-muted-foreground line-through">{formatINR(p.mrp)}</span>
+                  )}
+                </div>
+                {p.tag && <span className="mt-2 inline-block w-fit bg-gold text-ink text-[9px] uppercase tracking-[0.2em] px-2 py-0.5">{p.tag}</span>}
+              </div>
+            </Link>
+          ))}
+        </div>
+      )}
+
+      {more.length > 0 && (
+        <div className="mt-10 flex justify-center">
+          <button
+            onClick={() => setExpanded(v => !v)}
+            className="inline-flex items-center gap-2 border border-border px-8 py-3 text-xs uppercase tracking-[0.25em] font-semibold hover:bg-ink hover:text-primary-foreground transition-smooth"
+          >
+            {expanded ? "Show Less" : "More"}
+            <ChevronDown className={`h-4 w-4 transition-transform ${expanded ? "rotate-180" : ""}`} />
+          </button>
+        </div>
+      )}
+    </div>
+  );
+};
+
 import { Link, useParams } from "react-router-dom";
 import { Heart, Star, ShoppingBag, Truck, RotateCcw, ShieldCheck, Minus, Plus } from "lucide-react";
 import Layout from "@/components/Layout";
