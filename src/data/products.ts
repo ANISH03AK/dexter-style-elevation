@@ -129,36 +129,41 @@ const mulberry32 = (seed: number) => () => {
   return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
 };
 
-const COUNT_PER_CAT = 125; // 8 cats × 125 = 1000 generated
 const CATEGORIES = Object.keys(IMAGES) as Category[];
 
 const seed = mulberry32(20251);
-const pick = <T,>(arr: T[]) => arr[Math.floor(seed() * arr.length)];
 const rangeInt = (min: number, max: number) => Math.floor(seed() * (max - min + 1)) + min;
 
-const seen = new Set<string>();
+const seenIds = new Set<string>();
+const seenNames = new Set<string>();
 const generated: Product[] = [];
 
 for (const cat of CATEGORIES) {
-  for (let i = 0; i < COUNT_PER_CAT; i++) {
-    const adj = pick(NAME_PARTS[cat].adj);
-    const noun = pick(NAME_PARTS[cat].noun);
-    const name = `${adj} ${noun}`;
-    const baseId = `${cat.toLowerCase().replace(/[^a-z]/g, "")}-${name.toLowerCase().replace(/[^a-z0-9]+/g, "-")}`;
-    let id = baseId;
-    let n = 2;
-    while (seen.has(id)) { id = `${baseId}-${n++}`; }
-    seen.add(id);
+  const { adj: adjs, noun: nouns } = NAME_PARTS[cat];
+  const imgs = IMAGES[cat];
+  // Enumerate every adj × noun combination → guarantees unique product names per category
+  let imgIdx = 0;
+  for (let a = 0; a < adjs.length; a++) {
+    for (let n = 0; n < nouns.length; n++) {
+      const name = `${adjs[a]} ${nouns[n]}`;
+      const nameKey = name.toLowerCase();
+      if (seenNames.has(nameKey)) continue;
+      seenNames.add(nameKey);
 
-    const [pmin, pmax] = PRICE_RANGE[cat];
-    const price = Math.round(rangeInt(pmin, pmax) / 10) * 10;
-    const mrp = Math.round((price * (1.8 + seed() * 0.9)) / 10) * 10; // 45-65% off
-    const tag = seed() < 0.35 ? pick(TAGS) : undefined;
-    const rating = +(3.6 + seed() * 1.4).toFixed(1);
-    const reviews = rangeInt(12, 4800);
-    const image = u(pick(IMAGES[cat]));
+      const id = `${cat.toLowerCase().replace(/[^a-z]/g, "")}-${nameKey.replace(/[^a-z0-9]+/g, "-")}`;
+      if (seenIds.has(id)) continue;
+      seenIds.add(id);
 
-    generated.push({
+      const [pmin, pmax] = PRICE_RANGE[cat];
+      const price = Math.round(rangeInt(pmin, pmax) / 10) * 10;
+      const mrp = Math.round((price * (1.8 + seed() * 0.9)) / 10) * 10;
+      const tag = seed() < 0.35 ? TAGS[Math.floor(seed() * TAGS.length)] : undefined;
+      const rating = +(3.6 + seed() * 1.4).toFixed(1);
+      const reviews = rangeInt(12, 4800);
+      const image = u(imgs[imgIdx % imgs.length]);
+      imgIdx++;
+
+      generated.push({
       id,
       name,
       price,
