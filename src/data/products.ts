@@ -1,10 +1,3 @@
-import hoodie from "@/assets/prod-hoodie.jpg";
-import shirt from "@/assets/prod-shirt.jpg";
-import coat from "@/assets/prod-coat.jpg";
-import jeans from "@/assets/prod-jeans.jpg";
-import tee from "@/assets/prod-tee.jpg";
-import jacket from "@/assets/prod-jacket.jpg";
-
 export type Category =
   | "Shirts" | "T-Shirts" | "Jeans" | "Jackets"
   | "Hoodies" | "Suits" | "Activewear" | "Accessories";
@@ -24,179 +17,46 @@ export type Product = {
 
 const u = (id: string) => `https://images.unsplash.com/${id}?auto=format&fit=crop&w=900&q=80`;
 
-// Curated Unsplash photo IDs by category (men's fashion)
-const IMAGES: Record<Category, string[]> = {
-  Shirts: [
-    "photo-1602810318383-e386cc2a3ccf","photo-1564584217132-2271feaeb3c5",
-    "photo-1589310243389-96a5483213a8","photo-1603252109303-2751441dd157",
-    "photo-1596755094514-f87e34085b2c","photo-1620012253295-c15cc3e65df4",
-    "photo-1626497764746-6dc36546b388","photo-1607345366928-199ea26cfe3e",
-  ],
-  "T-Shirts": [
-    "photo-1521572163474-6864f9cf17ab","photo-1503342217505-b0a15ec3261c",
-    "photo-1586790170083-2f9ceadc732d","photo-1618354691373-d851c5c3a990",
-    "photo-1576566588028-4147f3842f27","photo-1581655353564-df123a1eb820",
-    "photo-1583743814966-8936f5b7be1a","photo-1622445275576-721325763afe",
-  ],
-  Jeans: [
-    "photo-1542272604-787c3835535d","photo-1582552938357-32b906df40cb",
-    "photo-1517438476312-10d79c5f25fd","photo-1473966968600-fa801b869a1a",
-    "photo-1604176354204-9268737828e4","photo-1604176424472-9d7122c0b9c2",
-    "photo-1541099649105-f69ad21f3246","photo-1551854838-212c50b4c184",
-  ],
-  Jackets: [
-    "photo-1551028719-00167b16eac5","photo-1591047139829-d91aecb6caea",
-    "photo-1539533113208-f6df8cc8b543","photo-1593030761757-71fae45fa0e7",
-    "photo-1520975954732-35dd22299614","photo-1548883354-94bcfe321cbb",
-    "photo-1611312449408-fcece27cdbb7","photo-1544022613-e87ca75a784a",
-  ],
-  Hoodies: [
-    "photo-1556821840-3a63f95609a7","photo-1620799140408-edc6dcb6d633",
-    "photo-1578587018452-892bacefd3f2","photo-1565693413579-8a73fcdf0c44",
-    "photo-1620799139507-2a76f79a2f4d","photo-1614975059251-992f11792b9f",
-  ],
-  Suits: [
-    "photo-1594938298603-c8148c4dae35","photo-1507679799987-c73779587ccf",
-    "photo-1593032465175-481ac7f401a0","photo-1617137968427-85924c800a22",
-    "photo-1521336575822-6da63fb45455","photo-1598808503746-f34c53b9323e",
-  ],
-  Activewear: [
-    "photo-1571019613454-1cb2f99b2d8b","photo-1552902865-b72c031ac5ea",
-    "photo-1591195853828-11db59a44f6b","photo-1583468982228-19f19164aee2",
-    "photo-1556906781-9a412961c28c","photo-1606902965551-dce093cda6e7",
-  ],
-  Accessories: [
-    "photo-1624222247344-550fb60583dc","photo-1601925260368-ae2f83cf8b7f",
-    "photo-1627123424574-724758594e93","photo-1572635196237-14b3f281503f",
-    "photo-1547949003-9792a18a2601","photo-1622434641406-a158123450f9",
-    "photo-1611923134239-b9be5816e23d","photo-1603487742131-4160ec999306",
-  ],
-};
+export const products: Product[] = [
+  { id: "shirt-milan-oxford", name: "Milan Oxford Shirt", price: 1199, mrp: 2999, category: "Shirts", image: u("photo-1602810318383-e386cc2a3ccf"), tag: "Trending", rating: 4.7, reviews: 1842, description: "Crisp oxford weave with a sharp spread collar and clean tailored finish for smart daily wear." },
+  { id: "shirt-riviera-linen", name: "Riviera Linen Shirt", price: 1399, mrp: 3299, category: "Shirts", image: u("photo-1564584217132-2271feaeb3c5"), tag: "New", rating: 4.6, reviews: 1218, description: "Breathable linen shirt with a relaxed silhouette built for warm days and polished evenings." },
+  { id: "shirt-harbor-stripe", name: "Harbor Stripe Shirt", price: 1299, mrp: 3099, category: "Shirts", image: u("photo-1589310243389-96a5483213a8"), rating: 4.5, reviews: 964, description: "Vertical stripe cotton shirt that delivers a lean profile with lightweight everyday comfort." },
+  { id: "shirt-regent-poplin", name: "Regent Poplin Shirt", price: 1499, mrp: 3599, category: "Shirts", image: u("photo-1603252109303-2751441dd157"), tag: "Premium", rating: 4.8, reviews: 776, description: "Smooth poplin construction with refined cuffs and a versatile cut for work or dinner." },
 
-const NAME_PARTS: Record<Category, { adj: string[]; noun: string[] }> = {
-  Shirts: {
-    adj: ["Onyx","Atelier","Heritage","Banker","Highland","Coastal","Monaco","Westend","Riviera","Linen","Oxford","Poplin","Slim","Vintage"],
-    noun: ["Oxford Shirt","Linen Shirt","Flannel Shirt","Denim Shirt","Formal Shirt","Stripe Shirt","Check Shirt","Cuban Shirt","Mandarin Shirt"],
-  },
-  "T-Shirts": {
-    adj: ["Midnight","Streetwave","Pulse","Pacific","Studio","Drop-Shoulder","Boxy","Essential","Pima","Combed","Statement","Faded"],
-    noun: ["Crew Tee","Graphic Tee","V-Neck Tee","Henley","Polo","Oversized Tee","Pocket Tee","Long Sleeve Tee","Striped Tee"],
-  },
-  Jeans: {
-    adj: ["Indigo","Onyx","Carbon","Stonewash","Raw","Selvedge","Tapered","Slim","Relaxed","Distressed","Vintage","Charcoal","Stone"],
-    noun: ["Skinny Jeans","Straight Jeans","Tapered Jeans","Cargo Pants","Chino Trouser","Denim Joggers","Wide Leg Jeans","Slim Fit Jeans"],
-  },
-  Jackets: {
-    adj: ["Noir","Arctic","Rebel","Storm","Aviator","Charcoal","Heritage","Italian","Vintage","Tactical","Urban","Highland"],
-    noun: ["Bomber Jacket","Denim Jacket","Puffer Jacket","Slim Blazer","Overcoat","Trench Coat","Biker Jacket","Field Jacket","Quilted Jacket"],
-  },
-  Hoodies: {
-    adj: ["Tech","Heritage","Sherpa","Heavyweight","Boxy","Onyx","Graphite","Ember","Studio","Retro","Lounge"],
-    noun: ["Pullover Hoodie","Full-Zip Hoodie","Crewneck Sweat","Sherpa Hoodie","Half-Zip","Oversized Hoodie","Quarter-Zip Sweat"],
-  },
-  Suits: {
-    adj: ["Midnight","Onyx","Charcoal","Pinstripe","Italian","British","Slim","Tailored","Premium","Black-Tie"],
-    noun: ["Two-Piece Suit","Three-Piece Suit","Tuxedo","Wool Blazer","Formal Trouser","Dinner Jacket","Waistcoat"],
-  },
-  Activewear: {
-    adj: ["Pulse","Velocity","Apex","Performance","Tech","Dynamic","Stride","Flux","Core"],
-    noun: ["Training Tee","Tapered Joggers","Training Shorts","Compression Tights","Track Jacket","Performance Polo","Running Tee"],
-  },
-  Accessories: {
-    adj: ["Italian","Premium","Heritage","Calfskin","Vintage","Onyx","Brushed","Classic","Modern","Sterling"],
-    noun: ["Leather Belt","Cashmere Scarf","Bifold Wallet","Aviator Sunglasses","Leather Card Holder","Wool Beanie","Silk Tie","Pocket Square","Steel Watch","Bracelet"],
-  },
-};
+  { id: "tee-signal-crew", name: "Signal Crew Tee", price: 499, mrp: 1299, category: "T-Shirts", image: u("photo-1521572163474-6864f9cf17ab"), tag: "Hot", rating: 4.4, reviews: 3124, description: "Soft combed jersey tee with a balanced fit and durable neck rib for repeat everyday use." },
+  { id: "tee-drift-oversized", name: "Drift Oversized Tee", price: 699, mrp: 1499, category: "T-Shirts", image: u("photo-1503342217505-b0a15ec3261c"), tag: "Bestseller", rating: 4.7, reviews: 2288, description: "Boxy oversized t-shirt with dropped shoulders and a premium drape that feels current and easy." },
+  { id: "tee-vector-polo", name: "Vector Polo Tee", price: 799, mrp: 1699, category: "T-Shirts", image: u("photo-1586790170083-2f9ceadc732d"), rating: 4.5, reviews: 1106, description: "Minimal polo tee with a clean placket and soft-touch knit for smart-casual rotation." },
+  { id: "tee-nova-pocket", name: "Nova Pocket Tee", price: 599, mrp: 1399, category: "T-Shirts", image: u("photo-1618354691373-d851c5c3a990"), tag: "New", rating: 4.3, reviews: 856, description: "Relaxed pocket tee cut from breathable cotton with subtle structure and everyday versatility." },
 
-const PRICE_RANGE: Record<Category, [number, number]> = {
-  Shirts: [499, 1899],
-  "T-Shirts": [299, 999],
-  Jeans: [699, 2199],
-  Jackets: [1499, 5999],
-  Hoodies: [799, 2299],
-  Suits: [3999, 9999],
-  Activewear: [499, 1499],
-  Accessories: [299, 1799],
-};
+  { id: "jeans-indigo-taper", name: "Indigo Taper Jeans", price: 1499, mrp: 3699, category: "Jeans", image: u("photo-1542272604-787c3835535d"), tag: "Trending", rating: 4.6, reviews: 1689, description: "Mid-rise tapered denim with a deep indigo wash and comfortable stretch for all-day wear." },
+  { id: "jeans-stone-straight", name: "Stone Straight Jeans", price: 1599, mrp: 3899, category: "Jeans", image: u("photo-1582552938357-32b906df40cb"), rating: 4.5, reviews: 1327, description: "Straight-leg jeans finished in a versatile stone wash with sturdy premium denim construction." },
+  { id: "jeans-carbon-slim", name: "Carbon Slim Jeans", price: 1699, mrp: 4099, category: "Jeans", image: u("photo-1517438476312-10d79c5f25fd"), tag: "Limited", rating: 4.7, reviews: 948, description: "Slim black denim with a clean ankle break and sharp streamlined look for day-to-night styling." },
+  { id: "jeans-vault-relaxed", name: "Vault Relaxed Jeans", price: 1799, mrp: 4399, category: "Jeans", image: u("photo-1473966968600-fa801b869a1a"), rating: 4.4, reviews: 715, description: "Relaxed-leg jeans with vintage fading and room through the thigh for laid-back comfort." },
 
-const TAGS = ["New","Trending","Hot","Bestseller","Limited","Drop","Premium","Cozy","Active","Icon","50% Off","60% Off","70% Off"];
+  { id: "jacket-aspen-bomber", name: "Aspen Bomber Jacket", price: 2499, mrp: 5999, category: "Jackets", image: u("photo-1551028719-00167b16eac5"), tag: "Bestseller", rating: 4.8, reviews: 1446, description: "Structured bomber jacket with ribbed trims and a modern profile for effortless outerwear styling." },
+  { id: "jacket-torque-biker", name: "Torque Biker Jacket", price: 4299, mrp: 9999, category: "Jackets", image: u("photo-1591047139829-d91aecb6caea"), tag: "Icon", rating: 4.9, reviews: 684, description: "Edge-driven biker jacket with clean panel detailing, rich texture, and a confident silhouette." },
+  { id: "jacket-crown-overcoat", name: "Crown Overcoat", price: 3899, mrp: 8999, category: "Jackets", image: u("photo-1539533113208-f6df8cc8b543"), rating: 4.7, reviews: 538, description: "Longline overcoat designed with refined lapels and a sharp drape for elevated seasonal layering." },
+  { id: "jacket-terrain-field", name: "Terrain Field Jacket", price: 2999, mrp: 7299, category: "Jackets", image: u("photo-1593030761757-71fae45fa0e7"), tag: "Premium", rating: 4.6, reviews: 902, description: "Utility field jacket with multiple pockets, a structured collar, and an all-weather-ready build." },
 
-// Seeded PRNG so the catalog is stable between renders/builds
-const mulberry32 = (seed: number) => () => {
-  let t = (seed += 0x6D2B79F5);
-  t = Math.imul(t ^ (t >>> 15), t | 1);
-  t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
-  return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
-};
+  { id: "hoodie-ember-pullover", name: "Ember Pullover Hoodie", price: 1299, mrp: 3199, category: "Hoodies", image: u("photo-1556821840-3a63f95609a7"), tag: "Cozy", rating: 4.7, reviews: 2456, description: "Heavy brushed fleece hoodie with a roomy hood and soft interior built for all-day comfort." },
+  { id: "hoodie-graph-fullzip", name: "Graph Full-Zip Hoodie", price: 1499, mrp: 3499, category: "Hoodies", image: u("photo-1620799140408-edc6dcb6d633"), rating: 4.5, reviews: 1364, description: "Zip-up hoodie with clean seam lines and a structured fit for casual layering across seasons." },
+  { id: "hoodie-rally-quarterzip", name: "Rally Quarter-Zip Sweat", price: 1399, mrp: 3299, category: "Hoodies", image: u("photo-1578587018452-892bacefd3f2"), tag: "New", rating: 4.4, reviews: 892, description: "Quarter-zip sweatshirt with a raised collar, smooth fleece body, and understated athletic styling." },
+  { id: "hoodie-cinder-boxy", name: "Cinder Boxy Hoodie", price: 1599, mrp: 3799, category: "Hoodies", image: u("photo-1565693413579-8a73fcdf0c44"), tag: "Trending", rating: 4.6, reviews: 1179, description: "Boxy-cut hoodie with dropped shoulders and thick premium knit for a bold modern streetwear feel." },
 
-const CATEGORIES = Object.keys(IMAGES) as Category[];
+  { id: "suit-onyx-twopiece", name: "Onyx Two-Piece Suit", price: 5499, mrp: 11999, category: "Suits", image: u("photo-1594938298603-c8148c4dae35"), tag: "Premium", rating: 4.8, reviews: 642, description: "Sharp two-piece suiting set crafted for formal events with a clean silhouette and polished finish." },
+  { id: "suit-mayfair-pinstripe", name: "Mayfair Pinstripe Suit", price: 6299, mrp: 13499, category: "Suits", image: u("photo-1507679799987-c73779587ccf"), rating: 4.7, reviews: 411, description: "Tailored pinstripe suit balancing traditional elegance with a precise contemporary fit." },
+  { id: "suit-velour-tuxedo", name: "Velour Tuxedo Set", price: 6999, mrp: 14999, category: "Suits", image: u("photo-1593032465175-481ac7f401a0"), tag: "Icon", rating: 4.9, reviews: 288, description: "Statement tuxedo with satin detailing and a sculpted jacket shape for black-tie occasions." },
+  { id: "suit-cavendish-blazer", name: "Cavendish Blazer Suit", price: 5899, mrp: 12799, category: "Suits", image: u("photo-1617137968427-85924c800a22"), tag: "New", rating: 4.6, reviews: 356, description: "Refined blazer-led suit with structured shoulders and elegant lines that dress up instantly." },
 
-const seed = mulberry32(20251);
-const rangeInt = (min: number, max: number) => Math.floor(seed() * (max - min + 1)) + min;
+  { id: "active-apex-tee", name: "Apex Training Tee", price: 799, mrp: 1799, category: "Activewear", image: u("photo-1571019613454-1cb2f99b2d8b"), tag: "Active", rating: 4.5, reviews: 1524, description: "Sweat-wicking performance tee built with stretch comfort and airflow for demanding sessions." },
+  { id: "active-stride-jogger", name: "Stride Tapered Joggers", price: 1199, mrp: 2599, category: "Activewear", image: u("photo-1552902865-b72c031ac5ea"), rating: 4.4, reviews: 1047, description: "Technical joggers with a tapered ankle, secure pockets, and flexible movement for gym or travel." },
+  { id: "active-sprint-track", name: "Sprint Track Jacket", price: 1499, mrp: 2999, category: "Activewear", image: u("photo-1591195853828-11db59a44f6b"), tag: "Trending", rating: 4.6, reviews: 813, description: "Lightweight zip track jacket designed for motion with a sleek fit and clean athletic finish." },
+  { id: "active-core-short", name: "Core Training Shorts", price: 899, mrp: 1999, category: "Activewear", image: u("photo-1583468982228-19f19164aee2"), rating: 4.3, reviews: 697, description: "Breathable training shorts with easy stretch and a supportive waistband for intense workouts." },
 
-const seenIds = new Set<string>();
-const seenNames = new Set<string>();
-const generated: Product[] = [];
-
-for (const cat of CATEGORIES) {
-  const { adj: adjs, noun: nouns } = NAME_PARTS[cat];
-  const imgs = IMAGES[cat];
-  // Enumerate every adj × noun combination → guarantees unique product names per category
-  let imgIdx = 0;
-  for (let a = 0; a < adjs.length; a++) {
-    for (let n = 0; n < nouns.length; n++) {
-      const name = `${adjs[a]} ${nouns[n]}`;
-      const nameKey = name.toLowerCase();
-      if (seenNames.has(nameKey)) continue;
-      seenNames.add(nameKey);
-
-      const id = `${cat.toLowerCase().replace(/[^a-z]/g, "")}-${nameKey.replace(/[^a-z0-9]+/g, "-")}`;
-      if (seenIds.has(id)) continue;
-      seenIds.add(id);
-
-      const [pmin, pmax] = PRICE_RANGE[cat];
-      const price = Math.round(rangeInt(pmin, pmax) / 10) * 10;
-      const mrp = Math.round((price * (1.8 + seed() * 0.9)) / 10) * 10;
-      const tag = seed() < 0.35 ? TAGS[Math.floor(seed() * TAGS.length)] : undefined;
-      const rating = +(3.6 + seed() * 1.4).toFixed(1);
-      const reviews = rangeInt(12, 4800);
-      const image = u(imgs[imgIdx % imgs.length]);
-      imgIdx++;
-
-      generated.push({
-      id,
-      name,
-      price,
-      mrp,
-      category: cat,
-      image,
-      tag,
-      rating,
-      reviews,
-      description: `${name.toLowerCase()} crafted from premium materials. Modern fit, durable construction, and signature DEXTER detailing for everyday luxury.`,
-      });
-    }
-  }
-}
-
-// Final dedupe pass — collapse any accidental duplicate ids/names
-const dedupedGen: Product[] = [];
-const finalSeen = new Set<string>();
-for (const p of generated) {
-  if (finalSeen.has(p.id)) continue;
-  finalSeen.add(p.id);
-  dedupedGen.push(p);
-}
-
-const heroes: Product[] = [
-  { id: "onyx-hoodie", name: "Onyx Oversized Hoodie", price: 1299, mrp: 4999, category: "Hoodies", image: hoodie, tag: "Bestseller", rating: 4.7, reviews: 2840, description: "Heavyweight 460gsm cotton fleece. Drop shoulder cut and brushed interior for an elevated everyday silhouette." },
-  { id: "atelier-shirt", name: "Atelier Linen Shirt", price: 999, mrp: 3499, category: "Shirts", image: shirt, tag: "Trending", rating: 4.6, reviews: 1820, description: "Tailored from premium European linen. Mother-of-pearl buttons and a relaxed modern fit." },
-  { id: "noir-overcoat", name: "Noir Wool Overcoat", price: 3499, mrp: 11999, category: "Jackets", image: coat, tag: "70% Off", rating: 4.8, reviews: 940, description: "Italian virgin wool overcoat with peak lapels. A definitive statement of refined masculinity." },
-  { id: "raw-selvedge", name: "Raw Selvedge Denim", price: 1499, mrp: 4499, category: "Jeans", image: jeans, tag: "Limited", rating: 4.5, reviews: 1320, description: "14oz Japanese selvedge denim. Slim straight cut that breaks in beautifully over time." },
-  { id: "essential-tee", name: "Essential Pima Tee", price: 399, mrp: 1499, category: "T-Shirts", image: tee, tag: "Hot", rating: 4.4, reviews: 5240, description: "Ultra-soft Peruvian Pima cotton with a clean crew neck. The perfect everyday white tee." },
-  { id: "rebel-leather", name: "Rebel Leather Biker", price: 5999, mrp: 18999, category: "Jackets", image: jacket, tag: "Icon", rating: 4.9, reviews: 612, description: "Hand-finished lambskin biker jacket with asymmetric zip. A timeless rebel essential." },
+  { id: "access-heritage-belt", name: "Heritage Leather Belt", price: 699, mrp: 1699, category: "Accessories", image: u("photo-1624222247344-550fb60583dc"), tag: "Bestseller", rating: 4.7, reviews: 934, description: "Full-grain leather belt with a brushed metal buckle and timeless finishing for dress or denim." },
+  { id: "access-sterling-watch", name: "Sterling Steel Watch", price: 1799, mrp: 3999, category: "Accessories", image: u("photo-1601925260368-ae2f83cf8b7f"), tag: "Premium", rating: 4.8, reviews: 582, description: "Polished steel watch with a minimal dial and refined bracelet that elevates any outfit." },
+  { id: "access-noir-wallet", name: "Noir Bifold Wallet", price: 899, mrp: 1999, category: "Accessories", image: u("photo-1627123424574-724758594e93"), rating: 4.5, reviews: 744, description: "Compact bifold wallet in rich textured leather with clean compartments and a slim profile." },
+  { id: "access-luxe-scarf", name: "Luxe Wool Scarf", price: 999, mrp: 2299, category: "Accessories", image: u("photo-1572635196237-14b3f281503f"), tag: "New", rating: 4.4, reviews: 468, description: "Soft wool scarf finished with fine edges and versatile proportions for cold-weather layering." },
 ];
-
-export const products: Product[] = [...heroes, ...dedupedGen];
 
 export const getProduct = (id: string) => products.find(p => p.id === id);
