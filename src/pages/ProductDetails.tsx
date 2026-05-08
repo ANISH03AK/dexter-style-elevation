@@ -158,12 +158,8 @@ const ProductDetails = () => {
         </div>
 
         {/* Related */}
-        <div className="mt-24">
-          <h2 className="font-display text-3xl md:text-4xl font-bold mb-10">You May Also Like</h2>
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-x-4 gap-y-10 md:gap-x-6">
-            {products.filter(p => p.id !== product.id).slice(0, 4).map(p => <ProductCard key={p.id} product={p} />)}
-          </div>
-        </div>
+        <RelatedProducts currentId={product.id} category={product.category} all={products} />
+
       </section>
     </Layout>
   );
