@@ -197,6 +197,6 @@ const heroes: Product[] = [
   { id: "rebel-leather", name: "Rebel Leather Biker", price: 5999, mrp: 18999, category: "Jackets", image: jacket, tag: "Icon", rating: 4.9, reviews: 612, description: "Hand-finished lambskin biker jacket with asymmetric zip. A timeless rebel essential." },
 ];
 
-export const products: Product[] = [...heroes, ...generated];
+export const products: Product[] = [...heroes, ...dedupedGen];
 
 export const getProduct = (id: string) => products.find(p => p.id === id);
