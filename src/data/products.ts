@@ -174,8 +174,18 @@ for (const cat of CATEGORIES) {
       rating,
       reviews,
       description: `${name.toLowerCase()} crafted from premium materials. Modern fit, durable construction, and signature DEXTER detailing for everyday luxury.`,
-    });
+      });
+    }
   }
+}
+
+// Final dedupe pass — collapse any accidental duplicate ids/names
+const dedupedGen: Product[] = [];
+const finalSeen = new Set<string>();
+for (const p of generated) {
+  if (finalSeen.has(p.id)) continue;
+  finalSeen.add(p.id);
+  dedupedGen.push(p);
 }
 
 const heroes: Product[] = [
