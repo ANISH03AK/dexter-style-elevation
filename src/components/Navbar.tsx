@@ -2,6 +2,7 @@ import { Link, NavLink } from "react-router-dom";
 import { Search, Heart, ShoppingBag, User, Menu, X, ChevronDown } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useCart } from "@/context/CartContext";
+import { useAuth } from "@/hooks/useAuth";
 import { useWishlist } from "@/context/WishlistContext";
 import { cn } from "@/lib/utils";
 import dexterLogo from "@/assets/dexter-logo.png";
@@ -25,6 +26,7 @@ const allLinks = [...leftLinks, ...rightLinks];
 const Navbar = () => {
   const { count } = useCart();
   const { count: wishCount } = useWishlist();
+  const { user, isAdmin, signOut } = useAuth();
   const [scrolled, setScrolled] = useState(false);
   const [open, setOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
@@ -125,14 +127,14 @@ const Navbar = () => {
 
       {searchOpen && <SearchBar onClose={() => setSearchOpen(false)} />}
 
-      {/* Mobile slide-in menu (80% width) */}
+      {/* Mobile slide-in menu (side drawer, capped width) */}
       {open && (
         <div className="fixed inset-0 z-50 lg:hidden">
           <div
             className="absolute inset-0 bg-black/50 animate-fade-in"
             onClick={() => setOpen(false)}
           />
-          <aside className="absolute top-0 left-0 h-full w-[80%] max-w-[320px] bg-white shadow-xl flex flex-col animate-slide-in-right">
+          <aside className="absolute top-0 left-0 h-full w-[78%] max-w-[280px] bg-white shadow-2xl flex flex-col animate-slide-in-right">
             <div className="flex items-center justify-between px-5 py-4 border-b border-border">
               <img src={dexterLogo} alt="DEXTER" className="h-9 w-auto object-contain" />
               <button onClick={() => setOpen(false)} aria-label="Close menu" className="p-1">
@@ -153,9 +155,23 @@ const Navbar = () => {
               <Link to="/wishlist" onClick={() => setOpen(false)} className="block px-5 py-3 text-sm uppercase tracking-[0.18em] text-ink/85 hover:bg-muted hover:text-gold border-b border-border/50">
                 Wishlist
               </Link>
-              <Link to="/auth" onClick={() => setOpen(false)} className="block px-5 py-3 text-sm uppercase tracking-[0.18em] text-ink/85 hover:bg-muted hover:text-gold">
-                Account
-              </Link>
+              {isAdmin && (
+                <Link to="/admin" onClick={() => setOpen(false)} className="block px-5 py-3 text-sm uppercase tracking-[0.18em] text-gold hover:bg-muted border-b border-border/50">
+                  Admin Dashboard
+                </Link>
+              )}
+              {user ? (
+                <button
+                  onClick={async () => { await signOut(); setOpen(false); }}
+                  className="block w-full text-left px-5 py-3 text-sm uppercase tracking-[0.18em] text-ink/85 hover:bg-muted hover:text-gold"
+                >
+                  Sign Out
+                </button>
+              ) : (
+                <Link to="/auth" onClick={() => setOpen(false)} className="block px-5 py-3 text-sm uppercase tracking-[0.18em] text-ink/85 hover:bg-muted hover:text-gold">
+                  Sign In
+                </Link>
+              )}
             </nav>
           </aside>
         </div>
