@@ -134,7 +134,7 @@ const Navbar = () => {
             className="absolute inset-0 bg-black/50 animate-fade-in"
             onClick={() => setOpen(false)}
           />
-          <aside className="absolute top-0 left-0 h-full w-[78%] max-w-[280px] bg-white shadow-2xl flex flex-col animate-slide-in-right">
+          <aside className="absolute top-0 left-0 h-full w-[82%] max-w-[300px] bg-white shadow-2xl flex flex-col animate-fade-in">
             <div className="flex items-center justify-between px-5 py-4 border-b border-border">
               <img src={dexterLogo} alt="DEXTER" className="h-9 w-auto object-contain" />
               <button onClick={() => setOpen(false)} aria-label="Close menu" className="p-1">

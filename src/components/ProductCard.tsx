@@ -38,9 +38,9 @@ const ProductCard = ({ product }: { product: Product }) => {
             {product.tag}
           </span>
         )}
-        {discount > 30 && (
-          <span className="absolute top-3 right-3 bg-gold text-ink text-[10px] font-bold uppercase tracking-wider px-2 py-1 rounded-sm shadow-gold animate-scale-in">
-            {discount}% OFF
+        {product.mrp && product.mrp > product.price && (
+          <span className="absolute top-3 right-3 bg-gold text-ink text-[10px] font-bold uppercase tracking-wider px-2.5 py-1 rounded-sm shadow-gold animate-scale-in">
+            Offer · {discount}% Off
           </span>
         )}
         <button
