@@ -10,12 +10,23 @@ type AuthCtx = {
   role: Role;
   loading: boolean;
   isAdmin: boolean;
+  // Mobile-number based auth (default for customers)
+  signInWithPhone: (phone: string, password: string) => Promise<{ error: string | null }>;
+  signUpWithPhone: (phone: string, password: string, fullName: string) => Promise<{ error: string | null }>;
+  // Email auth (used by store owner / admin)
   signIn: (email: string, password: string) => Promise<{ error: string | null }>;
   signUp: (email: string, password: string, fullName: string) => Promise<{ error: string | null }>;
   signOut: () => Promise<void>;
 };
 
 const Ctx = createContext<AuthCtx | null>(null);
+
+// Convert a raw phone string to a deterministic email alias we can use with
+// Supabase's password auth (avoids needing an external SMS provider).
+const phoneToEmail = (phone: string) => {
+  const digits = phone.replace(/\D+/g, "");
+  return `${digits}@dexter.phone`;
+};
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
@@ -70,12 +81,35 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     return { error: error?.message ?? null };
   };
 
+  const signInWithPhone: AuthCtx["signInWithPhone"] = async (phone, password) => {
+    const { error } = await supabase.auth.signInWithPassword({
+      email: phoneToEmail(phone),
+      password,
+    });
+    return { error: error?.message ?? null };
+  };
+
+  const signUpWithPhone: AuthCtx["signUpWithPhone"] = async (phone, password, fullName) => {
+    const { error } = await supabase.auth.signUp({
+      email: phoneToEmail(phone),
+      password,
+      options: {
+        emailRedirectTo: `${window.location.origin}/`,
+        data: { full_name: fullName, phone },
+      },
+    });
+    return { error: error?.message ?? null };
+  };
+
   const signOut = async () => {
     await supabase.auth.signOut();
   };
 
   return (
-    <Ctx.Provider value={{ user, session, role, loading, isAdmin: role === "admin", signIn, signUp, signOut }}>
+    <Ctx.Provider value={{
+      user, session, role, loading, isAdmin: role === "admin",
+      signIn, signUp, signInWithPhone, signUpWithPhone, signOut,
+    }}>
       {children}
     </Ctx.Provider>
   );
