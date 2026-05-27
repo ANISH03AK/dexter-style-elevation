@@ -16,6 +16,7 @@ import Wishlist from "./pages/Wishlist.tsx";
 import Auth from "./pages/Auth.tsx";
 import About from "./pages/About.tsx";
 import Admin from "./pages/Admin.tsx";
+import Contact from "./pages/Contact.tsx";
 import NotFound from "./pages/NotFound.tsx";
 import ScrollToTop from "./components/ScrollToTop";
 import NavArrows from "./components/NavArrows";
@@ -43,6 +44,7 @@ const App = () => (
                   <Route path="/wishlist" element={<Wishlist />} />
                   <Route path="/auth" element={<Auth />} />
                   <Route path="/about" element={<About />} />
+                  <Route path="/contact" element={<Contact />} />
                   <Route path="/admin" element={<Admin />} />
                   <Route path="*" element={<NotFound />} />
                 </Routes>

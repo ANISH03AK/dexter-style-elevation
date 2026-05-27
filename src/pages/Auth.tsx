@@ -83,7 +83,7 @@ const Auth = () => {
           <div className="grid grid-cols-2 gap-2 mb-6 p-1 bg-secondary rounded-md">
             {([
               { id: "phone", label: "Mobile", Icon: Phone },
-              { id: "email", label: "Email (Owner)", Icon: Mail },
+              { id: "email", label: "Email", Icon: Mail },
             ] as const).map(m => (
               <button
                 key={m.id}
