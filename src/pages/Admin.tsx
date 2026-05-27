@@ -161,8 +161,7 @@ const Admin = () => {
     if (error) toast.error(error.message); else toast.success(`Order ${status}`);
   };
 
-  const isDbId = (id: string) => /^[0-9a-f]{8}-/.test(id);
-  const dbProducts = products.filter(p => isDbId(p.id));
+  const dbProducts = products;
   const filtered = dbProducts.filter(p =>
     p.name.toLowerCase().includes(q.toLowerCase()) ||
     p.category.toLowerCase().includes(q.toLowerCase())

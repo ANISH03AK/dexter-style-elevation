@@ -1,5 +1,5 @@
 import { createContext, useContext, useState, ReactNode, useEffect, useCallback } from "react";
-import { products as seedProducts, Product, Category } from "@/data/products";
+import { Product, Category } from "@/data/products";
 import { supabase } from "@/integrations/supabase/client";
 
 type NewProductInput = {
@@ -63,7 +63,8 @@ export const ProductsProvider = ({ children }: { children: ReactNode }) => {
   }, [refresh]);
 
   // Live (admin-managed) products take precedence; seed list shown as fallback inventory
-  const all = [...live, ...seedProducts];
+  // Live admin-managed catalogue is the single source of truth.
+  const all = live;
 
   const addProduct: Ctx["addProduct"] = async (p) => {
     const { error } = await supabase.from("products").insert({
