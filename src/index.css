@@ -1,79 +1,84 @@
-@import url('https://fonts.googleapis.com/css2?family=Urbanist:wght@300;400;500;600;700;800;900&family=Playfair+Display:wght@600;700;800;900&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Urbanist:wght@300;400;500;600;700;800;900&display=swap');
 
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-/* DEXTER — Premium Luxury: Navy + White + Gold */
+/* DEXTER MENS CLOTHING — Black / Red / Yellow-Gold high-contrast streetwear theme */
 @layer base {
   :root {
     --background: 0 0% 100%;
-    --foreground: 214 100% 12%;
+    --foreground: 0 0% 6%;            /* deep black text */
 
     --card: 0 0% 100%;
-    --card-foreground: 214 100% 12%;
+    --card-foreground: 0 0% 6%;
 
     --popover: 0 0% 100%;
-    --popover-foreground: 214 100% 12%;
+    --popover-foreground: 0 0% 6%;
 
-    /* Navy Blue #001F3F */
-    --primary: 214 100% 12%;
+    /* Primary = crisp black */
+    --primary: 0 0% 6%;
     --primary-foreground: 0 0% 100%;
 
-    --secondary: 214 30% 96%;
-    --secondary-foreground: 214 100% 12%;
+    --secondary: 0 0% 96%;
+    --secondary-foreground: 0 0% 6%;
 
-    --muted: 214 20% 94%;
-    --muted-foreground: 214 15% 40%;
+    --muted: 0 0% 94%;
+    --muted-foreground: 0 0% 30%;
 
-    /* Gold #D4AF37 */
-    --accent: 46 65% 52%;
-    --accent-foreground: 214 100% 12%;
-    --gold: 46 65% 52%;
-    --gold-soft: 46 70% 68%;
+    /* Accent = yellow-gold #FFC107 */
+    --accent: 46 100% 50%;
+    --accent-foreground: 0 0% 6%;
+    --gold: 46 100% 50%;
+    --gold-soft: 46 100% 65%;
 
-    --destructive: 0 72% 45%;
+    /* Red accent for offers / CTAs */
+    --red: 0 84% 50%;
+    --red-foreground: 0 0% 100%;
+
+    --destructive: 0 84% 50%;
     --destructive-foreground: 0 0% 100%;
 
-    --border: 214 20% 88%;
-    --input: 214 20% 88%;
-    --ring: 214 100% 12%;
+    --border: 0 0% 88%;
+    --input: 0 0% 88%;
+    --ring: 0 0% 6%;
 
     --radius: 0.5rem;
 
-    /* Navy surfaces (kept as `ink` aliases to avoid touching every file) */
-    --ink: 214 100% 12%;
-    --ink-soft: 214 80% 18%;
-    --graphite: 214 40% 28%;
+    /* "Ink" surfaces = pure black streetwear */
+    --ink: 0 0% 6%;
+    --ink-soft: 0 0% 12%;
+    --graphite: 0 0% 22%;
 
-    --gradient-dark: linear-gradient(180deg, hsl(214 100% 12%) 0%, hsl(214 100% 8%) 100%);
-    --gradient-gold: linear-gradient(135deg, hsl(46 70% 60%) 0%, hsl(40 75% 45%) 100%);
-    --gradient-hero: linear-gradient(90deg, hsl(214 100% 8% / 0.95) 0%, hsl(214 100% 8% / 0.4) 60%, hsl(214 100% 8% / 0.1) 100%);
+    --gradient-dark: linear-gradient(180deg, hsl(0 0% 6%) 0%, hsl(0 0% 0%) 100%);
+    --gradient-gold: linear-gradient(135deg, hsl(46 100% 55%) 0%, hsl(40 100% 45%) 100%);
+    --gradient-hero: linear-gradient(90deg, hsl(0 0% 0% / 0.85) 0%, hsl(0 0% 0% / 0.45) 55%, hsl(0 0% 0% / 0.1) 100%);
 
-    --shadow-card: 0 1px 2px hsl(214 100% 12% / 0.06), 0 8px 24px -12px hsl(214 100% 12% / 0.18);
-    --shadow-elevated: 0 20px 60px -20px hsl(214 100% 12% / 0.40);
-    --shadow-gold: 0 10px 30px -10px hsl(46 65% 52% / 0.45);
+    --shadow-card: 0 1px 2px hsl(0 0% 0% / 0.06), 0 8px 24px -12px hsl(0 0% 0% / 0.18);
+    --shadow-elevated: 0 20px 60px -20px hsl(0 0% 0% / 0.40);
+    --shadow-gold: 0 10px 30px -10px hsl(46 100% 50% / 0.55);
+    --shadow-logo: 0 18px 40px hsl(0 0% 0% / 0.55), 0 6px 12px hsl(0 0% 0% / 0.35);
 
     --transition-smooth: all 0.4s cubic-bezier(0.22, 1, 0.36, 1);
   }
 
   .dark {
-    --background: 214 100% 8%;
+    --background: 0 0% 6%;
     --foreground: 0 0% 98%;
-    --card: 214 100% 10%;
+    --card: 0 0% 10%;
     --card-foreground: 0 0% 98%;
-    --popover: 214 100% 10%;
+    --popover: 0 0% 10%;
     --popover-foreground: 0 0% 98%;
     --primary: 0 0% 98%;
-    --primary-foreground: 214 100% 12%;
-    --secondary: 214 60% 16%;
+    --primary-foreground: 0 0% 6%;
+    --secondary: 0 0% 16%;
     --secondary-foreground: 0 0% 98%;
-    --muted: 214 60% 16%;
-    --muted-foreground: 214 15% 65%;
-    --accent: 46 65% 52%;
-    --accent-foreground: 214 100% 12%;
-    --border: 214 50% 22%;
-    --input: 214 50% 22%;
+    --muted: 0 0% 16%;
+    --muted-foreground: 0 0% 65%;
+    --accent: 46 100% 50%;
+    --accent-foreground: 0 0% 6%;
+    --border: 0 0% 22%;
+    --input: 0 0% 22%;
     --ring: 0 0% 98%;
   }
 }
@@ -83,11 +88,12 @@
   body {
     @apply bg-background text-foreground antialiased;
     font-family: 'Urbanist', system-ui, sans-serif;
-    font-feature-settings: 'cv11', 'ss01';
+    font-weight: 500;
   }
   h1, h2, h3, h4 {
     font-family: 'Urbanist', system-ui, sans-serif;
-    @apply tracking-tight;
+    @apply tracking-tight text-foreground;
+    font-weight: 800;
   }
   .font-display {
     font-family: 'Urbanist', system-ui, sans-serif;
@@ -99,6 +105,9 @@
 @layer utilities {
   .container-px { @apply px-4 sm:px-6 lg:px-12; }
   .text-gold { color: hsl(var(--gold)); }
+  .text-red-cta { color: hsl(var(--red)); }
+  .bg-gold { background-color: hsl(var(--gold)); }
+  .bg-red-cta { background-color: hsl(var(--red)); }
   .bg-ink { background-color: hsl(var(--ink)); }
   .bg-ink-soft { background-color: hsl(var(--ink-soft)); }
   .bg-graphite { background-color: hsl(var(--graphite)); }
@@ -107,11 +116,10 @@
   .shadow-card { box-shadow: var(--shadow-card); }
   .shadow-elevated { box-shadow: var(--shadow-elevated); }
   .shadow-gold { box-shadow: var(--shadow-gold); }
+  .shadow-logo { filter: drop-shadow(var(--shadow-logo)); }
   .transition-smooth { transition: var(--transition-smooth); }
 
-  .marquee-track {
-    animation: marquee 30s linear infinite;
-  }
+  .marquee-track { animation: marquee 30s linear infinite; }
   @keyframes marquee {
     from { transform: translateX(0); }
     to { transform: translateX(-50%); }
