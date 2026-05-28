@@ -32,38 +32,39 @@ const Index = () => {
 
         <img
           src={hero}
-          alt="DEXTER MENS CLOTHING — premium men's fashion lifestyle"
+          alt="DEXTER MENS CLOTHING — premium men's fashion lookbook"
           className="absolute inset-0 w-full h-full object-cover object-center"
         />
-        <div className="absolute inset-0 bg-gradient-to-b from-black/40 via-black/20 to-black/70" />
+        <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-black/40 to-black/80" />
 
         {/* Big Dexter logo overlay with sophisticated drop-shadow */}
         <div className="absolute inset-0 flex flex-col items-center justify-center px-6 text-center">
           <img
             src={dexterLogo}
             alt="DEXTER MENS CLOTHING"
-            className="w-[260px] sm:w-[360px] md:w-[460px] lg:w-[560px] h-auto object-contain shadow-logo"
+            className="w-[260px] sm:w-[360px] md:w-[460px] lg:w-[560px] h-auto object-contain shadow-logo animate-fade-in"
             style={{ filter: "drop-shadow(0 18px 40px rgba(0,0,0,0.65)) drop-shadow(0 6px 12px rgba(0,0,0,0.5))" }}
           />
-          <p className="mt-6 text-white text-xs sm:text-sm md:text-base uppercase tracking-[0.4em] font-bold drop-shadow-lg">
+          <p className="mt-6 text-white text-xs sm:text-sm md:text-base uppercase tracking-[0.4em] font-bold drop-shadow-lg animate-fade-in">
             Premium Menswear · Jayankondam
           </p>
-          <div className="mt-8 flex flex-wrap justify-center gap-3">
+          <div className="mt-8 flex flex-wrap justify-center gap-3 animate-fade-in">
             <Link
               to="/shop"
-              className="inline-flex items-center gap-3 bg-red-cta text-white px-7 py-3.5 text-xs uppercase tracking-[0.25em] font-bold rounded shadow-lg hover:scale-[1.03] transition-transform"
+              className="inline-flex items-center gap-3 bg-red-cta text-white px-7 py-3.5 text-xs uppercase tracking-[0.25em] font-bold rounded shadow-lg hover:bg-gold hover:text-ink hover:scale-[1.04] active:scale-95 transition-all duration-300"
             >
               Shop Collection <ArrowRight className="h-4 w-4" />
             </Link>
             <a
               href="tel:08925259787"
-              className="inline-flex items-center gap-3 bg-gold text-ink px-7 py-3.5 text-xs uppercase tracking-[0.25em] font-bold rounded shadow-lg hover:scale-[1.03] transition-transform"
+              className="inline-flex items-center gap-3 bg-gold text-ink px-7 py-3.5 text-xs uppercase tracking-[0.25em] font-bold rounded shadow-lg hover:bg-red-cta hover:text-white hover:scale-[1.04] active:scale-95 transition-all duration-300"
             >
               <Phone className="h-4 w-4" /> 089252 59787
             </a>
           </div>
         </div>
       </section>
+
 
       {/* MARQUEE strip — store info */}
       <section className="bg-ink text-primary-foreground py-4 overflow-hidden border-y border-white/10">
