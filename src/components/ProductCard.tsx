@@ -17,9 +17,11 @@ const ProductCard = ({ product }: { product: Product }) => {
     ? Math.round(((product.mrp - product.price) / product.mrp) * 100)
     : 0;
 
+  const savings = product.mrp && product.mrp > product.price ? product.mrp - product.price : 0;
+
   return (
-    <div className="group relative animate-fade-in">
-      <Link to={`/product/${product.id}`} className="block overflow-hidden bg-secondary aspect-[4/5] relative rounded-md">
+    <div className="group relative animate-fade-in transition-all duration-500 ease-out hover:-translate-y-1 hover:scale-[1.02]">
+      <Link to={`/product/${product.id}`} className="block overflow-hidden bg-secondary aspect-[4/5] relative rounded-md shadow-card group-hover:shadow-elevated transition-shadow duration-500">
         {!loaded && (
           <div className="absolute inset-0 bg-gradient-to-br from-secondary via-muted to-secondary animate-pulse" />
         )}
@@ -28,31 +30,36 @@ const ProductCard = ({ product }: { product: Product }) => {
           alt={product.name}
           loading="lazy"
           onLoad={() => setLoaded(true)}
-          className={`w-full h-full object-cover transition-transform duration-500 ease-out group-hover:scale-105 ${loaded ? "opacity-100" : "opacity-0"}`}
+          className={`w-full h-full object-cover transition-transform duration-700 ease-out group-hover:scale-110 ${loaded ? "opacity-100" : "opacity-0"}`}
         />
         {/* Gradient overlay on hover */}
-        <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+        <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
 
         {product.tag && (
-          <span className="absolute top-3 left-3 bg-ink text-primary-foreground text-[10px] tracking-[0.18em] uppercase px-2.5 py-1 rounded-sm shadow-lg">
+          <span className="absolute top-3 left-3 bg-ink text-primary-foreground text-[10px] tracking-[0.18em] uppercase px-2.5 py-1 rounded-sm shadow-lg z-10">
             {product.tag}
           </span>
         )}
-        {product.mrp && product.mrp > product.price && (
-          <span className="absolute top-3 right-3 bg-gold text-ink text-[10px] font-bold uppercase tracking-wider px-2.5 py-1 rounded-sm shadow-gold animate-scale-in">
-            Offer · {discount}% Off
-          </span>
+        {savings > 0 && (
+          <div className="absolute top-3 right-3 z-10 flex flex-col items-end gap-1.5">
+            <span className="bg-red-cta text-white text-[10px] font-extrabold uppercase tracking-wider px-2.5 py-1 rounded-sm shadow-lg animate-pulse-gold">
+              Save ₹{savings}
+            </span>
+            <span className="bg-gold text-ink text-[10px] font-bold uppercase tracking-wider px-2.5 py-1 rounded-sm shadow-gold">
+              {discount}% Off
+            </span>
+          </div>
         )}
         <button
           onClick={(e) => { e.preventDefault(); toggle(product); toast.success(wished ? "Removed from wishlist" : "Added to wishlist"); }}
-          className={`absolute top-3 right-3 h-9 w-9 grid place-items-center bg-background/90 backdrop-blur rounded-full transition-colors duration-200 hover:text-gold ${wished ? "text-gold" : ""} ${discount > 30 ? "top-12" : ""}`}
+          className={`absolute bottom-16 right-3 h-9 w-9 grid place-items-center bg-background/90 backdrop-blur rounded-full transition-all duration-200 hover:text-gold hover:scale-110 active:scale-95 z-10 ${wished ? "text-gold" : ""}`}
           aria-label="Wishlist"
         >
           <Heart className={`h-4 w-4 ${wished ? "fill-current" : ""}`} />
         </button>
         <button
           onClick={(e) => { e.preventDefault(); add(product); toast.success(`${product.name} added to cart`); }}
-          className="absolute bottom-0 inset-x-0 bg-ink text-primary-foreground text-xs uppercase tracking-[0.2em] py-3.5 translate-y-full group-hover:translate-y-0 transition-transform duration-500 hover:bg-gold hover:text-ink"
+          className="absolute bottom-0 inset-x-0 bg-ink text-primary-foreground text-xs uppercase tracking-[0.2em] py-3.5 translate-y-full group-hover:translate-y-0 transition-all duration-500 hover:bg-gold hover:text-ink active:bg-red-cta active:text-white"
         >
           Quick Add
         </button>
