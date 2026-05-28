@@ -3,6 +3,8 @@ import { ArrowRight, Truck, ShieldCheck, RotateCcw, MapPin, Phone } from "lucide
 import Layout from "@/components/Layout";
 import ProductCard from "@/components/ProductCard";
 import Reviews from "@/components/Reviews";
+import OfferBannerSlider from "@/components/OfferBannerSlider";
+import Reveal from "@/components/Reveal";
 import { useProducts } from "@/context/ProductsContext";
 import hero from "@/assets/hero-model.jpg";
 import dexterLogo from "@/assets/dexter-logo.png";
@@ -22,8 +24,12 @@ const Index = () => {
   const { products } = useProducts();
   return (
     <Layout>
-      {/* HERO — clean lifestyle imagery, NO floating clutter, logo overlay with drop-shadow */}
+      {/* PREMIUM OFFER BANNER — auto-sliding deals */}
+      <OfferBannerSlider />
+
+      {/* HERO — premium lookbook imagery */}
       <section className="relative w-full h-[70vh] min-h-[520px] md:h-[80vh] md:min-h-[640px] overflow-hidden bg-ink">
+
         <img
           src={hero}
           alt="DEXTER MENS CLOTHING — premium men's fashion lifestyle"
@@ -76,40 +82,47 @@ const Index = () => {
 
       {/* CATEGORIES */}
       <section className="container-px mx-auto max-w-[1400px] py-20">
-        <div className="flex items-end justify-between mb-10 flex-wrap gap-4">
+        <Reveal className="flex items-end justify-between mb-10 flex-wrap gap-4">
           <div>
             <p className="text-xs uppercase tracking-[0.3em] text-red-cta mb-3 font-bold">Curated</p>
             <h2 className="font-display text-3xl md:text-5xl font-extrabold text-foreground">Shop by Category</h2>
           </div>
-          <Link to="/shop" className="hidden md:inline-flex items-center gap-2 text-xs uppercase tracking-[0.25em] font-bold text-foreground hover:text-red-cta link-underline">
+          <Link to="/shop" className="hidden md:inline-flex items-center gap-2 text-xs uppercase tracking-[0.25em] font-bold text-foreground hover:text-red-cta link-underline transition-colors">
             View All <ArrowRight className="h-4 w-4" />
           </Link>
-        </div>
+        </Reveal>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-          {categories.map(c => (
-            <Link key={c.name} to={`/shop?cat=${encodeURIComponent(c.cat)}`} className="group relative aspect-[4/5] overflow-hidden rounded-md bg-secondary">
-              <img src={c.image} alt={c.name} className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" />
-              <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
-              <div className="absolute bottom-0 inset-x-0 p-5">
-                <h3 className="font-display text-2xl font-extrabold text-white">{c.name}</h3>
-                <p className="text-[10px] uppercase tracking-[0.25em] text-gold font-bold mt-1">Shop Now →</p>
-              </div>
-            </Link>
+          {categories.map((c, i) => (
+            <Reveal key={c.name} delay={i * 80}>
+              <Link to={`/shop?cat=${encodeURIComponent(c.cat)}`} className="group relative aspect-[4/5] overflow-hidden rounded-md bg-secondary block hover:shadow-elevated transition-shadow duration-500">
+                <img src={c.image} alt={c.name} className="absolute inset-0 w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
+                <div className="absolute bottom-0 inset-x-0 p-5">
+                  <h3 className="font-display text-2xl font-extrabold text-white">{c.name}</h3>
+                  <p className="text-[10px] uppercase tracking-[0.25em] text-gold font-bold mt-1">Shop Now →</p>
+                </div>
+              </Link>
+            </Reveal>
           ))}
         </div>
       </section>
 
       {/* LIVE PRODUCTS — fetched from admin DB */}
       <section className="container-px mx-auto max-w-[1400px] pb-20">
-        <div className="text-center mb-12">
+        <Reveal className="text-center mb-12">
           <p className="text-xs uppercase tracking-[0.3em] text-red-cta mb-3 font-bold">Live Collection</p>
           <h2 className="font-display text-3xl md:text-5xl font-extrabold text-foreground">Latest Drops</h2>
           <p className="mt-3 text-muted-foreground text-sm">Updated directly by our store team — fresh inventory every week.</p>
-        </div>
+        </Reveal>
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-x-3 gap-y-8 md:gap-x-5">
-          {products.slice(0, 12).map(p => <ProductCard key={p.id} product={p} />)}
+          {products.slice(0, 12).map((p, i) => (
+            <Reveal key={p.id} delay={(i % 4) * 60}>
+              <ProductCard product={p} />
+            </Reveal>
+          ))}
         </div>
       </section>
+
 
       {/* CUSTOMER REVIEWS */}
       <Reviews />
