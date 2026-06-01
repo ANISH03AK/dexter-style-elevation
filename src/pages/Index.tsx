@@ -95,7 +95,7 @@ const Index = () => {
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
           {categories.map((c, i) => (
             <Reveal key={c.name} delay={i * 80}>
-              <Link to={`/shop?cat=${encodeURIComponent(c.cat)}`} className="group relative aspect-[4/5] overflow-hidden rounded-md bg-secondary block hover:shadow-elevated transition-shadow duration-500">
+              <Link to={`/shop?cat=${encodeURIComponent(c.cat)}`} className="trace-border group relative aspect-[4/5] overflow-hidden rounded-md bg-secondary block hover:shadow-elevated transition-shadow duration-500">
                 <img src={c.image} alt={c.name} className="absolute inset-0 w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
                 <div className="absolute bottom-0 inset-x-0 p-5">
@@ -124,6 +124,48 @@ const Index = () => {
         </div>
       </section>
 
+      {/* DEXTER HYPE ZONE — lower ad banners */}
+      <section className="container-px mx-auto max-w-[1400px] pb-20">
+        <Reveal className="text-center mb-10">
+          <p className="text-xs uppercase tracking-[0.3em] text-red-cta mb-3 font-bold">Featured Drops</p>
+          <h2 className="font-display text-3xl md:text-5xl font-extrabold text-foreground">Dexter Hype Zone</h2>
+        </Reveal>
+        <div className="grid md:grid-cols-2 gap-5">
+          {[
+            {
+              title: "Oversized Drop-Shoulder Festival",
+              sub: "Street-ready silhouettes · Heavy 240 GSM",
+              cta: "Shop Oversized",
+              to: "/shop?cat=T-Shirts",
+              img: "https://images.unsplash.com/photo-1503342217505-b0a15ec3261c?auto=format&fit=crop&w=1400&q=80",
+              accent: "from-red-cta/80",
+            },
+            {
+              title: "Street Utility Cargos",
+              sub: "Multi-pocket tactical fits · Premium twill",
+              cta: "Shop Cargos",
+              to: "/shop?cat=Pants",
+              img: "https://images.unsplash.com/photo-1517445312882-bc9910d016b7?auto=format&fit=crop&w=1400&q=80",
+              accent: "from-gold/80",
+            },
+          ].map((b, i) => (
+            <Reveal key={b.title} delay={i * 100}>
+              <Link to={b.to} className="trace-border group relative block aspect-[16/10] overflow-hidden rounded-lg bg-ink">
+                <img src={b.img} alt={b.title} className="absolute inset-0 w-full h-full object-cover group-hover:scale-110 transition-transform duration-700 opacity-80" />
+                <div className={`absolute inset-0 bg-gradient-to-tr ${b.accent} via-black/60 to-black/85`} />
+                <div className="absolute inset-0 p-7 md:p-10 flex flex-col justify-end">
+                  <p className="text-[10px] uppercase tracking-[0.35em] text-gold font-bold mb-3">Dexter Exclusive</p>
+                  <h3 className="font-display text-2xl md:text-4xl font-extrabold text-white drop-shadow-lg">{b.title}</h3>
+                  <p className="text-sm text-white/80 mt-2 max-w-sm">{b.sub}</p>
+                  <span className="mt-5 inline-flex items-center gap-2 bg-white text-ink px-5 py-2.5 text-xs uppercase tracking-[0.25em] font-bold rounded w-fit group-hover:bg-gold transition-smooth">
+                    {b.cta} <ArrowRight className="h-3.5 w-3.5" />
+                  </span>
+                </div>
+              </Link>
+            </Reveal>
+          ))}
+        </div>
+      </section>
 
       {/* CUSTOMER REVIEWS */}
       <Reviews />
