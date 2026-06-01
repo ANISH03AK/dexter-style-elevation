@@ -130,4 +130,21 @@
   .link-underline {
     @apply relative after:absolute after:left-0 after:bottom-0 after:h-px after:w-full after:origin-right after:scale-x-0 after:bg-current after:transition-transform after:duration-300 hover:after:origin-left hover:after:scale-x-100;
   }
+
+  /* Animated traced border for premium cards (red→gold conic sweep on hover) */
+  .trace-border { position: relative; isolation: isolate; }
+  .trace-border::before {
+    content: ""; position: absolute; inset: 0; padding: 2px; border-radius: inherit;
+    background: conic-gradient(from var(--angle, 0deg),
+      hsl(var(--red)) 0%, hsl(var(--gold)) 25%, transparent 45%,
+      transparent 55%, hsl(var(--gold)) 75%, hsl(var(--red)) 100%);
+    -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+    mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+    -webkit-mask-composite: xor; mask-composite: exclude;
+    opacity: 0; transition: opacity .35s ease;
+    pointer-events: none; z-index: 2;
+  }
+  .trace-border:hover::before { opacity: 1; animation: trace-spin 2.4s linear infinite; }
+  @property --angle { syntax: "<angle>"; initial-value: 0deg; inherits: false; }
+  @keyframes trace-spin { to { --angle: 360deg; } }
 }
