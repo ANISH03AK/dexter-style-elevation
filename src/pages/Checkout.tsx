@@ -8,8 +8,12 @@ import { formatINR } from "@/lib/format";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
+const SHIPPING_FEE = 162;
+const FREE_ITEM_THRESHOLD = 3;
+const FREE_SUBTOTAL_THRESHOLD = 2500;
+
 const Checkout = () => {
-  const { items, total, clear } = useCart();
+  const { items, total, count, clear } = useCart();
   const { user } = useAuth();
   const [submitting, setSubmitting] = useState(false);
   const [confirmed, setConfirmed] = useState<{ id: string } | null>(null);
@@ -23,7 +27,8 @@ const Checkout = () => {
   });
   const navigate = useNavigate();
 
-  const shipping = total > 12500 || total === 0 ? 0 : 1250;
+  const qualifiesFree = count >= FREE_ITEM_THRESHOLD || total >= FREE_SUBTOTAL_THRESHOLD;
+  const shipping = items.length === 0 ? 0 : (qualifiesFree ? 0 : SHIPPING_FEE);
   const grand = total + shipping;
 
   if (items.length === 0 && !confirmed) {

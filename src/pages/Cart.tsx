@@ -1,18 +1,39 @@
 import { Link } from "react-router-dom";
-import { Minus, Plus, X, ArrowRight, ShoppingBag } from "lucide-react";
+import { Minus, Plus, X, ArrowRight, ShoppingBag, Sparkles } from "lucide-react";
 import Layout from "@/components/Layout";
 import { useCart } from "@/context/CartContext";
 import { formatINR } from "@/lib/format";
 
+const SHIPPING_FEE = 162;
+const FREE_ITEM_THRESHOLD = 3;
+const FREE_SUBTOTAL_THRESHOLD = 2500;
+
 const Cart = () => {
-  const { items, setQty, remove, total } = useCart();
-  const shipping = total > 12500 || total === 0 ? 0 : 1250;
+  const { items, setQty, remove, count, total } = useCart();
+  const qualifiesFree = count >= FREE_ITEM_THRESHOLD || total >= FREE_SUBTOTAL_THRESHOLD;
+  const shipping = items.length === 0 ? 0 : (qualifiesFree ? 0 : SHIPPING_FEE);
 
   return (
     <Layout>
       <section className="container-px mx-auto max-w-[1400px] py-10">
         <p className="text-xs uppercase tracking-[0.3em] text-gold mb-3">Your bag</p>
-        <h1 className="font-display text-4xl md:text-5xl font-bold mb-10">Shopping Cart</h1>
+        <h1 className="font-display text-4xl md:text-5xl font-bold mb-6">Shopping Cart</h1>
+
+        {/* Free shipping banner */}
+        {items.length > 0 && (
+          <div className={`mb-8 rounded-md px-5 py-4 text-sm font-semibold flex items-center gap-3 border-2 transition-colors ${
+            qualifiesFree
+              ? "bg-gold/15 border-gold text-ink"
+              : "bg-red-cta/10 border-red-cta text-ink"
+          }`}>
+            <Sparkles className="h-5 w-5 shrink-0 text-red-cta" />
+            <span>
+              {qualifiesFree
+                ? "🎉 CONGRATULATIONS! You've unlocked FREE SHIPPING!"
+                : `🔥 SPECIAL OFFER: Add ${FREE_ITEM_THRESHOLD} items or shop for ₹${FREE_SUBTOTAL_THRESHOLD}+ to get FREE SHIPPING! (Standard Shipping: ₹${SHIPPING_FEE})`}
+            </span>
+          </div>
+        )}
 
         {items.length === 0 ? (
           <div className="text-center py-24 border border-border">
@@ -58,9 +79,13 @@ const Cart = () => {
             <aside className="bg-secondary p-8 self-start sticky top-32">
               <h3 className="font-display text-2xl font-bold mb-6">Order Summary</h3>
               <div className="space-y-3 text-sm">
-                <div className="flex justify-between"><span className="text-muted-foreground">Subtotal</span><span>{formatINR(total)}</span></div>
-                <div className="flex justify-between"><span className="text-muted-foreground">Shipping</span><span>{shipping === 0 ? "Free" : formatINR(shipping)}</span></div>
-                <div className="flex justify-between"><span className="text-muted-foreground">Tax</span><span>Calculated at checkout</span></div>
+                <div className="flex justify-between"><span className="text-muted-foreground">Subtotal ({count} items)</span><span>{formatINR(total)}</span></div>
+                <div className="flex justify-between">
+                  <span className="text-muted-foreground">Shipping</span>
+                  <span className={qualifiesFree ? "text-gold font-semibold" : ""}>
+                    {qualifiesFree ? "Free" : formatINR(shipping)}
+                  </span>
+                </div>
               </div>
               <div className="mt-6 pt-6 border-t border-border flex justify-between text-lg font-semibold">
                 <span>Total</span>
