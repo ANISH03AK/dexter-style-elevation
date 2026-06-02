@@ -10,7 +10,7 @@ import hero from "@/assets/hero-model.jpg";
 import dexterLogo from "@/assets/dexter-logo.png";
 import catShirts from "@/assets/cat-shirts-street.jpg";
 import catTees from "@/assets/cat-tees-street.jpg";
-import catJeans from "@/assets/cat-pants-street.jpg";
+import catJeans from "@/assets/cat-pants-waistdown.jpg";
 import catJackets from "@/assets/cat-hoodies-street.jpg";
 
 const categories = [
