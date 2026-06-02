@@ -1,6 +1,9 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { ArrowRight, ChevronLeft, ChevronRight, Flame, Sparkles, Tag } from "lucide-react";
+import slideFestival from "@/assets/slide-festival.jpg";
+import slideTees from "@/assets/slide-tees.jpg";
+import slideBrands from "@/assets/slide-brands.jpg";
 
 type Slide = {
   eyebrow: string;
@@ -11,6 +14,8 @@ type Slide = {
   bg: string;
   accent: "red" | "gold";
   icon: typeof Flame;
+  image: string;
+  imageAlt: string;
 };
 
 const slides: Slide[] = [
@@ -23,6 +28,8 @@ const slides: Slide[] = [
     bg: "from-black via-zinc-900 to-black",
     accent: "red",
     icon: Flame,
+    image: slideFestival,
+    imageAlt: "Festival sale lookbook - model with shopping bags",
   },
   {
     eyebrow: "Premium Drop-Shoulder Tees",
@@ -33,6 +40,8 @@ const slides: Slide[] = [
     bg: "from-black via-zinc-900 to-zinc-800",
     accent: "gold",
     icon: Sparkles,
+    image: slideTees,
+    imageAlt: "Premium oversized drop-shoulder t-shirt on model",
   },
   {
     eyebrow: "Authentic Brands",
@@ -43,6 +52,8 @@ const slides: Slide[] = [
     bg: "from-zinc-900 via-black to-zinc-900",
     accent: "red",
     icon: Tag,
+    image: slideBrands,
+    imageAlt: "Stack of authentic premium menswear brands",
   },
 ];
 
@@ -57,7 +68,7 @@ const OfferBannerSlider = () => {
 
   return (
     <section className="relative w-full overflow-hidden border-y border-foreground/10 bg-ink">
-      <div className="relative h-[140px] sm:h-[160px] md:h-[180px]">
+      <div className="relative aspect-[16/8] sm:aspect-[16/6] md:aspect-[16/5] lg:aspect-[16/4] min-h-[200px] max-h-[420px]">
         {slides.map((s, i) => {
           const Icon = s.icon;
           const accentBtn =
@@ -65,41 +76,71 @@ const OfferBannerSlider = () => {
               ? "bg-red-cta text-white hover:bg-gold hover:text-ink"
               : "bg-gold text-ink hover:bg-red-cta hover:text-white";
           const accentText = s.accent === "red" ? "text-red-cta" : "text-gold";
+          const ringColor = s.accent === "red" ? "border-red-cta text-red-cta" : "border-gold text-gold";
           return (
             <div
               key={i}
               className={`absolute inset-0 bg-gradient-to-r ${s.bg} transition-opacity duration-700 ${
                 i === idx ? "opacity-100" : "opacity-0 pointer-events-none"
               }`}
+              aria-hidden={i !== idx}
             >
               {/* Decorative diagonal stripes */}
               <div
-                className="absolute inset-0 opacity-[0.08]"
+                className="absolute inset-0 opacity-[0.06] pointer-events-none"
                 style={{
                   backgroundImage:
                     "repeating-linear-gradient(45deg, #fff 0 1px, transparent 1px 18px)",
                 }}
               />
-              <div className="relative h-full container-px mx-auto max-w-[1400px] flex items-center justify-between gap-4">
-                <div className="flex items-center gap-4 md:gap-6 min-w-0">
-                  <div className={`hidden sm:grid place-items-center h-12 w-12 md:h-14 md:w-14 rounded-full border-2 ${s.accent === "red" ? "border-red-cta text-red-cta" : "border-gold text-gold"} shrink-0 animate-pulse-gold`}>
-                    <Icon className="h-5 w-5 md:h-6 md:w-6" />
-                  </div>
-                  <div className="min-w-0">
-                    <p className={`text-[10px] md:text-xs uppercase tracking-[0.3em] font-bold ${accentText}`}>{s.eyebrow}</p>
-                    <h3 className="font-display text-lg sm:text-2xl md:text-3xl font-extrabold text-white leading-tight truncate">
-                      {s.title}
-                    </h3>
-                    <p className="hidden sm:block text-xs md:text-sm text-white/70 mt-0.5 truncate">{s.sub}</p>
+
+              {/* SPLIT FLEX: text left, image right */}
+              <div className="relative h-full grid grid-cols-[1fr_38%] sm:grid-cols-[1fr_40%] md:grid-cols-2">
+                {/* TEXT */}
+                <div className="container-px flex items-center min-w-0 py-3 sm:py-4">
+                  <div className="flex items-center gap-3 sm:gap-5 min-w-0 w-full">
+                    <div className={`hidden sm:grid place-items-center h-12 w-12 md:h-14 md:w-14 rounded-full border-2 ${ringColor} shrink-0 animate-pulse-gold`}>
+                      <Icon className="h-5 w-5 md:h-6 md:w-6" />
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <p className={`text-[9px] sm:text-[10px] md:text-xs uppercase tracking-[0.25em] sm:tracking-[0.3em] font-bold ${accentText} truncate`}>
+                        {s.eyebrow}
+                      </p>
+                      <h3 className="font-display text-base sm:text-2xl md:text-3xl lg:text-4xl font-extrabold text-white leading-tight mt-0.5 truncate">
+                        {s.title}
+                      </h3>
+                      <p className="hidden sm:block text-xs md:text-sm text-white/70 mt-1 truncate">{s.sub}</p>
+                      <Link
+                        to={s.href}
+                        className={`mt-2 sm:mt-3 inline-flex items-center gap-1.5 sm:gap-2 px-3 sm:px-5 py-1.5 sm:py-2.5 text-[9px] sm:text-[11px] uppercase tracking-[0.2em] font-bold rounded shadow-lg transition-all duration-300 hover:scale-[1.04] active:scale-95 ${accentBtn}`}
+                      >
+                        <span className="hidden sm:inline">{s.cta}</span>
+                        <span className="sm:hidden">Shop</span>
+                        <ArrowRight className="h-3 w-3 sm:h-3.5 sm:w-3.5" />
+                      </Link>
+                    </div>
                   </div>
                 </div>
+
+                {/* IMAGE */}
                 <Link
                   to={s.href}
-                  className={`shrink-0 inline-flex items-center gap-2 px-4 sm:px-6 py-2.5 sm:py-3 text-[10px] sm:text-xs uppercase tracking-[0.2em] font-bold rounded shadow-lg transition-all duration-300 hover:scale-[1.04] active:scale-95 ${accentBtn}`}
+                  className="relative overflow-hidden block group"
+                  aria-label={s.cta}
+                  tabIndex={i === idx ? 0 : -1}
                 >
-                  <span className="hidden sm:inline">{s.cta}</span>
-                  <span className="sm:hidden">Shop</span>
-                  <ArrowRight className="h-3.5 w-3.5" />
+                  <img
+                    src={s.image}
+                    alt={s.imageAlt}
+                    width={1024}
+                    height={1024}
+                    loading={i === 0 ? "eager" : "lazy"}
+                    decoding="async"
+                    className="absolute inset-0 w-full h-full object-cover object-center will-change-transform transition-transform duration-[1200ms] group-hover:scale-105"
+                  />
+                  {/* Left-edge fade so text blends seamlessly */}
+                  <div className="absolute inset-0 bg-gradient-to-r from-black via-black/40 to-transparent pointer-events-none" />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent pointer-events-none" />
                 </Link>
               </div>
             </div>
