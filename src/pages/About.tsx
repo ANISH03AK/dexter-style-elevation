@@ -2,6 +2,8 @@ import { useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import { Award, Globe2, Leaf, Sparkles, Target, Users } from "lucide-react";
 import Layout from "@/components/Layout";
+import dexterLogo from "@/assets/dexter-logo.png";
+
 
 const stats = [
   { v: 1000000, l: "Pieces Shipped", suffix: "+" },
@@ -97,11 +99,17 @@ const About = () => {
             From our atelier in Milan to our flagship in Mumbai, every collection is engineered for the modern individual.
           </p>
         </div>
-        <div className="aspect-[4/5] rounded-lg overflow-hidden shadow-elevated">
+        <div className="aspect-[4/5] rounded-lg overflow-hidden shadow-elevated bg-ink grid place-items-center p-10 relative">
+          <div className="absolute inset-0 bg-gradient-to-br from-ink via-ink-soft to-ink" />
+          <div
+            className="absolute inset-0 opacity-[0.06]"
+            style={{ backgroundImage: "repeating-linear-gradient(45deg, #fff 0 1px, transparent 1px 22px)" }}
+          />
           <img
-            src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=1000&q=80"
-            alt="DEXTER atelier"
-            className="w-full h-full object-cover hover:scale-105 transition-transform duration-700"
+            src={dexterLogo}
+            alt="DEXTER MENS CLOTHING logo"
+            className="relative max-w-[78%] max-h-[70%] w-auto h-auto object-contain transition-transform duration-700 hover:scale-[1.04]"
+            style={{ filter: "drop-shadow(0 18px 40px rgba(0,0,0,0.55)) drop-shadow(0 6px 12px rgba(0,0,0,0.35))" }}
           />
         </div>
       </section>
