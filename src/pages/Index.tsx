@@ -8,10 +8,10 @@ import Reveal from "@/components/Reveal";
 import { useProducts } from "@/context/ProductsContext";
 import hero from "@/assets/hero-model.jpg";
 import dexterLogo from "@/assets/dexter-logo.png";
-import catShirts from "@/assets/cat-shirts.jpg";
-import catTees from "@/assets/cat-tshirts.jpg";
-import catJeans from "@/assets/cat-jeans.jpg";
-import catJackets from "@/assets/cat-jackets.jpg";
+import catShirts from "@/assets/cat-shirts-street.jpg";
+import catTees from "@/assets/cat-tees-street.jpg";
+import catJeans from "@/assets/cat-pants-street.jpg";
+import catJackets from "@/assets/cat-hoodies-street.jpg";
 
 const categories = [
   { name: "Shirts", image: catShirts, cat: "Shirts" },
@@ -95,11 +95,24 @@ const Index = () => {
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
           {categories.map((c, i) => (
             <Reveal key={c.name} delay={i * 80}>
-              <Link to={`/shop?cat=${encodeURIComponent(c.cat)}`} className="trace-border group relative aspect-[4/5] overflow-hidden rounded-md bg-secondary block hover:shadow-elevated transition-shadow duration-500">
-                <img src={c.image} alt={c.name} className="absolute inset-0 w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
+              <Link
+                to={`/shop?cat=${encodeURIComponent(c.cat)}`}
+                className="trace-border group relative aspect-[4/5] overflow-hidden rounded-md bg-secondary block hover:shadow-elevated hover:scale-[1.03] transition-all duration-500 ease-out will-change-transform"
+              >
+                <div className="absolute inset-0 overflow-hidden">
+                  <img
+                    src={c.image}
+                    alt={`${c.name} - DEXTER streetwear lookbook`}
+                    width={1024}
+                    height={1280}
+                    loading="lazy"
+                    decoding="async"
+                    className="absolute inset-0 w-full h-full object-cover object-center animate-ken-burns will-change-transform"
+                  />
+                </div>
+                <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/30 to-transparent" />
                 <div className="absolute bottom-0 inset-x-0 p-5">
-                  <h3 className="font-display text-2xl font-extrabold text-white">{c.name}</h3>
+                  <h3 className="font-display text-2xl font-extrabold text-white drop-shadow-lg">{c.name}</h3>
                   <p className="text-[10px] uppercase tracking-[0.25em] text-gold font-bold mt-1">Shop Now →</p>
                 </div>
               </Link>
