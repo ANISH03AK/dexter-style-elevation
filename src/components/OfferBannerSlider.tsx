@@ -1,9 +1,9 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { ArrowRight, ChevronLeft, ChevronRight, Flame, Sparkles, Tag } from "lucide-react";
-import slideFestival from "@/assets/slide-festival.jpg";
-import slideTees from "@/assets/slide-tees.jpg";
-import slideBrands from "@/assets/slide-brands.jpg";
+import slideFestival from "@/assets/slide-rack-festival.jpg";
+import slideTees from "@/assets/slide-rack-tees.jpg";
+import slideBrands from "@/assets/slide-rack-brands.jpg";
 
 type Slide = {
   eyebrow: string;
@@ -11,7 +11,6 @@ type Slide = {
   sub: string;
   cta: string;
   href: string;
-  bg: string;
   accent: "red" | "gold";
   icon: typeof Flame;
   image: string;
@@ -25,11 +24,10 @@ const slides: Slide[] = [
     sub: "Premium Shirts · Hoodies · Streetwear",
     cta: "Shop The Offer",
     href: "/shop",
-    bg: "from-black via-zinc-900 to-black",
     accent: "red",
     icon: Flame,
     image: slideFestival,
-    imageAlt: "Festival sale lookbook - model with shopping bags",
+    imageAlt: "Festival sale — premium menswear hanging on rack",
   },
   {
     eyebrow: "Premium Drop-Shoulder Tees",
@@ -37,11 +35,10 @@ const slides: Slide[] = [
     sub: "Heavyweight cotton · Oversized fits",
     cta: "Grab Yours",
     href: "/shop?cat=T-Shirts",
-    bg: "from-black via-zinc-900 to-zinc-800",
     accent: "gold",
     icon: Sparkles,
     image: slideTees,
-    imageAlt: "Premium oversized drop-shoulder t-shirt on model",
+    imageAlt: "Premium oversized tees on hangers",
   },
   {
     eyebrow: "Authentic Brands",
@@ -49,11 +46,10 @@ const slides: Slide[] = [
     sub: "100% Original · In-store & Online",
     cta: "Explore Brands",
     href: "/shop",
-    bg: "from-zinc-900 via-black to-zinc-900",
     accent: "red",
     icon: Tag,
     image: slideBrands,
-    imageAlt: "Stack of authentic premium menswear brands",
+    imageAlt: "Branded menswear hanging on boutique rack",
   },
 ];
 
@@ -68,7 +64,7 @@ const OfferBannerSlider = () => {
 
   return (
     <section className="relative w-full overflow-hidden border-y border-foreground/10 bg-ink">
-      <div className="relative aspect-[16/8] sm:aspect-[16/6] md:aspect-[16/5] lg:aspect-[16/4] min-h-[200px] max-h-[420px]">
+      <div className="relative h-[160px] sm:h-[200px] md:h-[260px] lg:h-[300px] max-h-[160px] sm:max-h-[200px] md:max-h-[260px] lg:max-h-[300px]">
         {slides.map((s, i) => {
           const Icon = s.icon;
           const accentBtn =
@@ -80,68 +76,66 @@ const OfferBannerSlider = () => {
           return (
             <div
               key={i}
-              className={`absolute inset-0 bg-gradient-to-r ${s.bg} transition-opacity duration-700 ${
+              className={`absolute inset-0 bg-ink transition-opacity duration-700 ${
                 i === idx ? "opacity-100" : "opacity-0 pointer-events-none"
               }`}
               aria-hidden={i !== idx}
             >
+              {/* Full-width background rack image */}
+              <img
+                src={s.image}
+                alt={s.imageAlt}
+                width={1536}
+                height={768}
+                loading={i === 0 ? "eager" : "lazy"}
+                decoding="async"
+                className="absolute inset-0 w-full h-full object-cover object-center will-change-transform"
+              />
+
+              {/* Seamless transparent gradient — fades into black on the left for text readability,
+                  and softly into black on edges so there are no harsh vertical cut-lines */}
+              <div
+                className="absolute inset-0 pointer-events-none"
+                style={{
+                  background:
+                    "linear-gradient(90deg, hsl(0 0% 0% / 0.92) 0%, hsl(0 0% 0% / 0.75) 30%, hsl(0 0% 0% / 0.35) 60%, hsl(0 0% 0% / 0.55) 100%)",
+                }}
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-black/30 pointer-events-none" />
+
               {/* Decorative diagonal stripes */}
               <div
-                className="absolute inset-0 opacity-[0.06] pointer-events-none"
+                className="absolute inset-0 opacity-[0.05] pointer-events-none"
                 style={{
                   backgroundImage:
                     "repeating-linear-gradient(45deg, #fff 0 1px, transparent 1px 18px)",
                 }}
               />
 
-              {/* SPLIT FLEX: text left, image right */}
-              <div className="relative h-full grid grid-cols-[1fr_38%] sm:grid-cols-[1fr_40%] md:grid-cols-2">
-                {/* TEXT */}
-                <div className="container-px flex items-center min-w-0 py-3 sm:py-4">
-                  <div className="flex items-center gap-3 sm:gap-5 min-w-0 w-full">
-                    <div className={`hidden sm:grid place-items-center h-12 w-12 md:h-14 md:w-14 rounded-full border-2 ${ringColor} shrink-0 animate-pulse-gold`}>
-                      <Icon className="h-5 w-5 md:h-6 md:w-6" />
-                    </div>
-                    <div className="min-w-0 flex-1">
-                      <p className={`text-[9px] sm:text-[10px] md:text-xs uppercase tracking-[0.25em] sm:tracking-[0.3em] font-bold ${accentText} truncate`}>
-                        {s.eyebrow}
-                      </p>
-                      <h3 className="font-display text-base sm:text-2xl md:text-3xl lg:text-4xl font-extrabold text-white leading-tight mt-0.5 truncate">
-                        {s.title}
-                      </h3>
-                      <p className="hidden sm:block text-xs md:text-sm text-white/70 mt-1 truncate">{s.sub}</p>
-                      <Link
-                        to={s.href}
-                        className={`mt-2 sm:mt-3 inline-flex items-center gap-1.5 sm:gap-2 px-3 sm:px-5 py-1.5 sm:py-2.5 text-[9px] sm:text-[11px] uppercase tracking-[0.2em] font-bold rounded shadow-lg transition-all duration-300 hover:scale-[1.04] active:scale-95 ${accentBtn}`}
-                      >
-                        <span className="hidden sm:inline">{s.cta}</span>
-                        <span className="sm:hidden">Shop</span>
-                        <ArrowRight className="h-3 w-3 sm:h-3.5 sm:w-3.5" />
-                      </Link>
-                    </div>
+              {/* TEXT OVERLAY */}
+              <div className="relative h-full container-px flex items-center">
+                <div className="flex items-center gap-3 sm:gap-5 min-w-0 w-full max-w-[70%] sm:max-w-[60%]">
+                  <div className={`hidden sm:grid place-items-center h-11 w-11 md:h-14 md:w-14 rounded-full border-2 ${ringColor} shrink-0 animate-pulse-gold`}>
+                    <Icon className="h-5 w-5 md:h-6 md:w-6" />
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <p className={`text-[9px] sm:text-[10px] md:text-xs uppercase tracking-[0.25em] sm:tracking-[0.3em] font-bold ${accentText} truncate`}>
+                      {s.eyebrow}
+                    </p>
+                    <h3 className="font-display text-base sm:text-2xl md:text-3xl lg:text-4xl font-extrabold text-white leading-tight mt-0.5 truncate">
+                      {s.title}
+                    </h3>
+                    <p className="hidden sm:block text-xs md:text-sm text-white/75 mt-1 truncate">{s.sub}</p>
+                    <Link
+                      to={s.href}
+                      className={`mt-2 sm:mt-3 inline-flex items-center gap-1.5 sm:gap-2 px-3 sm:px-5 py-1.5 sm:py-2.5 text-[9px] sm:text-[11px] uppercase tracking-[0.2em] font-bold rounded shadow-lg transition-all duration-300 hover:scale-[1.04] active:scale-95 ${accentBtn}`}
+                    >
+                      <span className="hidden sm:inline">{s.cta}</span>
+                      <span className="sm:hidden">Shop</span>
+                      <ArrowRight className="h-3 w-3 sm:h-3.5 sm:w-3.5" />
+                    </Link>
                   </div>
                 </div>
-
-                {/* IMAGE */}
-                <Link
-                  to={s.href}
-                  className="relative overflow-hidden block group"
-                  aria-label={s.cta}
-                  tabIndex={i === idx ? 0 : -1}
-                >
-                  <img
-                    src={s.image}
-                    alt={s.imageAlt}
-                    width={1024}
-                    height={1024}
-                    loading={i === 0 ? "eager" : "lazy"}
-                    decoding="async"
-                    className="absolute inset-0 w-full h-full object-cover object-center will-change-transform transition-transform duration-[1200ms] group-hover:scale-105"
-                  />
-                  {/* Left-edge fade so text blends seamlessly */}
-                  <div className="absolute inset-0 bg-gradient-to-r from-black via-black/40 to-transparent pointer-events-none" />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent pointer-events-none" />
-                </Link>
               </div>
             </div>
           );
