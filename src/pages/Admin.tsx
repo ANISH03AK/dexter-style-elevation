@@ -401,7 +401,48 @@ const Admin = () => {
             </div>
           )}
         </div>
+
+        {/* Payment Settings */}
+        <div className="mt-16">
+          <p className="text-[11px] uppercase tracking-[0.25em] text-gold mb-2">Storefront Gateway</p>
+          <h2 className="font-display text-2xl font-bold mb-6">Payment Settings</h2>
+          <div className="grid sm:grid-cols-3 gap-4">
+            {([
+              { id: "cod", label: "Cash on Delivery", icon: Banknote, desc: "Pay on delivery" },
+              { id: "upi", label: "UPI", icon: Wallet, desc: "GPay · PhonePe · Paytm" },
+              { id: "card", label: "Credit / Debit Card", icon: CreditCard, desc: "Visa · MC · RuPay" },
+            ] as const).map(({ id, label, icon: Icon, desc }) => {
+              const on = paySettings[id];
+              return (
+                <div key={id} className={`border-2 rounded-md p-5 transition-colors ${on ? "border-gold bg-gold/5" : "border-border bg-card opacity-70"}`}>
+                  <div className="flex items-start justify-between gap-3">
+                    <div className="flex items-center gap-3">
+                      <div className={`h-10 w-10 rounded-full grid place-items-center ${on ? "bg-gold/20 text-gold" : "bg-muted text-muted-foreground"}`}>
+                        <Icon className="h-5 w-5" />
+                      </div>
+                      <div>
+                        <p className="font-semibold text-sm">{label}</p>
+                        <p className="text-[11px] text-muted-foreground">{desc}</p>
+                      </div>
+                    </div>
+                    <button
+                      onClick={() => togglePayment(id, !on)}
+                      aria-pressed={on}
+                      className={`relative h-6 w-11 rounded-full transition-colors shrink-0 ${on ? "bg-gold" : "bg-muted"}`}
+                    >
+                      <span className={`absolute top-0.5 h-5 w-5 rounded-full bg-white shadow transition-transform ${on ? "translate-x-5" : "translate-x-0.5"}`} />
+                    </button>
+                  </div>
+                  <p className={`mt-3 text-[10px] uppercase tracking-[0.22em] font-bold ${on ? "text-gold" : "text-muted-foreground"}`}>
+                    {on ? "Live on Checkout" : "Hidden from Checkout"}
+                  </p>
+                </div>
+              );
+            })}
+          </div>
+        </div>
       </div>
+
 
       <style>{`
         .input {
