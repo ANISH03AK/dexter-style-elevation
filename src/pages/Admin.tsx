@@ -1,5 +1,6 @@
 import { useEffect, useState, useCallback } from "react";
-import { Trash2, Plus, Search, Loader2, LogOut, Upload, Pencil, X, IndianRupee, Clock, Package, ShoppingBag } from "lucide-react";
+import { Trash2, Plus, Search, Loader2, LogOut, Upload, Pencil, X, IndianRupee, Clock, Package, ShoppingBag, CreditCard, Wallet, Banknote } from "lucide-react";
+
 import { toast } from "sonner";
 import { Navigate, useNavigate } from "react-router-dom";
 import Layout from "@/components/Layout";
@@ -46,6 +47,8 @@ const Admin = () => {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [orders, setOrders] = useState<Order[]>([]);
   const [ordersLoading, setOrdersLoading] = useState(true);
+  const [paySettings, setPaySettings] = useState<Record<string, boolean>>({ cod: true, upi: true, card: true });
+
 
   const fetchOrders = useCallback(async () => {
     const { data, error } = await supabase
@@ -59,12 +62,41 @@ const Admin = () => {
   useEffect(() => {
     if (!isAdmin) return;
     fetchOrders();
-    const channel = supabase
+    const ch1 = supabase
       .channel("orders-live")
       .on("postgres_changes", { event: "*", schema: "public", table: "orders" }, () => fetchOrders())
       .subscribe();
-    return () => { supabase.removeChannel(channel); };
+
+    const loadPay = async () => {
+      const { data } = await supabase.from("payment_settings").select("*");
+      if (data) {
+        const map: Record<string, boolean> = {};
+        data.forEach((r: any) => { map[r.method] = r.enabled; });
+        setPaySettings({ cod: map.cod ?? true, upi: map.upi ?? true, card: map.card ?? true });
+      }
+    };
+    loadPay();
+    const ch2 = supabase
+      .channel("pay-settings-admin")
+      .on("postgres_changes", { event: "*", schema: "public", table: "payment_settings" }, loadPay)
+      .subscribe();
+    return () => { supabase.removeChannel(ch1); supabase.removeChannel(ch2); };
   }, [isAdmin, fetchOrders]);
+
+  const togglePayment = async (method: "cod" | "upi" | "card", next: boolean) => {
+    setPaySettings((p) => ({ ...p, [method]: next }));
+    const { error } = await supabase
+      .from("payment_settings")
+      .update({ enabled: next, updated_at: new Date().toISOString() })
+      .eq("method", method);
+    if (error) {
+      setPaySettings((p) => ({ ...p, [method]: !next }));
+      toast.error(error.message);
+    } else {
+      toast.success(`${method.toUpperCase()} ${next ? "enabled" : "disabled"}`);
+    }
+  };
+
 
   useEffect(() => {
     if (!file) { setPreview(""); return; }
