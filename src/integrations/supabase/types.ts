@@ -62,6 +62,24 @@ export type Database = {
         }
         Relationships: []
       }
+      payment_settings: {
+        Row: {
+          enabled: boolean
+          method: string
+          updated_at: string
+        }
+        Insert: {
+          enabled?: boolean
+          method: string
+          updated_at?: string
+        }
+        Update: {
+          enabled?: boolean
+          method?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       products: {
         Row: {
           category: string
@@ -122,6 +140,42 @@ export type Database = {
           full_name?: string | null
           id?: string
           phone?: string | null
+        }
+        Relationships: []
+      }
+      reviews: {
+        Row: {
+          approved: boolean
+          author_name: string
+          body: string
+          created_at: string
+          id: string
+          location: string | null
+          product_id: string | null
+          rating: number
+          user_id: string | null
+        }
+        Insert: {
+          approved?: boolean
+          author_name: string
+          body: string
+          created_at?: string
+          id?: string
+          location?: string | null
+          product_id?: string | null
+          rating: number
+          user_id?: string | null
+        }
+        Update: {
+          approved?: boolean
+          author_name?: string
+          body?: string
+          created_at?: string
+          id?: string
+          location?: string | null
+          product_id?: string | null
+          rating?: number
+          user_id?: string | null
         }
         Relationships: []
       }
