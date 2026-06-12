@@ -208,7 +208,7 @@ const Admin = () => {
             <h1 className="font-display text-3xl sm:text-4xl font-bold">Welcome back.</h1>
             <p className="text-sm text-muted-foreground mt-2">{user.email}</p>
           </div>
-          <button onClick={async () => { await signOut(); navigate("/"); }} className="text-xs uppercase tracking-[0.2em] flex items-center gap-2 border border-border px-4 py-2 hover:bg-muted rounded-md">
+          <button onClick={async () => { localStorage.removeItem("admin_token"); await signOut(); navigate("/"); }} className="text-xs uppercase tracking-[0.2em] flex items-center gap-2 border border-border px-4 py-2 hover:bg-muted rounded-md">
             <LogOut className="h-4 w-4" /> Sign Out
           </button>
         </div>
