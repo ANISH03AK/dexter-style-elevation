@@ -50,17 +50,28 @@ const Contact = () => (
         </a>
       </div>
 
-      <div className="rounded-2xl overflow-hidden border-2 border-border shadow-elevated">
+      <div className="rounded-2xl overflow-hidden border-2 border-border shadow-elevated bg-ink">
         <iframe
           title="DEXTER MENS CLOTHING — Jayankondam"
-          src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3916.4800363294025!2d79.2903743!3d11.0022359!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3arqzsRm118pMRIUCM%3A0x235014a8a9154fdb!2sDEXTER%20MENS%20CLOTHING!5e0!3m2!1sen!2sin!4v1716762000000!5m2!1sen!2sin"
+          src="https://www.google.com/maps?q=Anna+Silai,+Jayankondam,+Tamil+Nadu&output=embed"
           width="100%"
           height="450"
-          style={{ border: 0 }}
+          style={{ border: 0, filter: "grayscale(0.3) contrast(1.05)" }}
           allowFullScreen
           loading="lazy"
           referrerPolicy="no-referrer-when-downgrade"
         />
+      </div>
+
+      <div className="mt-6 text-center">
+        <a
+          href="https://www.google.com/maps/dir/?api=1&destination=Anna+Silai,+Jayankondam,+Tamil+Nadu+621802&destination_place_id=DEXTER+MENS+CLOTHING"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="inline-flex items-center gap-3 bg-gradient-to-r from-red-cta to-gold text-white px-8 py-4 text-sm uppercase tracking-[0.25em] font-bold rounded-lg shadow-lg hover:scale-[1.03] transition-transform"
+        >
+          🗺️ Navigate to Store
+        </a>
       </div>
     </section>
   </Layout>

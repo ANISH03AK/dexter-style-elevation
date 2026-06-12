@@ -17,9 +17,13 @@ import Auth from "./pages/Auth.tsx";
 import About from "./pages/About.tsx";
 import Admin from "./pages/Admin.tsx";
 import Contact from "./pages/Contact.tsx";
+import DexterBoss from "./pages/DexterBoss.tsx";
+import TrackOrder from "./pages/TrackOrder.tsx";
 import NotFound from "./pages/NotFound.tsx";
 import ScrollToTop from "./components/ScrollToTop";
 import NavArrows from "./components/NavArrows";
+import DbStatusBanner from "./components/DbStatusBanner";
+import ExitIntentPopup from "./components/ExitIntentPopup";
 
 const queryClient = new QueryClient();
 
@@ -35,6 +39,8 @@ const App = () => (
                 <Sonner />
                 <ScrollToTop />
                 <NavArrows />
+                <DbStatusBanner />
+                <ExitIntentPopup />
                 <Routes>
                   <Route path="/" element={<Index />} />
                   <Route path="/shop" element={<Shop />} />
@@ -45,6 +51,8 @@ const App = () => (
                   <Route path="/auth" element={<Auth />} />
                   <Route path="/about" element={<About />} />
                   <Route path="/contact" element={<Contact />} />
+                  <Route path="/track" element={<TrackOrder />} />
+                  <Route path="/dexter-boss" element={<DexterBoss />} />
                   <Route path="/admin" element={<Admin />} />
                   <Route path="*" element={<NotFound />} />
                 </Routes>
