@@ -105,19 +105,15 @@ const Admin = () => {
     return () => URL.revokeObjectURL(url);
   }, [file]);
 
+  const hasAdminToken = typeof window !== "undefined" && !!localStorage.getItem("admin_token");
+
   if (authLoading) {
     return <div className="min-h-screen grid place-items-center"><Loader2 className="h-6 w-6 animate-spin" /></div>;
   }
-  if (!user) return <Navigate to="/auth" replace />;
-  if (!isAdmin) {
-    return (
-      <Layout>
-        <div className="container-px mx-auto max-w-3xl py-32 text-center">
-          <h1 className="font-display text-3xl font-bold mb-3">Restricted area</h1>
-          <p className="text-muted-foreground">This dashboard is only available to the Store Owner.</p>
-        </div>
-      </Layout>
-    );
+  // Allow entry via either Supabase admin role OR hidden owner-token flow (/dexter-boss).
+  // Otherwise redirect to the public storefront — no public path leads here.
+  if (!isAdmin && !hasAdminToken) {
+    return <Navigate to="/" replace />;
   }
 
   const uploadImage = async (): Promise<string | null> => {
