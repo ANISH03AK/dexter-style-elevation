@@ -13,6 +13,9 @@ export type Product = {
   description: string;
   rating?: number;
   reviews?: number;
+  pinned?: boolean;
+  badgeText?: string;
+  stockBySize?: Record<string, number>;
 };
 
 const u = (id: string) => `https://images.unsplash.com/${id}?auto=format&fit=crop&w=900&q=80`;
