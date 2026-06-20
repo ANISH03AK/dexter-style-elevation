@@ -14,6 +14,47 @@ export type Database = {
   }
   public: {
     Tables: {
+      lookbook_items: {
+        Row: {
+          active: boolean
+          caption: string | null
+          created_at: string
+          id: string
+          image_url: string
+          product_id: string | null
+          sort_order: number
+          updated_at: string
+        }
+        Insert: {
+          active?: boolean
+          caption?: string | null
+          created_at?: string
+          id?: string
+          image_url: string
+          product_id?: string | null
+          sort_order?: number
+          updated_at?: string
+        }
+        Update: {
+          active?: boolean
+          caption?: string | null
+          created_at?: string
+          id?: string
+          image_url?: string
+          product_id?: string | null
+          sort_order?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "lookbook_items_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       orders: {
         Row: {
           address: string
@@ -82,6 +123,7 @@ export type Database = {
       }
       products: {
         Row: {
+          badge_text: string | null
           category: string
           created_at: string
           description: string | null
@@ -89,11 +131,14 @@ export type Database = {
           image_url: string | null
           name: string
           offer_price: number | null
+          pinned: boolean
           price: number
+          stock_by_size: Json
           tag: string | null
           updated_at: string
         }
         Insert: {
+          badge_text?: string | null
           category: string
           created_at?: string
           description?: string | null
@@ -101,11 +146,14 @@ export type Database = {
           image_url?: string | null
           name: string
           offer_price?: number | null
+          pinned?: boolean
           price: number
+          stock_by_size?: Json
           tag?: string | null
           updated_at?: string
         }
         Update: {
+          badge_text?: string | null
           category?: string
           created_at?: string
           description?: string | null
@@ -113,7 +161,9 @@ export type Database = {
           image_url?: string | null
           name?: string
           offer_price?: number | null
+          pinned?: boolean
           price?: number
+          stock_by_size?: Json
           tag?: string | null
           updated_at?: string
         }
@@ -140,6 +190,36 @@ export type Database = {
           full_name?: string | null
           id?: string
           phone?: string | null
+        }
+        Relationships: []
+      }
+      promo_codes: {
+        Row: {
+          active: boolean
+          code: string
+          created_at: string
+          id: string
+          kind: string
+          updated_at: string
+          value: number
+        }
+        Insert: {
+          active?: boolean
+          code: string
+          created_at?: string
+          id?: string
+          kind: string
+          updated_at?: string
+          value: number
+        }
+        Update: {
+          active?: boolean
+          code?: string
+          created_at?: string
+          id?: string
+          kind?: string
+          updated_at?: string
+          value?: number
         }
         Relationships: []
       }
@@ -176,6 +256,39 @@ export type Database = {
           product_id?: string | null
           rating?: number
           user_id?: string | null
+        }
+        Relationships: []
+      }
+      store_settings: {
+        Row: {
+          announcement_text: string
+          flat_shipping_fee: number
+          free_shipping_threshold: number
+          hero_headline: string
+          hero_image_url: string | null
+          hero_subtext: string
+          id: boolean
+          updated_at: string
+        }
+        Insert: {
+          announcement_text?: string
+          flat_shipping_fee?: number
+          free_shipping_threshold?: number
+          hero_headline?: string
+          hero_image_url?: string | null
+          hero_subtext?: string
+          id?: boolean
+          updated_at?: string
+        }
+        Update: {
+          announcement_text?: string
+          flat_shipping_fee?: number
+          free_shipping_threshold?: number
+          hero_headline?: string
+          hero_image_url?: string | null
+          hero_subtext?: string
+          id?: boolean
+          updated_at?: string
         }
         Relationships: []
       }
