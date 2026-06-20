@@ -7,6 +7,8 @@ import { CartProvider } from "@/context/CartContext";
 import { ProductsProvider } from "@/context/ProductsContext";
 import { AuthProvider } from "@/hooks/useAuth";
 import { WishlistProvider } from "@/context/WishlistContext";
+import { StoreSettingsProvider } from "@/context/StoreSettingsContext";
+import { LookbookProvider } from "@/context/LookbookContext";
 import Index from "./pages/Index.tsx";
 import Shop from "./pages/Shop.tsx";
 import ProductDetails from "./pages/ProductDetails.tsx";
@@ -32,6 +34,8 @@ const App = () => (
     <TooltipProvider>
       <BrowserRouter>
         <AuthProvider>
+          <StoreSettingsProvider>
+          <LookbookProvider>
           <ProductsProvider>
             <WishlistProvider>
               <CartProvider>
@@ -59,6 +63,8 @@ const App = () => (
               </CartProvider>
             </WishlistProvider>
           </ProductsProvider>
+          </LookbookProvider>
+          </StoreSettingsProvider>
         </AuthProvider>
       </BrowserRouter>
     </TooltipProvider>
