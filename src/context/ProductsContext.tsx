@@ -10,6 +10,9 @@ type NewProductInput = {
   image: string;
   tag?: string;
   description?: string;
+  pinned?: boolean;
+  badgeText?: string;
+  stockBySize?: Record<string, number>;
 };
 
 type Ctx = {
@@ -24,8 +27,6 @@ type Ctx = {
 
 const ProductsCtx = createContext<Ctx | null>(null);
 
-// DB row → Product shape compatible with existing UI
-// offer_price (if present) becomes the displayed price; original price becomes mrp
 const mapRow = (r: any): Product => {
   const hasOffer = r.offer_price != null && Number(r.offer_price) < Number(r.price);
   return {
@@ -37,6 +38,9 @@ const mapRow = (r: any): Product => {
     image: r.image_url || "https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?auto=format&fit=crop&w=900&q=80",
     tag: r.tag ?? undefined,
     description: r.description ?? "",
+    pinned: !!r.pinned,
+    badgeText: r.badge_text ?? undefined,
+    stockBySize: (r.stock_by_size as Record<string, number>) ?? {},
   };
 };
 
@@ -70,12 +74,15 @@ export const ProductsProvider = ({ children }: { children: ReactNode }) => {
     const { error } = await supabase.from("products").insert({
       name: p.name,
       category: p.category,
-      price: p.mrp ?? p.price,           // original price
-      offer_price: p.mrp ? p.price : null, // discounted (if mrp provided, price is the offer)
+      price: p.mrp ?? p.price,
+      offer_price: p.mrp ? p.price : null,
       image_url: p.image,
       tag: p.tag || null,
       description: p.description || null,
-    });
+      pinned: p.pinned ?? false,
+      badge_text: p.badgeText || null,
+      stock_by_size: p.stockBySize ?? {},
+    } as any);
     if (!error) await refresh();
     return { error: error?.message ?? null };
   };
@@ -87,6 +94,9 @@ export const ProductsProvider = ({ children }: { children: ReactNode }) => {
     if (p.image !== undefined) patch.image_url = p.image;
     if (p.tag !== undefined) patch.tag = p.tag || null;
     if (p.description !== undefined) patch.description = p.description || null;
+    if (p.pinned !== undefined) patch.pinned = p.pinned;
+    if (p.badgeText !== undefined) patch.badge_text = p.badgeText || null;
+    if (p.stockBySize !== undefined) patch.stock_by_size = p.stockBySize;
     if (p.price !== undefined || p.mrp !== undefined) {
       patch.price = p.mrp ?? p.price;
       patch.offer_price = p.mrp ? p.price : null;

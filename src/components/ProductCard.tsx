@@ -40,6 +40,11 @@ const ProductCard = ({ product }: { product: Product }) => {
             {product.tag}
           </span>
         )}
+        {product.badgeText && (
+          <span className="absolute top-3 left-3 mt-7 bg-red-cta text-white text-[10px] font-extrabold uppercase tracking-wider px-2.5 py-1 rounded-sm shadow-lg z-10">
+            {product.badgeText}
+          </span>
+        )}
         {savings > 0 && (
           <div className="absolute top-3 right-3 z-10 flex flex-col items-end gap-1.5">
             <span className="bg-red-cta text-white text-[10px] font-extrabold uppercase tracking-wider px-2.5 py-1 rounded-sm shadow-lg animate-pulse-gold">
