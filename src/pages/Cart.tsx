@@ -1,67 +1,78 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import { Minus, Plus, X, ArrowRight, ShoppingBag, Sparkles, Tag, Check } from "lucide-react";
+import { Minus, Plus, X, ArrowRight, ShoppingBag, Sparkles, Tag, Check, Loader2 } from "lucide-react";
 import Layout from "@/components/Layout";
 import { useCart } from "@/context/CartContext";
+import { useStoreSettings } from "@/context/StoreSettingsContext";
 import { formatINR } from "@/lib/format";
 import { toast } from "sonner";
+import { supabase } from "@/integrations/supabase/client";
 
-const SHIPPING_FEE = 162;
 const FREE_ITEM_THRESHOLD = 3;
-const FREE_SUBTOTAL_THRESHOLD = 2500;
 const PROMO_KEY = "dexter:promo";
 
 type Promo = { code: string; label: string; off: number } | null;
 
-const calcPromo = (code: string, subtotal: number): Promo => {
-  const c = code.trim().toUpperCase();
-  if (c === "DEXTER10") return { code: c, label: "10% OFF", off: Math.round(subtotal * 0.1) };
-  if (c === "FIRSTDROP") return { code: c, label: "₹200 OFF", off: Math.min(200, subtotal) };
-  if (c === "DEXTER5") return { code: c, label: "5% OFF", off: Math.round(subtotal * 0.05) };
-  return null;
-};
-
 const Cart = () => {
   const { items, setQty, remove, count, total } = useCart();
+  const { settings } = useStoreSettings();
+  const FREE_SUBTOTAL_THRESHOLD = settings.free_shipping_threshold;
+  const SHIPPING_FEE = settings.flat_shipping_fee;
+
   const qualifiesFree = count >= FREE_ITEM_THRESHOLD || total >= FREE_SUBTOTAL_THRESHOLD;
   const shipping = items.length === 0 ? 0 : (qualifiesFree ? 0 : SHIPPING_FEE);
 
   const [codeInput, setCodeInput] = useState("");
+  const [applying, setApplying] = useState(false);
   const [promo, setPromo] = useState<Promo>(() => {
     try { const raw = sessionStorage.getItem(PROMO_KEY); return raw ? JSON.parse(raw) : null; } catch { return null; }
   });
 
-  // Re-evaluate discount when subtotal changes
-  useEffect(() => {
-    if (promo) {
-      const fresh = calcPromo(promo.code, total);
-      if (fresh) {
-        if (fresh.off !== promo.off) {
-          setPromo(fresh);
-          sessionStorage.setItem(PROMO_KEY, JSON.stringify(fresh));
-        }
-      }
-    }
-  }, [total, promo]);
+  const validateCode = async (raw: string, subtotal: number): Promise<Promo> => {
+    const code = raw.trim().toUpperCase();
+    if (!code) return null;
+    const { data } = await supabase
+      .from("promo_codes")
+      .select("code, kind, value, active")
+      .ilike("code", code)
+      .eq("active", true)
+      .maybeSingle();
+    if (!data) return null;
+    const v = Number(data.value);
+    const off = data.kind === "percent" ? Math.round(subtotal * (v / 100)) : Math.min(v, subtotal);
+    const label = data.kind === "percent" ? `${v}% OFF` : `${formatINR(v)} OFF`;
+    return { code: data.code, label, off };
+  };
 
-  const applyPromo = (e: React.FormEvent) => {
+  // Re-validate when subtotal changes
+  useEffect(() => {
+    if (!promo) return;
+    let cancelled = false;
+    (async () => {
+      const fresh = await validateCode(promo.code, total);
+      if (cancelled) return;
+      if (!fresh) { setPromo(null); sessionStorage.removeItem(PROMO_KEY); }
+      else if (fresh.off !== promo.off) { setPromo(fresh); sessionStorage.setItem(PROMO_KEY, JSON.stringify(fresh)); }
+    })();
+    return () => { cancelled = true; };
+  }, [total]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  const applyPromo = async (e: React.FormEvent) => {
     e.preventDefault();
-    const p = calcPromo(codeInput, total);
-    if (!p) { toast.error("Invalid promo code"); return; }
+    setApplying(true);
+    const p = await validateCode(codeInput, total);
+    setApplying(false);
+    if (!p) { toast.error("Invalid or inactive promo code"); return; }
     setPromo(p);
     sessionStorage.setItem(PROMO_KEY, JSON.stringify(p));
     setCodeInput("");
     toast.success(`Code ${p.code} applied — ${p.label}`);
   };
 
-  const removePromo = () => {
-    setPromo(null);
-    sessionStorage.removeItem(PROMO_KEY);
-  };
+  const removePromo = () => { setPromo(null); sessionStorage.removeItem(PROMO_KEY); };
 
   const discount = promo?.off ?? 0;
   const grand = Math.max(0, total + shipping - discount);
-
   const freeShipRemaining = Math.max(0, FREE_SUBTOTAL_THRESHOLD - total);
   const freeShipPct = Math.min(100, (total / FREE_SUBTOTAL_THRESHOLD) * 100);
 
@@ -135,7 +146,6 @@ const Cart = () => {
             <aside className="bg-secondary p-8 self-start sticky top-32">
               <h3 className="font-display text-2xl font-bold mb-6">Order Summary</h3>
 
-              {/* Promo code */}
               <div className="mb-6">
                 <label className="text-[11px] uppercase tracking-[0.25em] text-muted-foreground flex items-center gap-2 mb-2">
                   <Tag className="h-3 w-3" /> Promo Code
@@ -159,12 +169,11 @@ const Cart = () => {
                       placeholder="Enter code"
                       className="flex-1 border border-border bg-background px-3 py-2 text-sm rounded focus:outline-none focus:border-gold"
                     />
-                    <button className="bg-ink text-primary-foreground px-4 text-[11px] uppercase tracking-[0.2em] font-bold rounded hover:bg-gold hover:text-ink transition">
-                      Apply
+                    <button disabled={applying} className="bg-ink text-primary-foreground px-4 text-[11px] uppercase tracking-[0.2em] font-bold rounded hover:bg-gold hover:text-ink transition disabled:opacity-60 inline-flex items-center gap-1">
+                      {applying && <Loader2 className="h-3 w-3 animate-spin" />} Apply
                     </button>
                   </form>
                 )}
-                <p className="mt-2 text-[10px] text-muted-foreground">Try DEXTER10 or FIRSTDROP</p>
               </div>
 
               <div className="space-y-3 text-sm">
