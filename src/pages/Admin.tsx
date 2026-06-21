@@ -120,9 +120,10 @@ const Admin = () => {
     return () => URL.revokeObjectURL(url);
   }, [file]);
 
-  const hasAdminToken = typeof window !== "undefined" && !!localStorage.getItem("admin_token");
-  if (authLoading) return <div className="min-h-screen grid place-items-center"><Loader2 className="h-6 w-6 animate-spin" /></div>;
-  if (!isAdmin && !hasAdminToken) return <Navigate to="/" replace />;
+  // Local-only gate. AdminGuard already enforced this; double-check here defensively.
+  if (typeof window !== "undefined" && !localStorage.getItem("admin_token")) {
+    return <Navigate to="/" replace />;
+  }
 
   // ============ PRODUCT CRUD ============
   const resetForm = () => { setForm(empty); setFile(null); setEditingId(null); };

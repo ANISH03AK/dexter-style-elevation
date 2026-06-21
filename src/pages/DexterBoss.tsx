@@ -23,8 +23,8 @@ const DexterBoss = () => {
     await new Promise((r) => setTimeout(r, 450));
     setBusy(false);
     if (phone.replace(/\D/g, "") === OWNER_PHONE && pin === OWNER_PIN) {
-      const token = btoa(`${OWNER_PHONE}:${Date.now()}`);
-      localStorage.setItem("admin_token", token);
+      // Hardcoded owner bypass — no Supabase auth, no network call.
+      localStorage.setItem("admin_token", "true");
       toast.success("Owner verified — entering control room");
       navigate("/admin", { replace: true });
     } else {

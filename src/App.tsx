@@ -26,6 +26,7 @@ import ScrollToTop from "./components/ScrollToTop";
 import NavArrows from "./components/NavArrows";
 import DbStatusBanner from "./components/DbStatusBanner";
 import ExitIntentPopup from "./components/ExitIntentPopup";
+import AdminGuard from "./components/AdminGuard";
 
 const queryClient = new QueryClient();
 
@@ -57,7 +58,7 @@ const App = () => (
                   <Route path="/contact" element={<Contact />} />
                   <Route path="/track" element={<TrackOrder />} />
                   <Route path="/dexter-boss" element={<DexterBoss />} />
-                  <Route path="/admin" element={<Admin />} />
+                  <Route path="/admin" element={<AdminGuard><Admin /></AdminGuard>} />
                   <Route path="*" element={<NotFound />} />
                 </Routes>
               </CartProvider>
