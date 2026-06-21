@@ -32,7 +32,7 @@ const uploadToBucket = async (file: File, prefix: string) => {
 };
 
 const Admin = () => {
-  const { user, isAdmin, loading: authLoading, signOut } = useAuth();
+  const { user, isAdmin, signOut } = useAuth();
   const { products, addProduct, updateProduct, removeProduct, refresh } = useProducts();
   const navigate = useNavigate();
 
