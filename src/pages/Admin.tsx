@@ -1,5 +1,5 @@
 import { useEffect, useState, useCallback } from "react";
-import { Trash2, Plus, Search, Loader2, LogOut, Upload, Pencil, X, IndianRupee, Clock, Package, ShoppingBag, CreditCard, Wallet, Banknote, Pin, Save, Image as ImageIcon, Tag as TagIcon, Settings as SettingsIcon, Layers } from "lucide-react";
+import { Trash2, Plus, Search, Loader2, LogOut, Upload, Pencil, X, IndianRupee, Clock, Package, ShoppingBag, CreditCard, Wallet, Banknote, Pin, Save, Image as ImageIcon, Tag as TagIcon, Settings as SettingsIcon, Layers, ShieldCheck, RefreshCw, ExternalLink, AlertTriangle } from "lucide-react";
 import { toast } from "sonner";
 import { Navigate, useNavigate } from "react-router-dom";
 import Layout from "@/components/Layout";
