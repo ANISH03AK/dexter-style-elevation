@@ -700,15 +700,17 @@ const Admin = () => {
   );
 };
 
-const StatCard = ({ icon: Icon, label, value, accent }: { icon: any; label: string; value: string; accent?: boolean }) => (
-  <div className={`border rounded-md p-5 ${accent ? "bg-ink text-primary-foreground border-ink" : "bg-card border-border"}`}>
+const StatCard = ({ icon: Icon, label, value, sub, accent, warn }: { icon: any; label: string; value: string; sub?: string; accent?: boolean; warn?: boolean }) => (
+  <div className={`border rounded-xl p-5 transition-all duration-300 hover:-translate-y-0.5 hover:shadow-elevated ${accent ? "bg-ink text-primary-foreground border-ink" : warn ? "bg-card border-red-cta/40" : "bg-card border-border"}`}>
     <div className="flex items-center justify-between">
-      <p className={`text-[10px] uppercase tracking-[0.22em] ${accent ? "text-gold" : "text-muted-foreground"}`}>{label}</p>
-      <div className={`h-9 w-9 grid place-items-center rounded-full ${accent ? "bg-gold/20 text-gold" : "bg-secondary text-foreground"}`}><Icon className="h-4 w-4" /></div>
+      <p className={`text-[10px] uppercase tracking-[0.22em] ${accent ? "text-gold" : warn ? "text-red-cta" : "text-muted-foreground"}`}>{label}</p>
+      <div className={`h-9 w-9 grid place-items-center rounded-full ${accent ? "bg-gold/20 text-gold" : warn ? "bg-red-cta/10 text-red-cta" : "bg-secondary text-foreground"}`}><Icon className="h-4 w-4" /></div>
     </div>
     <p className="font-display text-2xl font-bold mt-3">{value}</p>
+    {sub && <p className={`mt-1 text-[10px] uppercase tracking-[0.18em] ${accent ? "text-white/45" : "text-muted-foreground"}`}>{sub}</p>}
   </div>
 );
+
 
 const Field = ({ label, children }: { label: string; children: React.ReactNode }) => (
   <div>
