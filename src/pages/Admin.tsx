@@ -277,28 +277,81 @@ const Admin = () => {
   const filtered = products.filter(p => p.name.toLowerCase().includes(q.toLowerCase()) || p.category.toLowerCase().includes(q.toLowerCase()));
   const totalSales = orders.filter(o => o.status !== "cancelled").reduce((s, o) => s + Number(o.total || 0), 0);
   const pendingOrders = orders.filter(o => o.status === "pending").length;
+  const todayKey = new Date().toDateString();
+  const todaysOrders = orders.filter(o => new Date(o.created_at).toDateString() === todayKey);
+  const todaysRevenue = todaysOrders.filter(o => o.status !== "cancelled").reduce((s, o) => s + Number(o.total || 0), 0);
+  const pinnedCount = products.filter(p => p.pinned).length;
+  const lowStock = products.filter(p => {
+    const s = p.stockBySize || {};
+    const total = Object.values(s).reduce((a: number, b: any) => a + Number(b || 0), 0);
+    return total > 0 && total <= 5;
+  }).length;
+  const outOfStock = products.filter(p => {
+    const s = p.stockBySize || {};
+    return Object.values(s).reduce((a: number, b: any) => a + Number(b || 0), 0) === 0;
+  }).length;
+  const activePromos = promos.filter(p => p.active).length;
+  const loginAt = typeof window !== "undefined" ? Number(localStorage.getItem("admin_login_at") || 0) : 0;
+
+  const refreshAll = async () => {
+    await Promise.all([refresh(), fetchOrders(), loadSettings(), loadPromos(), loadLookbook()]);
+    toast.success("Dashboard synced");
+  };
 
   return (
     <Layout>
-      <div className="container-px mx-auto max-w-[1400px] py-12">
+      <div className="container-px mx-auto max-w-[1400px] py-10">
         {/* Header */}
-        <div className="flex items-start justify-between mb-8 gap-4 flex-wrap">
-          <div>
-            <p className="text-[11px] uppercase tracking-[0.25em] text-gold mb-2">Store Owner Dashboard</p>
-            <h1 className="font-display text-3xl sm:text-4xl font-bold">Welcome back.</h1>
-            <p className="text-sm text-muted-foreground mt-2">{user?.email}</p>
+        <div className="relative overflow-hidden rounded-2xl bg-ink text-primary-foreground p-6 sm:p-8 mb-6">
+          <div className="absolute -top-24 -right-16 h-64 w-64 rounded-full bg-gold/20 blur-3xl pointer-events-none" />
+          <div className="absolute -bottom-24 -left-16 h-64 w-64 rounded-full bg-red-cta/20 blur-3xl pointer-events-none" />
+          <div className="relative flex items-start justify-between gap-4 flex-wrap">
+            <div>
+              <p className="text-[11px] uppercase tracking-[0.3em] text-gold mb-2 flex items-center gap-2">
+                <ShieldCheck className="h-3.5 w-3.5" /> Store Owner Control Room
+              </p>
+              <h1 className="font-display text-3xl sm:text-4xl font-extrabold">Welcome back, Boss.</h1>
+              <div className="mt-3 flex items-center gap-2 flex-wrap text-[10px] uppercase tracking-[0.2em] text-white/50">
+                <span className="inline-flex items-center gap-1.5 rounded-full border border-white/15 px-3 py-1">
+                  <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 animate-pulse" /> Live sync on
+                </span>
+                <span className="rounded-full border border-white/15 px-3 py-1">Master · 8668183926</span>
+                {loginAt > 0 && (
+                  <span className="rounded-full border border-white/15 px-3 py-1">
+                    Since {new Date(loginAt).toLocaleTimeString("en-IN", { hour: "2-digit", minute: "2-digit" })}
+                  </span>
+                )}
+                {user?.email && <span className="rounded-full border border-white/15 px-3 py-1">{user.email}</span>}
+              </div>
+            </div>
+            <div className="flex items-center gap-2 flex-wrap">
+              <button onClick={refreshAll} className="text-[10px] uppercase tracking-[0.2em] flex items-center gap-2 border border-white/20 px-4 py-2.5 rounded-lg hover:bg-white/10 transition">
+                <RefreshCw className="h-3.5 w-3.5" /> Sync
+              </button>
+              <button onClick={() => navigate("/")} className="text-[10px] uppercase tracking-[0.2em] flex items-center gap-2 border border-white/20 px-4 py-2.5 rounded-lg hover:bg-white/10 transition">
+                <ExternalLink className="h-3.5 w-3.5" /> View store
+              </button>
+              <button onClick={async () => { localStorage.removeItem("admin_token"); await signOut(); navigate("/"); }} className="text-[10px] uppercase tracking-[0.2em] flex items-center gap-2 bg-gradient-to-r from-red-cta to-gold text-black font-extrabold px-4 py-2.5 rounded-lg hover:opacity-90 transition">
+                <LogOut className="h-3.5 w-3.5" /> Sign Out
+              </button>
+            </div>
           </div>
-          <button onClick={async () => { localStorage.removeItem("admin_token"); await signOut(); navigate("/"); }} className="text-xs uppercase tracking-[0.2em] flex items-center gap-2 border border-border px-4 py-2 hover:bg-muted rounded-md">
-            <LogOut className="h-4 w-4" /> Sign Out
-          </button>
+        </div>
+
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
+          <StatCard icon={IndianRupee} label="Total Sales" value={formatINR(totalSales)} sub={`${formatINR(todaysRevenue)} today`} accent />
+          <StatCard icon={Clock} label="Pending Orders" value={String(pendingOrders)} sub={`${todaysOrders.length} placed today`} />
+          <StatCard icon={ShoppingBag} label="Total Orders" value={String(orders.length)} sub="All time" />
+          <StatCard icon={Package} label="Live Products" value={String(products.length)} sub={`${pinnedCount} pinned to homepage`} />
         </div>
 
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-10">
-          <StatCard icon={IndianRupee} label="Total Sales" value={formatINR(totalSales)} accent />
-          <StatCard icon={Clock} label="Pending Orders" value={String(pendingOrders)} />
-          <StatCard icon={ShoppingBag} label="Total Orders" value={String(orders.length)} />
-          <StatCard icon={Package} label="Live Products" value={String(products.length)} />
+          <StatCard icon={AlertTriangle} label="Low Stock" value={String(lowStock)} sub="5 or fewer units left" warn={lowStock > 0} />
+          <StatCard icon={Package} label="Out Of Stock" value={String(outOfStock)} sub="Needs restocking" warn={outOfStock > 0} />
+          <StatCard icon={TagIcon} label="Active Promos" value={String(activePromos)} sub={`${promos.length} total codes`} />
+          <StatCard icon={Layers} label="Lookbook Slides" value={String(lookbook.length)} sub="Shop the look grid" />
         </div>
+
 
         <Tabs defaultValue="products" className="w-full">
           <TabsList className="flex flex-wrap h-auto justify-start gap-1 bg-secondary/50 p-1 mb-6">
