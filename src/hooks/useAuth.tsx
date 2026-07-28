@@ -86,20 +86,37 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       email: phoneToEmail(phone),
       password,
     });
-    return { error: error?.message ?? null };
+    if (!error) return { error: null };
+    const msg = /invalid login credentials/i.test(error.message)
+      ? "No account found with this number, or the password is wrong."
+      : error.message;
+    return { error: msg };
   };
 
   const signUpWithPhone: AuthCtx["signUpWithPhone"] = async (phone, password, fullName) => {
-    const { error } = await supabase.auth.signUp({
-      email: phoneToEmail(phone),
+    const digits = phone.replace(/\D+/g, "");
+    const { data, error } = await supabase.auth.signUp({
+      email: phoneToEmail(digits),
       password,
       options: {
         emailRedirectTo: `${window.location.origin}/`,
-        data: { full_name: fullName, phone },
+        data: { full_name: fullName, phone: digits },
       },
     });
-    return { error: error?.message ?? null };
+    if (error) {
+      const msg = /already registered|already exists/i.test(error.message)
+        ? "This mobile number already has an account. Please sign in."
+        : error.message;
+      return { error: msg };
+    }
+    // Supabase returns an obfuscated user with no identities when the email
+    // (phone alias) is already taken — enforce one account per mobile number.
+    if (data.user && (data.user.identities?.length ?? 0) === 0) {
+      return { error: "This mobile number already has an account. Please sign in." };
+    }
+    return { error: null };
   };
+
 
   const signOut = async () => {
     await supabase.auth.signOut();
