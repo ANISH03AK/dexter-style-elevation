@@ -26,6 +26,7 @@ const Navbar = () => {
   const { count } = useCart();
   const { count: wishCount } = useWishlist();
   const { user, isAdmin, signOut } = useAuth();
+  const navigate = useNavigate();
   const [open, setOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
 
