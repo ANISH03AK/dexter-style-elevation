@@ -47,6 +47,7 @@ const Auth = () => {
   const [phone, setPhone] = useState("");
   const [password, setPassword] = useState("");
   const [fullName, setFullName] = useState("");
+  const [remember, setRemember] = useState(true);
   const [submitting, setSubmitting] = useState(false);
 
   const { signInWithPhone, signUpWithPhone, user, isAdmin, loading } = useAuth();
@@ -76,8 +77,8 @@ const Auth = () => {
     setSubmitting(true);
     const res =
       mode === "login"
-        ? await signInWithPhone(digits, password)
-        : await signUpWithPhone(digits, password, fullName.trim());
+        ? await signInWithPhone(digits, password, remember)
+        : await signUpWithPhone(digits, password, fullName.trim(), remember);
     setSubmitting(false);
 
     if (res.error) {
@@ -87,6 +88,7 @@ const Auth = () => {
     }
     toast.success(mode === "login" ? "Welcome back" : "Account created");
   };
+
 
   return (
     <div className="min-h-screen grid lg:grid-cols-2">
@@ -190,6 +192,25 @@ const Auth = () => {
                 <p className="mt-2 text-xs text-muted-foreground">Keep it safe — you'll need it to sign in next time.</p>
               )}
             </div>
+
+            <label className="flex items-start gap-3 cursor-pointer select-none">
+              <input
+                type="checkbox"
+                checked={remember}
+                onChange={(e) => setRemember(e.target.checked)}
+                className="mt-0.5 h-4 w-4 accent-ink cursor-pointer"
+              />
+              <span className="text-sm">
+                <span className="font-semibold text-foreground">Keep me signed in</span>
+                <span className="block text-xs text-muted-foreground mt-0.5">
+                  {remember
+                    ? "You'll stay signed in on this device until you sign out."
+                    : "You'll be signed out when you close the browser."}
+                </span>
+              </span>
+            </label>
+
+
 
             <button
               disabled={!canSubmit}

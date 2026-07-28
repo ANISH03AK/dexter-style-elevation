@@ -1,5 +1,5 @@
-import { Link, NavLink } from "react-router-dom";
-import { Search, Heart, ShoppingBag, User, Menu, X, ChevronDown } from "lucide-react";
+import { Link, NavLink, useNavigate } from "react-router-dom";
+import { Search, Heart, ShoppingBag, User, Menu, X, ChevronDown, LogOut } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useCart } from "@/context/CartContext";
 import { useAuth } from "@/hooks/useAuth";
@@ -26,6 +26,7 @@ const Navbar = () => {
   const { count } = useCart();
   const { count: wishCount } = useWishlist();
   const { user, isAdmin, signOut } = useAuth();
+  const navigate = useNavigate();
   const [open, setOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
 
@@ -90,9 +91,21 @@ const Navbar = () => {
             <button onClick={() => setSearchOpen(s => !s)} aria-label="Search" className="hover:text-red-cta transition-smooth">
               <Search className="h-[18px] w-[18px]" />
             </button>
-            <Link to="/auth" aria-label="Account" className="hidden sm:block hover:text-red-cta transition-smooth">
-              <User className="h-[18px] w-[18px]" />
-            </Link>
+            {user ? (
+              <button
+                onClick={async () => { await signOut(); navigate("/"); }}
+                aria-label="Sign out"
+                title="Sign out"
+                className="hidden sm:block hover:text-red-cta transition-smooth"
+              >
+                <LogOut className="h-[18px] w-[18px]" />
+              </button>
+            ) : (
+              <Link to="/auth" aria-label="Account" className="hidden sm:block hover:text-red-cta transition-smooth">
+                <User className="h-[18px] w-[18px]" />
+              </Link>
+            )}
+
             <Link to="/wishlist" aria-label="Wishlist" className="relative hover:text-red-cta transition-smooth">
               <Heart className="h-[18px] w-[18px]" />
               {wishCount > 0 && (
