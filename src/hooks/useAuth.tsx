@@ -11,15 +11,36 @@ type AuthCtx = {
   loading: boolean;
   isAdmin: boolean;
   // Mobile-number based auth (default for customers)
-  signInWithPhone: (phone: string, password: string) => Promise<{ error: string | null }>;
-  signUpWithPhone: (phone: string, password: string, fullName: string) => Promise<{ error: string | null }>;
+  signInWithPhone: (phone: string, password: string, remember?: boolean) => Promise<{ error: string | null }>;
+  signUpWithPhone: (phone: string, password: string, fullName: string, remember?: boolean) => Promise<{ error: string | null }>;
   // Email auth (used by store owner / admin)
   signIn: (email: string, password: string) => Promise<{ error: string | null }>;
   signUp: (email: string, password: string, fullName: string) => Promise<{ error: string | null }>;
   signOut: () => Promise<void>;
+  remembered: boolean;
 };
 
 const Ctx = createContext<AuthCtx | null>(null);
+
+const REMEMBER_KEY = "dexter_remember";
+const TAB_KEY = "dexter_session_tab";
+
+const safeGet = (store: Storage, k: string) => {
+  try { return store.getItem(k); } catch { return null; }
+};
+const safeSet = (store: Storage, k: string, v: string) => {
+  try { store.setItem(k, v); } catch { /* ignore */ }
+};
+const safeRemove = (store: Storage, k: string) => {
+  try { store.removeItem(k); } catch { /* ignore */ }
+};
+
+// Persist the user's "remember me" choice. When it is off, the session is only
+// valid for the current browser tab/session — we drop it on a fresh visit.
+const setRemember = (remember: boolean) => {
+  safeSet(localStorage, REMEMBER_KEY, remember ? "1" : "0");
+  safeSet(sessionStorage, TAB_KEY, "1");
+};
 
 // Convert a raw phone string to a deterministic email alias we can use with
 // Supabase's password auth (avoids needing an external SMS provider).
@@ -27,6 +48,7 @@ const phoneToEmail = (phone: string) => {
   const digits = phone.replace(/\D+/g, "");
   return `${digits}@dexter.phone`;
 };
+
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
