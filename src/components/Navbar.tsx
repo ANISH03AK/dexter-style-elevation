@@ -1,5 +1,5 @@
-import { Link, NavLink } from "react-router-dom";
-import { Search, Heart, ShoppingBag, User, Menu, X, ChevronDown } from "lucide-react";
+import { Link, NavLink, useNavigate } from "react-router-dom";
+import { Search, Heart, ShoppingBag, User, Menu, X, ChevronDown, LogOut } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useCart } from "@/context/CartContext";
 import { useAuth } from "@/hooks/useAuth";
