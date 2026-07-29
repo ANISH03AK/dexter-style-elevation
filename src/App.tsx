@@ -1,6 +1,6 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Route, Routes, useLocation } from "react-router-dom";
-import { AnimatePresence } from "framer-motion";
+import { AnimatePresence, motion } from "framer-motion";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -30,7 +30,6 @@ import ExitIntentPopup from "./components/ExitIntentPopup";
 import AdminGuard from "./components/AdminGuard";
 import SmoothScroll from "./components/motion/SmoothScroll";
 import LoadingScreen from "./components/motion/LoadingScreen";
-import PageTransition from "./components/motion/PageTransition";
 
 const queryClient = new QueryClient();
 
@@ -38,7 +37,13 @@ const AnimatedRoutes = () => {
   const location = useLocation();
   return (
     <AnimatePresence mode="wait" initial={false}>
-      <PageTransition key={location.pathname}>
+      <motion.div
+        key={location.pathname}
+        initial={{ opacity: 0, y: 18, filter: "blur(6px)" }}
+        animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
+        exit={{ opacity: 0, y: -12, filter: "blur(6px)" }}
+        transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
+      >
       <Routes location={location}>
         <Route path="/" element={<Index />} />
         <Route path="/shop" element={<Shop />} />
@@ -54,7 +59,7 @@ const AnimatedRoutes = () => {
         <Route path="/admin" element={<AdminGuard><Admin /></AdminGuard>} />
         <Route path="*" element={<NotFound />} />
       </Routes>
-      </PageTransition>
+      </motion.div>
     </AnimatePresence>
   );
 };
