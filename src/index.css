@@ -145,6 +145,58 @@
 
   .hover-lift { @apply transition-smooth hover:-translate-y-1; }
 
+  /* ── Premium motion kit ─────────────────────────────────────── */
+
+  /* Tactile ripple for buttons */
+  .animate-ripple { animation: ripple .65s cubic-bezier(.22,1,.36,1) forwards; }
+  @keyframes ripple {
+    from { transform: scale(0); opacity: .35; }
+    to   { transform: scale(1); opacity: 0; }
+  }
+
+  /* Ambient floating orbs */
+  .animate-float-slow   { animation: float-y 12s ease-in-out infinite; }
+  .animate-float-slower { animation: float-y 18s ease-in-out infinite reverse; }
+  @keyframes float-y {
+    0%, 100% { transform: translate3d(0, 0, 0) scale(1); }
+    50%      { transform: translate3d(2%, -6%, 0) scale(1.08); }
+  }
+
+  /* Gentle levitation for feature elements */
+  .animate-levitate { animation: levitate 6s ease-in-out infinite; }
+  @keyframes levitate {
+    0%, 100% { transform: translateY(0); }
+    50%      { transform: translateY(-8px); }
+  }
+
+  /* Skeleton shimmer */
+  .skeleton-shimmer {
+    background: linear-gradient(90deg,
+      hsl(var(--muted)) 0%, hsl(var(--secondary)) 40%,
+      hsl(var(--muted)) 80%);
+    background-size: 200% 100%;
+    animation: shimmer 1.4s linear infinite;
+  }
+  @keyframes shimmer {
+    from { background-position: 200% 0; }
+    to   { background-position: -200% 0; }
+  }
+
+  /* Depth layer helper for 3D tilt children */
+  .depth-1 { transform: translateZ(28px); }
+  .depth-2 { transform: translateZ(56px); }
+
+  /* Elegant text mask reveal */
+  .reveal-mask { clip-path: inset(0 0 100% 0); animation: mask-up .9s cubic-bezier(.22,1,.36,1) forwards; }
+  @keyframes mask-up { to { clip-path: inset(0 0 0 0); } }
+
+  @media (prefers-reduced-motion: reduce) {
+    .animate-ripple, .animate-float-slow, .animate-float-slower,
+    .animate-levitate, .animate-ken-burns, .marquee-track,
+    .skeleton-shimmer, .reveal-mask { animation: none !important; }
+  }
+
+
   .link-underline {
     @apply relative after:absolute after:left-0 after:bottom-0 after:h-px after:w-full after:origin-right after:scale-x-0 after:bg-current after:transition-transform after:duration-300 hover:after:origin-left hover:after:scale-x-100;
   }

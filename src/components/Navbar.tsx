@@ -1,12 +1,21 @@
 import { Link, NavLink, useNavigate } from "react-router-dom";
 import { Search, Heart, ShoppingBag, User, Menu, X, ChevronDown, LogOut } from "lucide-react";
 import { useEffect, useState } from "react";
+import { AnimatePresence, motion } from "framer-motion";
 import { useCart } from "@/context/CartContext";
 import { useAuth } from "@/hooks/useAuth";
 import { useWishlist } from "@/context/WishlistContext";
 import dexterLogo from "@/assets/dexter-logo.png";
 import MegaMenu from "./MegaMenu";
 import SearchBar from "./SearchBar";
+
+const EASE = [0.22, 1, 0.36, 1] as const;
+
+const itemVariants = {
+  hidden: { opacity: 0, x: -18 },
+  show: { opacity: 1, x: 0, transition: { duration: 0.4, ease: EASE } },
+};
+
 
 const leftLinks = [
   { to: "/shop", label: "Shop" },
@@ -106,77 +115,135 @@ const Navbar = () => {
               </Link>
             )}
 
-            <Link to="/wishlist" aria-label="Wishlist" className="relative hover:text-red-cta transition-smooth">
+            <Link to="/wishlist" aria-label="Wishlist" className="relative hover:text-red-cta transition-smooth hover:scale-110 active:scale-90 duration-200">
               <Heart className="h-[18px] w-[18px]" />
-              {wishCount > 0 && (
-                <span className="absolute -top-2 -right-2 h-4 min-w-4 px-1 rounded-full bg-red-cta text-white text-[10px] font-bold flex items-center justify-center">
-                  {wishCount}
-                </span>
-              )}
+              <AnimatePresence>
+                {wishCount > 0 && (
+                  <motion.span
+                    key={wishCount}
+                    initial={{ scale: 0, opacity: 0 }}
+                    animate={{ scale: 1, opacity: 1 }}
+                    exit={{ scale: 0, opacity: 0 }}
+                    transition={{ type: "spring", stiffness: 500, damping: 22 }}
+                    className="absolute -top-2 -right-2 h-4 min-w-4 px-1 rounded-full bg-red-cta text-white text-[10px] font-bold flex items-center justify-center"
+                  >
+                    {wishCount}
+                  </motion.span>
+                )}
+              </AnimatePresence>
             </Link>
-            <Link to="/cart" aria-label="Cart" className="relative hover:text-red-cta transition-smooth">
+            <Link to="/cart" aria-label="Cart" className="relative hover:text-red-cta transition-smooth hover:scale-110 active:scale-90 duration-200">
               <ShoppingBag className="h-[18px] w-[18px]" />
-              {count > 0 && (
-                <span className="absolute -top-2 -right-2 h-4 min-w-4 px-1 rounded-full bg-gold text-ink text-[10px] font-bold flex items-center justify-center">
-                  {count}
-                </span>
-              )}
+              <AnimatePresence>
+                {count > 0 && (
+                  <motion.span
+                    key={count}
+                    initial={{ scale: 0, y: -6, opacity: 0 }}
+                    animate={{ scale: 1, y: 0, opacity: 1 }}
+                    exit={{ scale: 0, opacity: 0 }}
+                    transition={{ type: "spring", stiffness: 520, damping: 20 }}
+                    className="absolute -top-2 -right-2 h-4 min-w-4 px-1 rounded-full bg-gold text-ink text-[10px] font-bold flex items-center justify-center"
+                  >
+                    {count}
+                  </motion.span>
+                )}
+              </AnimatePresence>
             </Link>
           </div>
         </div>
       </div>
 
-      {searchOpen && <SearchBar onClose={() => setSearchOpen(false)} />}
+      <AnimatePresence>
+        {searchOpen && (
+          <motion.div
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: "auto", opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            transition={{ duration: 0.4, ease: EASE }}
+            className="overflow-hidden"
+          >
+            <SearchBar onClose={() => setSearchOpen(false)} />
+          </motion.div>
+        )}
+      </AnimatePresence>
 
-      {/* Mobile slide-in drawer (max 300px) */}
-      {open && (
-        <div className="fixed inset-0 z-50 lg:hidden">
-          <div className="absolute inset-0 bg-black/50 animate-fade-in" onClick={() => setOpen(false)} />
-          <aside className="absolute top-0 left-0 h-full w-[82%] max-w-xs bg-white shadow-2xl flex flex-col animate-fade-in">
-            <div className="flex items-center justify-between px-5 py-4 border-b border-border">
-              <img src={dexterLogo} alt="DEXTER" className="h-10 w-auto object-contain" />
-              <button onClick={() => setOpen(false)} aria-label="Close menu" className="p-1 text-foreground">
-                <X className="h-5 w-5" />
-              </button>
-            </div>
-            <nav className="flex-1 overflow-y-auto py-3">
-              {allLinks.map(l => (
-                <Link
-                  key={l.label}
-                  to={l.to}
-                  onClick={() => setOpen(false)}
-                  className="block px-5 py-3 text-sm uppercase tracking-[0.18em] font-bold text-foreground hover:bg-muted hover:text-red-cta border-b border-border/50"
-                >
-                  {l.label}
-                </Link>
-              ))}
-              <Link to="/wishlist" onClick={() => setOpen(false)} className="block px-5 py-3 text-sm uppercase tracking-[0.18em] font-bold text-foreground hover:bg-muted hover:text-red-cta border-b border-border/50">
-                Wishlist
-              </Link>
-              {isAdmin && (
-                <Link to="/admin" onClick={() => setOpen(false)} className="block px-5 py-3 text-sm uppercase tracking-[0.18em] font-bold text-red-cta hover:bg-muted border-b border-border/50">
-                  Admin Dashboard
-                </Link>
-              )}
-              {user ? (
-                <button
-                  onClick={async () => { await signOut(); setOpen(false); }}
-                  className="block w-full text-left px-5 py-3 text-sm uppercase tracking-[0.18em] font-bold text-foreground hover:bg-muted hover:text-red-cta"
-                >
-                  Sign Out
+      {/* Mobile slide-in drawer */}
+      <AnimatePresence>
+        {open && (
+          <div className="fixed inset-0 z-50 lg:hidden">
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.3 }}
+              className="absolute inset-0 bg-black/60 backdrop-blur-sm"
+              onClick={() => setOpen(false)}
+            />
+            <motion.aside
+              initial={{ x: "-100%" }}
+              animate={{ x: 0 }}
+              exit={{ x: "-100%" }}
+              transition={{ duration: 0.45, ease: EASE }}
+              className="absolute top-0 left-0 h-full w-[82%] max-w-xs bg-white shadow-2xl flex flex-col"
+            >
+              <div className="flex items-center justify-between px-5 py-4 border-b border-border">
+                <img src={dexterLogo} alt="DEXTER" className="h-10 w-auto object-contain" />
+                <button onClick={() => setOpen(false)} aria-label="Close menu" className="p-1 text-foreground hover:rotate-90 transition-transform duration-300">
+                  <X className="h-5 w-5" />
                 </button>
-              ) : (
-                <Link to="/auth" onClick={() => setOpen(false)} className="block px-5 py-3 text-sm uppercase tracking-[0.18em] font-bold text-foreground hover:bg-muted hover:text-red-cta">
-                  Sign In
-                </Link>
-              )}
-            </nav>
-            <a href="tel:08925259787" className="block text-center bg-red-cta text-white py-3.5 text-xs uppercase tracking-[0.25em] font-bold">
-              Call Store
-            </a>
-          </aside>
-        </div>
-      )}
+              </div>
+              <motion.nav
+                className="flex-1 overflow-y-auto py-3"
+                initial="hidden"
+                animate="show"
+                variants={{ hidden: {}, show: { transition: { staggerChildren: 0.05, delayChildren: 0.12 } } }}
+              >
+                {allLinks.map(l => (
+                  <motion.div key={l.label} variants={itemVariants}>
+                    <Link
+                      to={l.to}
+                      onClick={() => setOpen(false)}
+                      className="block px-5 py-3 text-sm uppercase tracking-[0.18em] font-bold text-foreground hover:bg-muted hover:text-red-cta hover:pl-7 transition-all duration-300 border-b border-border/50"
+                    >
+                      {l.label}
+                    </Link>
+                  </motion.div>
+                ))}
+                <motion.div variants={itemVariants}>
+                  <Link to="/wishlist" onClick={() => setOpen(false)} className="block px-5 py-3 text-sm uppercase tracking-[0.18em] font-bold text-foreground hover:bg-muted hover:text-red-cta hover:pl-7 transition-all duration-300 border-b border-border/50">
+                    Wishlist
+                  </Link>
+                </motion.div>
+                {isAdmin && (
+                  <motion.div variants={itemVariants}>
+                    <Link to="/admin" onClick={() => setOpen(false)} className="block px-5 py-3 text-sm uppercase tracking-[0.18em] font-bold text-red-cta hover:bg-muted border-b border-border/50">
+                      Admin Dashboard
+                    </Link>
+                  </motion.div>
+                )}
+                <motion.div variants={itemVariants}>
+                  {user ? (
+                    <button
+                      onClick={async () => { await signOut(); setOpen(false); }}
+                      className="block w-full text-left px-5 py-3 text-sm uppercase tracking-[0.18em] font-bold text-foreground hover:bg-muted hover:text-red-cta"
+                    >
+                      Sign Out
+                    </button>
+                  ) : (
+                    <Link to="/auth" onClick={() => setOpen(false)} className="block px-5 py-3 text-sm uppercase tracking-[0.18em] font-bold text-foreground hover:bg-muted hover:text-red-cta">
+                      Sign In
+                    </Link>
+                  )}
+                </motion.div>
+              </motion.nav>
+              <a href="tel:08925259787" className="block text-center bg-red-cta text-white py-3.5 text-xs uppercase tracking-[0.25em] font-bold hover:bg-gold hover:text-ink transition-colors">
+                Call Store
+              </a>
+            </motion.aside>
+          </div>
+        )}
+      </AnimatePresence>
+
     </header>
   );
 };

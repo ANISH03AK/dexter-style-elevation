@@ -1,10 +1,16 @@
 import { Link } from "react-router-dom";
+import { useRef, useState } from "react";
+import { motion, useScroll, useTransform } from "framer-motion";
 import { ArrowRight, Truck, ShieldCheck, RotateCcw, MapPin, Phone, Sparkles } from "lucide-react";
 import Layout from "@/components/Layout";
 import ProductCard from "@/components/ProductCard";
+import ProductCardSkeleton from "@/components/ProductCardSkeleton";
 import Reviews from "@/components/Reviews";
 import OfferBannerSlider from "@/components/OfferBannerSlider";
 import Reveal from "@/components/Reveal";
+import Magnetic from "@/components/motion/Magnetic";
+import Counter from "@/components/motion/Counter";
+import FloatingBackground from "@/components/motion/FloatingBackground";
 import { useProducts } from "@/context/ProductsContext";
 import { useStoreSettings } from "@/context/StoreSettingsContext";
 import { useLookbook } from "@/context/LookbookContext";
@@ -15,6 +21,8 @@ import catTees from "@/assets/cat-tees-street.jpg";
 import catJeans from "@/assets/cat-pants-waistdown.jpg";
 import catJackets from "@/assets/cat-hoodies-street.jpg";
 
+const EASE = [0.22, 1, 0.36, 1] as const;
+
 const categories = [
   { name: "Shirts", image: catShirts, cat: "Shirts" },
   { name: "T-Shirts", image: catTees, cat: "T-Shirts" },
@@ -23,11 +31,26 @@ const categories = [
 ];
 
 const Index = () => {
-  const { products } = useProducts();
+  const { products, loading } = useProducts();
   const { settings } = useStoreSettings();
   const { items: lookbook } = useLookbook();
   const heroImg = settings.hero_image_url || hero;
   const pinned = products.filter(p => p.pinned);
+
+  // Layered hero parallax (scroll + mouse)
+  const heroRef = useRef<HTMLElement>(null);
+  const { scrollYProgress } = useScroll({ target: heroRef, offset: ["start start", "end start"] });
+  const heroY = useTransform(scrollYProgress, [0, 1], ["0%", "18%"]);
+  const heroScale = useTransform(scrollYProgress, [0, 1], [1, 1.14]);
+  const heroFade = useTransform(scrollYProgress, [0, 0.85], [1, 0]);
+  const [mouse, setMouse] = useState({ x: 0, y: 0 });
+  const onHeroMouse = (e: React.MouseEvent) => {
+    const el = heroRef.current;
+    if (!el || window.matchMedia("(pointer: coarse)").matches) return;
+    const r = el.getBoundingClientRect();
+    setMouse({ x: (e.clientX - r.left) / r.width - 0.5, y: (e.clientY - r.top) / r.height - 0.5 });
+  };
+
 
   return (
     <Layout>
@@ -40,31 +63,87 @@ const Index = () => {
 
       <OfferBannerSlider />
 
-      {/* HERO */}
-      <section className="relative w-full h-[70vh] min-h-[520px] md:h-[80vh] md:min-h-[640px] overflow-hidden bg-ink">
-        <img src={heroImg} alt={settings.hero_headline} className="absolute inset-0 w-full h-full object-cover object-center" />
-        <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-black/40 to-black/80" />
-        <div className="absolute inset-0 flex flex-col items-center justify-center px-6 text-center">
-          <img
+      {/* HERO — layered scroll + mouse parallax */}
+      <section
+        ref={heroRef}
+        onMouseMove={onHeroMouse}
+        onMouseLeave={() => setMouse({ x: 0, y: 0 })}
+        className="relative w-full h-[70vh] min-h-[520px] md:h-[80vh] md:min-h-[640px] overflow-hidden bg-ink"
+      >
+        <motion.img
+          src={heroImg}
+          alt={settings.hero_headline}
+          style={{ y: heroY, scale: heroScale, x: mouse.x * -14 }}
+          className="absolute -inset-[6%] w-[112%] h-[112%] object-cover object-center will-change-transform"
+        />
+        <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-black/40 to-black/85" />
+        <FloatingBackground />
+        <motion.div style={{ opacity: heroFade }} className="absolute inset-0 flex flex-col items-center justify-center px-6 text-center">
+          <motion.img
             src={dexterLogo}
             alt={settings.hero_headline}
-            className="w-[260px] sm:w-[360px] md:w-[460px] lg:w-[560px] h-auto object-contain shadow-logo animate-fade-in"
-            style={{ filter: "drop-shadow(0 18px 40px rgba(0,0,0,0.65)) drop-shadow(0 6px 12px rgba(0,0,0,0.5))" }}
+            initial={{ opacity: 0, y: 26, scale: 0.96, filter: "blur(8px)" }}
+            animate={{ opacity: 1, y: 0, scale: 1, filter: "blur(0px)" }}
+            transition={{ duration: 1, ease: EASE, delay: 0.1 }}
+            style={{ x: mouse.x * 26, y: mouse.y * 16, filter: "drop-shadow(0 18px 40px rgba(0,0,0,0.65)) drop-shadow(0 6px 12px rgba(0,0,0,0.5))" }}
+            className="w-[260px] sm:w-[360px] md:w-[460px] lg:w-[560px] h-auto object-contain will-change-transform"
           />
           <h1 className="sr-only">{settings.hero_headline}</h1>
-          <p className="mt-6 text-white text-xs sm:text-sm md:text-base uppercase tracking-[0.4em] font-bold drop-shadow-lg animate-fade-in">
+          <motion.p
+            initial={{ opacity: 0, y: 18 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8, ease: EASE, delay: 0.35 }}
+            style={{ x: mouse.x * 14 }}
+            className="mt-6 text-white text-xs sm:text-sm md:text-base uppercase tracking-[0.4em] font-bold drop-shadow-lg"
+          >
             {settings.hero_subtext}
-          </p>
-          <div className="mt-8 flex flex-wrap justify-center gap-3 animate-fade-in">
-            <Link to="/shop" className="inline-flex items-center gap-3 bg-red-cta text-white px-7 py-3.5 text-xs uppercase tracking-[0.25em] font-bold rounded shadow-lg hover:bg-gold hover:text-ink hover:scale-[1.04] active:scale-95 transition-all duration-300">
-              Shop Collection <ArrowRight className="h-4 w-4" />
-            </Link>
-            <a href="tel:08925259787" className="inline-flex items-center gap-3 bg-gold text-ink px-7 py-3.5 text-xs uppercase tracking-[0.25em] font-bold rounded shadow-lg hover:bg-red-cta hover:text-white hover:scale-[1.04] active:scale-95 transition-all duration-300">
-              <Phone className="h-4 w-4" /> 089252 59787
-            </a>
-          </div>
+          </motion.p>
+          <motion.div
+            initial={{ opacity: 0, y: 22 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8, ease: EASE, delay: 0.5 }}
+            className="mt-8 flex flex-wrap justify-center gap-3"
+          >
+            <Magnetic>
+              <Link to="/shop" className="inline-flex items-center gap-3 bg-red-cta text-white px-7 py-3.5 text-xs uppercase tracking-[0.25em] font-bold rounded shadow-lg hover:bg-gold hover:text-ink hover:scale-[1.04] active:scale-95 transition-all duration-300">
+                Shop Collection <ArrowRight className="h-4 w-4" />
+              </Link>
+            </Magnetic>
+            <Magnetic>
+              <a href="tel:08925259787" className="inline-flex items-center gap-3 bg-gold text-ink px-7 py-3.5 text-xs uppercase tracking-[0.25em] font-bold rounded shadow-lg hover:bg-red-cta hover:text-white hover:scale-[1.04] active:scale-95 transition-all duration-300">
+                <Phone className="h-4 w-4" /> 089252 59787
+              </a>
+            </Magnetic>
+          </motion.div>
+        </motion.div>
+
+        {/* Scroll cue */}
+        <div className="absolute bottom-6 inset-x-0 flex justify-center">
+          <span className="h-10 w-6 rounded-full border border-white/40 grid place-items-start p-1 animate-levitate">
+            <span className="h-2 w-1 rounded-full bg-gold" />
+          </span>
         </div>
       </section>
+
+      {/* LIVE STORE COUNTERS */}
+      <section className="bg-background border-b border-border">
+        <div className="container-px mx-auto max-w-[1400px] py-10 grid grid-cols-2 md:grid-cols-4 gap-6 text-center">
+          {[
+            { to: products.length || 17, label: "Live Styles", suffix: "+" },
+            { to: 4200, label: "Happy Customers", suffix: "+" },
+            { to: 12, label: "Years In Jayankondam", suffix: "" },
+            { to: 48, label: "Hour Dispatch", suffix: "h" },
+          ].map((s, i) => (
+            <Reveal key={s.label} delay={i * 80}>
+              <p className="font-display text-3xl md:text-4xl font-extrabold text-foreground">
+                <Counter to={s.to} suffix={s.suffix} />
+              </p>
+              <p className="mt-1 text-[10px] uppercase tracking-[0.28em] text-muted-foreground font-bold">{s.label}</p>
+            </Reveal>
+          ))}
+        </div>
+      </section>
+
 
       <section className="bg-ink text-primary-foreground py-4 overflow-hidden border-y border-white/10">
         <div className="flex marquee-track whitespace-nowrap text-xs uppercase tracking-[0.4em] font-bold">
@@ -131,9 +210,11 @@ const Index = () => {
           <p className="mt-3 text-muted-foreground text-sm">Updated directly by our store team — fresh inventory every week.</p>
         </Reveal>
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-x-3 gap-y-8 md:gap-x-5">
+          {loading && products.length === 0 && <ProductCardSkeleton count={8} />}
           {products.slice(0, 12).map((p, i) => (
             <Reveal key={p.id} delay={(i % 4) * 60}><ProductCard product={p} /></Reveal>
           ))}
+
         </div>
       </section>
 
