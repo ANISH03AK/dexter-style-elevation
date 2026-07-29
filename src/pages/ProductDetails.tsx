@@ -1,3 +1,4 @@
+import { AnimatePresence, motion } from "framer-motion";
 import { useState } from "react";
 import { ChevronDown } from "lucide-react";
 import type { Product, Category } from "@/data/products";
@@ -80,6 +81,7 @@ const ProductDetails = () => {
   const [size, setSize] = useState("M");
   const [qty, setQty] = useState(1);
   const [activeImg, setActiveImg] = useState(0);
+  const [zoom, setZoom] = useState({ x: 50, y: 50 });
   const { add } = useCart();
   const { toggle, has } = useWishlist();
 
@@ -108,9 +110,30 @@ const ProductDetails = () => {
                 </button>
               ))}
             </div>
-            <div className="aspect-[4/5] bg-secondary overflow-hidden">
-              <img src={gallery[activeImg]} alt={product.name} className="w-full h-full object-cover animate-fade-in" />
+            <div
+              className="group aspect-[4/5] bg-secondary overflow-hidden rounded-lg relative shadow-card hover:shadow-elevated transition-shadow duration-500"
+              onMouseMove={(e) => {
+                const r = e.currentTarget.getBoundingClientRect();
+                setZoom({ x: ((e.clientX - r.left) / r.width) * 100, y: ((e.clientY - r.top) / r.height) * 100 });
+              }}
+              onMouseLeave={() => setZoom({ x: 50, y: 50 })}
+            >
+              <AnimatePresence mode="wait">
+                <motion.img
+                  key={activeImg}
+                  src={gallery[activeImg]}
+                  alt={product.name}
+                  initial={{ opacity: 0, scale: 1.06, filter: "blur(8px)" }}
+                  animate={{ opacity: 1, scale: 1, filter: "blur(0px)" }}
+                  exit={{ opacity: 0, filter: "blur(8px)" }}
+                  transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
+                  style={{ transformOrigin: `${zoom.x}% ${zoom.y}%` }}
+                  className="absolute inset-0 w-full h-full object-cover transition-transform duration-500 ease-out group-hover:scale-[1.35]"
+                />
+              </AnimatePresence>
+              <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/25 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
             </div>
+
           </div>
 
           {/* Details */}

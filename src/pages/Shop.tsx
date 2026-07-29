@@ -1,8 +1,10 @@
 import { useMemo, useState, useEffect } from "react";
 import { useSearchParams, Link } from "react-router-dom";
+import { motion } from "framer-motion";
 import { SlidersHorizontal, X, ChevronLeft, ChevronRight } from "lucide-react";
 import Layout from "@/components/Layout";
 import ProductCard from "@/components/ProductCard";
+import ProductCardSkeleton from "@/components/ProductCardSkeleton";
 import { useProducts } from "@/context/ProductsContext";
 
 const allCats = ["Shirts", "T-Shirts", "Jeans", "Jackets", "Hoodies", "Suits", "Activewear", "Accessories"] as const;
@@ -10,7 +12,7 @@ const allSizes = ["S", "M", "L", "XL", "XXL"];
 const PER_PAGE = 24;
 
 const Shop = () => {
-  const { products } = useProducts();
+  const { products, loading } = useProducts();
   const [params, setParams] = useSearchParams();
   const initialCat = params.get("cat");
   const initialQ = params.get("q") || "";
@@ -135,9 +137,27 @@ const Shop = () => {
               </div>
             </div>
 
-            <div className="grid grid-cols-2 md:grid-cols-3 gap-x-4 gap-y-10 md:gap-x-6">
-              {pageItems.map(p => <ProductCard key={p.id} product={p} />)}
-            </div>
+            <motion.div
+              key={`${current}-${sort}`}
+              className="grid grid-cols-2 md:grid-cols-3 gap-x-4 gap-y-10 md:gap-x-6"
+              initial="hidden"
+              animate="show"
+              variants={{ hidden: {}, show: { transition: { staggerChildren: 0.06 } } }}
+            >
+              {loading && pageItems.length === 0 && <ProductCardSkeleton count={6} />}
+              {pageItems.map(p => (
+                <motion.div
+                  key={p.id}
+                  variants={{
+                    hidden: { opacity: 0, y: 26, scale: 0.97 },
+                    show: { opacity: 1, y: 0, scale: 1, transition: { duration: 0.6, ease: [0.22, 1, 0.36, 1] } },
+                  }}
+                >
+                  <ProductCard product={p} />
+                </motion.div>
+              ))}
+            </motion.div>
+
             {filtered.length === 0 && (
               <p className="text-center text-muted-foreground py-20">No products match your filters.</p>
             )}

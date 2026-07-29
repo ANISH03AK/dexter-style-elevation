@@ -6,12 +6,15 @@ import { useCart } from "@/context/CartContext";
 import { useWishlist } from "@/context/WishlistContext";
 import { toast } from "sonner";
 import { formatINR } from "@/lib/format";
+import TiltCard from "@/components/motion/TiltCard";
+import useRipple from "@/components/motion/useRipple";
 
 const ProductCard = ({ product }: { product: Product }) => {
   const { add } = useCart();
   const { toggle, has } = useWishlist();
   const [loaded, setLoaded] = useState(false);
   const wished = has(product.id);
+  const { bind, ripples } = useRipple();
 
   const discount = product.mrp && product.mrp > product.price
     ? Math.round(((product.mrp - product.price) / product.mrp) * 100)
@@ -19,13 +22,13 @@ const ProductCard = ({ product }: { product: Product }) => {
   const savings = product.mrp && product.mrp > product.price ? product.mrp - product.price : 0;
 
   return (
-    <div className="group relative animate-fade-in">
+    <TiltCard className="group relative" max={7}>
       {/* Glow ring on hover */}
       <div className="absolute -inset-0.5 rounded-xl bg-gradient-to-br from-gold via-red-cta to-gold opacity-0 group-hover:opacity-70 blur-md transition-all duration-500 -z-10" />
 
       <div className="relative rounded-xl overflow-hidden bg-secondary shadow-card group-hover:shadow-elevated transition-all duration-500 ease-out group-hover:-translate-y-1.5">
         <Link to={`/product/${product.id}`} className="block overflow-hidden aspect-[4/5] relative bg-gradient-to-br from-secondary via-muted to-secondary">
-          {!loaded && <div className="absolute inset-0 animate-pulse bg-muted" />}
+          {!loaded && <div className="absolute inset-0 skeleton-shimmer" />}
           <img
             src={product.image}
             alt={product.name}
@@ -41,7 +44,7 @@ const ProductCard = ({ product }: { product: Product }) => {
           <div className="absolute inset-x-0 bottom-0 h-2/5 bg-gradient-to-t from-black/70 via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
 
           {/* Badges (top-left stack) */}
-          <div className="absolute top-3 left-3 z-10 flex flex-col gap-1.5 items-start">
+          <div className="absolute top-3 left-3 z-10 flex flex-col gap-1.5 items-start depth-1">
             {product.tag && (
               <span className="backdrop-blur-md bg-ink/85 text-primary-foreground text-[10px] tracking-[0.18em] uppercase px-2.5 py-1 rounded-full shadow-lg">
                 {product.tag}
@@ -56,7 +59,7 @@ const ProductCard = ({ product }: { product: Product }) => {
 
           {/* Discount ribbon (top-right) */}
           {savings > 0 && (
-            <div className="absolute top-3 right-3 z-10 flex flex-col items-end gap-1.5">
+            <div className="absolute top-3 right-3 z-10 flex flex-col items-end gap-1.5 depth-1">
               <span className="bg-gradient-to-br from-gold via-yellow-400 to-gold text-ink text-[11px] font-black uppercase tracking-wider px-2.5 py-1 rounded-full shadow-gold animate-pulse-gold">
                 {discount}% OFF
               </span>
@@ -70,10 +73,10 @@ const ProductCard = ({ product }: { product: Product }) => {
           <div className="absolute right-3 top-1/2 -translate-y-1/2 flex flex-col gap-2 opacity-0 translate-x-4 group-hover:opacity-100 group-hover:translate-x-0 transition-all duration-500 z-10">
             <button
               onClick={(e) => { e.preventDefault(); toggle(product); toast.success(wished ? "Removed from wishlist" : "Added to wishlist"); }}
-              className={`h-10 w-10 grid place-items-center bg-white/95 backdrop-blur rounded-full shadow-lg transition-all duration-200 hover:bg-gold hover:scale-110 active:scale-95 ${wished ? "text-red-cta" : "text-ink"}`}
+              className={`h-10 w-10 grid place-items-center bg-white/95 backdrop-blur rounded-full shadow-lg transition-all duration-200 hover:bg-gold hover:scale-110 active:scale-90 ${wished ? "text-red-cta" : "text-ink"}`}
               aria-label="Wishlist"
             >
-              <Heart className={`h-4 w-4 ${wished ? "fill-current" : ""}`} />
+              <Heart className={`h-4 w-4 transition-transform duration-300 ${wished ? "fill-current scale-110" : ""}`} />
             </button>
             <Link
               to={`/product/${product.id}`}
@@ -86,10 +89,12 @@ const ProductCard = ({ product }: { product: Product }) => {
 
           {/* Quick Add bar */}
           <button
+            {...bind}
             onClick={(e) => { e.preventDefault(); add(product); toast.success(`${product.name} added to cart`); }}
-            className="absolute bottom-0 inset-x-0 bg-ink text-primary-foreground text-xs uppercase tracking-[0.22em] font-semibold py-3.5 translate-y-full group-hover:translate-y-0 transition-all duration-500 hover:bg-gold hover:text-ink active:bg-red-cta active:text-white flex items-center justify-center gap-2"
+            className="absolute bottom-0 inset-x-0 overflow-hidden bg-ink text-primary-foreground text-xs uppercase tracking-[0.22em] font-semibold py-3.5 translate-y-full group-hover:translate-y-0 transition-all duration-500 hover:bg-gold hover:text-ink active:bg-red-cta active:text-white flex items-center justify-center gap-2"
           >
             <ShoppingBag className="h-3.5 w-3.5" /> Quick Add
+            {ripples}
           </button>
         </Link>
 
@@ -122,7 +127,7 @@ const ProductCard = ({ product }: { product: Product }) => {
           )}
         </div>
       </div>
-    </div>
+    </TiltCard>
   );
 };
 
