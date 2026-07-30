@@ -230,3 +230,13 @@
   @property --angle { syntax: "<angle>"; initial-value: 0deg; inherits: false; }
   @keyframes trace-spin { to { --angle: 360deg; } }
 }
+
+/* Global damping when the visitor opts into reduced motion */
+.reduce-motion *,
+.reduce-motion *::before,
+.reduce-motion *::after {
+  animation-duration: 0.001ms !important;
+  animation-iteration-count: 1 !important;
+  transition-duration: 0.001ms !important;
+  scroll-behavior: auto !important;
+}
