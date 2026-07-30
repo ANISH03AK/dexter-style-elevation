@@ -1,5 +1,6 @@
 import { Instagram, Facebook, Phone, Mail, MapPin } from "lucide-react";
 import { Link } from "react-router-dom";
+import MotionToggle from "./MotionToggle";
 import dexterLogo from "@/assets/dexter-logo.png";
 
 const Footer = () => (
@@ -54,7 +55,9 @@ const Footer = () => (
     <div className="border-t border-white/10">
       <div className="container-px mx-auto max-w-[1400px] py-6 flex flex-col md:flex-row justify-between items-center gap-2 text-xs text-primary-foreground/60">
         <p>© {new Date().getFullYear()} DEXTER MENS CLOTHING. All rights reserved.</p>
+        <MotionToggle withLabel className="text-primary-foreground/70 hover:text-gold" />
         <p><a href="https://www.dextermensclothing.in/" className="hover:text-gold">www.dextermensclothing.in</a></p>
+
       </div>
     </div>
   </footer>

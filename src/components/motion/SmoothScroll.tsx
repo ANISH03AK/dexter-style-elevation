@@ -1,5 +1,6 @@
 import { useEffect } from "react";
 import Lenis from "lenis";
+import { useMotionPreference } from "@/context/MotionPreferenceContext";
 
 declare global {
   interface Window {
@@ -8,14 +9,16 @@ declare global {
 }
 
 /**
- * Cinematic smooth scrolling (disabled for users who prefer reduced motion
+ * Cinematic smooth scrolling (disabled when the visitor chose reduced motion
  * and on coarse touch pointers where native momentum feels better).
  */
 const SmoothScroll = () => {
+  const { reduced } = useMotionPreference();
+
   useEffect(() => {
-    const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
     const coarse = window.matchMedia("(pointer: coarse)").matches;
     if (reduced || coarse) return;
+
 
     const lenis = new Lenis({
       duration: 1.15,
@@ -38,7 +41,7 @@ const SmoothScroll = () => {
       lenis.destroy();
       window.__lenis = undefined;
     };
-  }, []);
+  }, [reduced]);
 
   return null;
 };

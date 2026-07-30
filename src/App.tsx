@@ -10,6 +10,7 @@ import { AuthProvider } from "@/hooks/useAuth";
 import { WishlistProvider } from "@/context/WishlistContext";
 import { StoreSettingsProvider } from "@/context/StoreSettingsContext";
 import { LookbookProvider } from "@/context/LookbookContext";
+import { MotionPreferenceProvider } from "@/context/MotionPreferenceContext";
 import Index from "./pages/Index.tsx";
 import Shop from "./pages/Shop.tsx";
 import ProductDetails from "./pages/ProductDetails.tsx";
@@ -66,6 +67,7 @@ const AnimatedRoutes = () => {
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
+    <MotionPreferenceProvider>
     <TooltipProvider>
       <BrowserRouter>
         <AuthProvider>
@@ -91,7 +93,9 @@ const App = () => (
         </AuthProvider>
       </BrowserRouter>
     </TooltipProvider>
+    </MotionPreferenceProvider>
   </QueryClientProvider>
 );
+
 
 export default App;

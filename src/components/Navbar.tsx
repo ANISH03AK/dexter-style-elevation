@@ -1,5 +1,6 @@
 import { Link, NavLink, useNavigate } from "react-router-dom";
 import { Search, Heart, ShoppingBag, User, Menu, X, ChevronDown, LogOut } from "lucide-react";
+import MotionToggle from "./MotionToggle";
 import { useEffect, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { useCart } from "@/context/CartContext";
@@ -100,6 +101,8 @@ const Navbar = () => {
             <button onClick={() => setSearchOpen(s => !s)} aria-label="Search" className="hover:text-red-cta transition-smooth">
               <Search className="h-[18px] w-[18px]" />
             </button>
+            <MotionToggle className="hidden sm:inline-flex" />
+
             {user ? (
               <button
                 onClick={async () => { await signOut(); navigate("/"); }}
@@ -235,7 +238,11 @@ const Navbar = () => {
                     </Link>
                   )}
                 </motion.div>
+                <motion.div variants={itemVariants} className="px-5 py-3 border-t border-border/50">
+                  <MotionToggle withLabel className="text-foreground" />
+                </motion.div>
               </motion.nav>
+
               <a href="tel:08925259787" className="block text-center bg-red-cta text-white py-3.5 text-xs uppercase tracking-[0.25em] font-bold hover:bg-gold hover:text-ink transition-colors">
                 Call Store
               </a>
