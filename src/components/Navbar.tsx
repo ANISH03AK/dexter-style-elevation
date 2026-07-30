@@ -100,6 +100,8 @@ const Navbar = () => {
             <button onClick={() => setSearchOpen(s => !s)} aria-label="Search" className="hover:text-red-cta transition-smooth">
               <Search className="h-[18px] w-[18px]" />
             </button>
+            <MotionToggle className="hidden sm:inline-flex" />
+
             {user ? (
               <button
                 onClick={async () => { await signOut(); navigate("/"); }}
