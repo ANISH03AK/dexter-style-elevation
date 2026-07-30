@@ -1,5 +1,6 @@
 import { Link, NavLink, useNavigate } from "react-router-dom";
 import { Search, Heart, ShoppingBag, User, Menu, X, ChevronDown, LogOut } from "lucide-react";
+import MotionToggle from "./MotionToggle";
 import { useEffect, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { useCart } from "@/context/CartContext";
