@@ -41,7 +41,7 @@ const SmoothScroll = () => {
       lenis.destroy();
       window.__lenis = undefined;
     };
-  }, []);
+  }, [reduced]);
 
   return null;
 };
