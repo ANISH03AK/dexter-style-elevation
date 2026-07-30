@@ -1,5 +1,6 @@
 import { Instagram, Facebook, Phone, Mail, MapPin } from "lucide-react";
 import { Link } from "react-router-dom";
+import MotionToggle from "./MotionToggle";
 import dexterLogo from "@/assets/dexter-logo.png";
 
 const Footer = () => (
