@@ -225,23 +225,23 @@ const Index = () => {
             <p className="text-xs uppercase tracking-[0.3em] text-gold mb-3 font-bold">Lookbook</p>
             <h2 className="font-display text-3xl md:text-5xl font-extrabold">Shop The Look</h2>
           </Reveal>
-          <div className="grid grid-cols-2 md:grid-cols-3 gap-3 md:gap-4">
-            {lookbook.map((l, i) => {
+          <div className="grid grid-cols-2 md:grid-cols-3 gap-3 md:gap-4 auto-rows-fr items-stretch">
+            {lookbook.map((l) => {
               const linked = l.product_id ? `/product/${l.product_id}` : "/shop";
-              const tall = i % 5 === 0;
               return (
-                <Link key={l.id} to={linked} className={`trace-border group relative block overflow-hidden rounded-md bg-secondary ${tall ? "row-span-2 aspect-[3/5]" : "aspect-[4/5]"}`}>
+                <Link key={l.id} to={linked} className="trace-border group relative block overflow-hidden rounded-md bg-secondary aspect-[4/5] h-full">
                   <img src={l.image_url} alt={l.caption || "Lookbook"} loading="lazy" className="absolute inset-0 w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" />
                   <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/10 to-transparent" />
-                  <div className="absolute bottom-0 inset-x-0 p-4">
-                    <span className="inline-flex items-center gap-1.5 bg-white text-ink px-3 py-1.5 text-[10px] uppercase tracking-[0.25em] font-bold rounded">
-                      {l.product_id ? "Shop This Look" : "Explore"} <ArrowRight className="h-3 w-3" />
+                  <div className="absolute bottom-0 inset-x-0 p-3 md:p-4 flex justify-center md:justify-start">
+                    <span className="inline-flex items-center justify-center gap-1.5 bg-white text-ink px-3 py-1.5 text-[10px] uppercase tracking-[0.25em] font-bold rounded whitespace-nowrap">
+                      {l.product_id ? "Shop This Look" : "Explore"} <ArrowRight className="h-3 w-3 shrink-0" />
                     </span>
                   </div>
                 </Link>
               );
             })}
           </div>
+
         </section>
       )}
 
