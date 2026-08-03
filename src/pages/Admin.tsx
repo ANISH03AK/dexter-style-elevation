@@ -9,6 +9,8 @@ import { formatINR } from "@/lib/format";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import AuditLog from "@/components/admin/AuditLog";
+
 
 const CATS: Category[] = ["Shirts","T-Shirts","Pants","Jeans","Jackets","Hoodies","Suits","Activewear","Innerwear","Accessories"];
 const SIZES = ["S","M","L","XL","XXL"];
