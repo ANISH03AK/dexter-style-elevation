@@ -5,6 +5,7 @@ import {
   ArrowLeft, CheckCircle2, Fingerprint, Wifi, Clock3, MapPin, ShieldCheck,
 } from "lucide-react";
 import { toast } from "sonner";
+import { supabase } from "@/integrations/supabase/client";
 
 const OWNER_PHONE = "8668183926";
 const OWNER_PIN = "DexterAdmin";
@@ -44,18 +45,43 @@ const DexterBoss = () => {
     e.preventDefault();
     if (locked) return toast.error(`Locked. Try again in ${lockSeconds}s`);
     setBusy(true);
-    await new Promise((r) => setTimeout(r, 550));
-    setBusy(false);
 
     if (phone.replace(/\D/g, "") === OWNER_PHONE && pin === OWNER_PIN) {
+      // Establish a real backend session for the owner so all admin writes
+      // (products, storefront, promos, lookbook, orders) pass security rules.
+      const email = `${OWNER_PHONE}@dexter.phone`;
+      let { error } = await supabase.auth.signInWithPassword({ email, password: OWNER_PIN });
+      if (error) {
+        const { error: signUpError } = await supabase.auth.signUp({
+          email,
+          password: OWNER_PIN,
+          options: {
+            emailRedirectTo: `${window.location.origin}/`,
+            data: { full_name: "Dexter Owner", phone: OWNER_PHONE },
+          },
+        });
+        if (!signUpError) {
+          ({ error } = await supabase.auth.signInWithPassword({ email, password: OWNER_PIN }));
+        }
+      }
+      setBusy(false);
+
+      if (error) {
+        toast.error("Owner session could not be created — edits may not save. " + error.message);
+      } else {
+        toast.success("Owner verified — entering control room");
+      }
+
       localStorage.setItem("admin_token", "true");
       localStorage.setItem("admin_login_at", String(Date.now()));
       if (remember) localStorage.setItem("admin_last_phone", phone);
       else localStorage.removeItem("admin_last_phone");
-      toast.success("Owner verified — entering control room");
       navigate("/admin", { replace: true });
       return;
     }
+
+    await new Promise((r) => setTimeout(r, 400));
+    setBusy(false);
 
     const next = attempts + 1;
     setAttempts(next);
