@@ -9,6 +9,8 @@ import { formatINR } from "@/lib/format";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import AuditLog from "@/components/admin/AuditLog";
+
 
 const CATS: Category[] = ["Shirts","T-Shirts","Pants","Jeans","Jackets","Hoodies","Suits","Activewear","Innerwear","Accessories"];
 const SIZES = ["S","M","L","XL","XXL"];
@@ -361,6 +363,8 @@ const Admin = () => {
             <TabsTrigger value="lookbook" className="text-xs uppercase tracking-[0.18em] gap-1.5"><Layers className="h-3.5 w-3.5" /> Lookbook</TabsTrigger>
             <TabsTrigger value="orders" className="text-xs uppercase tracking-[0.18em] gap-1.5"><ShoppingBag className="h-3.5 w-3.5" /> Orders</TabsTrigger>
             <TabsTrigger value="payments" className="text-xs uppercase tracking-[0.18em] gap-1.5"><CreditCard className="h-3.5 w-3.5" /> Payments</TabsTrigger>
+            <TabsTrigger value="audit" className="text-xs uppercase tracking-[0.18em] gap-1.5"><ShieldCheck className="h-3.5 w-3.5" /> Audit Log</TabsTrigger>
+
           </TabsList>
 
           {/* ============ PRODUCTS TAB ============ */}
@@ -689,7 +693,15 @@ const Admin = () => {
               })}
             </div>
           </TabsContent>
+
+          {/* ============ AUDIT LOG TAB ============ */}
+          <TabsContent value="audit">
+            <p className="text-[11px] uppercase tracking-[0.25em] text-gold mb-2">Accountability</p>
+            <h2 className="font-display text-2xl font-bold mb-6">Audit Log</h2>
+            <AuditLog />
+          </TabsContent>
         </Tabs>
+
       </div>
 
       <style>{`
