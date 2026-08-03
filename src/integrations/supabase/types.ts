@@ -14,6 +14,45 @@ export type Database = {
   }
   public: {
     Tables: {
+      audit_logs: {
+        Row: {
+          action: string
+          actor_email: string | null
+          actor_id: string | null
+          created_at: string
+          id: string
+          new_data: Json | null
+          old_data: Json | null
+          record_id: string | null
+          summary: string | null
+          table_name: string
+        }
+        Insert: {
+          action: string
+          actor_email?: string | null
+          actor_id?: string | null
+          created_at?: string
+          id?: string
+          new_data?: Json | null
+          old_data?: Json | null
+          record_id?: string | null
+          summary?: string | null
+          table_name: string
+        }
+        Update: {
+          action?: string
+          actor_email?: string | null
+          actor_id?: string | null
+          created_at?: string
+          id?: string
+          new_data?: Json | null
+          old_data?: Json | null
+          record_id?: string | null
+          summary?: string | null
+          table_name?: string
+        }
+        Relationships: []
+      }
       lookbook_items: {
         Row: {
           active: boolean
