@@ -689,7 +689,15 @@ const Admin = () => {
               })}
             </div>
           </TabsContent>
+
+          {/* ============ AUDIT LOG TAB ============ */}
+          <TabsContent value="audit">
+            <p className="text-[11px] uppercase tracking-[0.25em] text-gold mb-2">Accountability</p>
+            <h2 className="font-display text-2xl font-bold mb-6">Audit Log</h2>
+            <AuditLog />
+          </TabsContent>
         </Tabs>
+
       </div>
 
       <style>{`
