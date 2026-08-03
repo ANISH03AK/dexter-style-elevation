@@ -5,6 +5,7 @@ import {
   ArrowLeft, CheckCircle2, Fingerprint, Wifi, Clock3, MapPin, ShieldCheck,
 } from "lucide-react";
 import { toast } from "sonner";
+import { supabase } from "@/integrations/supabase/client";
 
 const OWNER_PHONE = "8668183926";
 const OWNER_PIN = "DexterAdmin";
