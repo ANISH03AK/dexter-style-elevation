@@ -363,6 +363,8 @@ const Admin = () => {
             <TabsTrigger value="lookbook" className="text-xs uppercase tracking-[0.18em] gap-1.5"><Layers className="h-3.5 w-3.5" /> Lookbook</TabsTrigger>
             <TabsTrigger value="orders" className="text-xs uppercase tracking-[0.18em] gap-1.5"><ShoppingBag className="h-3.5 w-3.5" /> Orders</TabsTrigger>
             <TabsTrigger value="payments" className="text-xs uppercase tracking-[0.18em] gap-1.5"><CreditCard className="h-3.5 w-3.5" /> Payments</TabsTrigger>
+            <TabsTrigger value="audit" className="text-xs uppercase tracking-[0.18em] gap-1.5"><ShieldCheck className="h-3.5 w-3.5" /> Audit Log</TabsTrigger>
+
           </TabsList>
 
           {/* ============ PRODUCTS TAB ============ */}
