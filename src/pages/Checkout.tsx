@@ -41,7 +41,7 @@ const Checkout = () => {
     grand: number;
     payment: PayMethod;
   }>(null);
-  const [enabledMethods, setEnabledMethods] = useState<Record<PayMethod, boolean>>({ cod: true, upi: true, card: true });
+  const [methods, setMethods] = useState<PayRow[]>([]);
   const [form, setForm] = useState({
     name: "",
     phone: "",
@@ -59,24 +59,14 @@ const Checkout = () => {
 
   useEffect(() => {
     const load = async () => {
-      const { data } = await supabase.from("payment_settings").select("*");
-      if (data) {
-        const map: Record<string, boolean> = {};
-        data.forEach((r: any) => { map[r.method] = r.enabled; });
-        setEnabledMethods({
-          cod: map.cod ?? true,
-          upi: map.upi ?? true,
-          card: map.card ?? true,
-        });
-        // If currently selected payment is disabled, pick first enabled
-        setForm((f) => {
-          if (map[f.payment] === false) {
-            const next = (["cod","upi","card"] as PayMethod[]).find(m => map[m] !== false) || "cod";
-            return { ...f, payment: next };
-          }
-          return f;
-        });
-      }
+      const { data } = await supabase
+        .from("payment_settings")
+        .select("*")
+        .eq("enabled", true)
+        .order("sort_order", { ascending: true });
+      const rows = ((data as unknown as PayRow[]) || []).filter(r => r.enabled);
+      setMethods(rows);
+      setForm((f) => (rows.some(r => r.method === f.payment) ? f : { ...f, payment: rows[0]?.method ?? "cod" }));
     };
     load();
     const ch = supabase
@@ -85,6 +75,7 @@ const Checkout = () => {
       .subscribe();
     return () => { supabase.removeChannel(ch); };
   }, []);
+
 
   const qualifiesFree = count >= FREE_ITEM_THRESHOLD || total >= FREE_SUBTOTAL_THRESHOLD;
   const shipping = items.length === 0 ? 0 : (qualifiesFree ? 0 : SHIPPING_FEE);
@@ -218,11 +209,8 @@ const Checkout = () => {
     );
   }
 
-  const methods: { id: PayMethod; label: string; desc: string }[] = [
-    { id: "cod", label: "Cash on Delivery", desc: "Pay when you receive" },
-    { id: "upi", label: "UPI", desc: "Google Pay, PhonePe, Paytm" },
-    { id: "card", label: "Credit / Debit Card", desc: "Visa, Mastercard, RuPay" },
-  ];
+
+
 
   return (
     <Layout>
