@@ -144,19 +144,37 @@ export type Database = {
       }
       payment_settings: {
         Row: {
+          description: string | null
           enabled: boolean
+          instructions: string | null
+          label: string | null
           method: string
+          payee_name: string | null
+          sort_order: number
           updated_at: string
+          upi_vpa: string | null
         }
         Insert: {
+          description?: string | null
           enabled?: boolean
+          instructions?: string | null
+          label?: string | null
           method: string
+          payee_name?: string | null
+          sort_order?: number
           updated_at?: string
+          upi_vpa?: string | null
         }
         Update: {
+          description?: string | null
           enabled?: boolean
+          instructions?: string | null
+          label?: string | null
           method?: string
+          payee_name?: string | null
+          sort_order?: number
           updated_at?: string
+          upi_vpa?: string | null
         }
         Relationships: []
       }

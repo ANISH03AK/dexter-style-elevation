@@ -12,9 +12,21 @@ const SHIPPING_FEE = 162;
 const FREE_ITEM_THRESHOLD = 3;
 const FREE_SUBTOTAL_THRESHOLD = 2500;
 
-type PayMethod = "cod" | "upi" | "card";
+type PayMethod = string;
+
+type PayRow = {
+  method: string;
+  enabled: boolean;
+  label: string | null;
+  description: string | null;
+  instructions: string | null;
+  upi_vpa: string | null;
+  payee_name: string | null;
+  sort_order: number;
+};
 
 const UPI_REGEX = /^[\w.\-]{2,256}@[a-zA-Z]{2,64}$/;
+
 
 const Checkout = () => {
   const { items, total, count, clear } = useCart();
@@ -29,7 +41,7 @@ const Checkout = () => {
     grand: number;
     payment: PayMethod;
   }>(null);
-  const [enabledMethods, setEnabledMethods] = useState<Record<PayMethod, boolean>>({ cod: true, upi: true, card: true });
+  const [methods, setMethods] = useState<PayRow[]>([]);
   const [form, setForm] = useState({
     name: "",
     phone: "",
@@ -47,24 +59,14 @@ const Checkout = () => {
 
   useEffect(() => {
     const load = async () => {
-      const { data } = await supabase.from("payment_settings").select("*");
-      if (data) {
-        const map: Record<string, boolean> = {};
-        data.forEach((r: any) => { map[r.method] = r.enabled; });
-        setEnabledMethods({
-          cod: map.cod ?? true,
-          upi: map.upi ?? true,
-          card: map.card ?? true,
-        });
-        // If currently selected payment is disabled, pick first enabled
-        setForm((f) => {
-          if (map[f.payment] === false) {
-            const next = (["cod","upi","card"] as PayMethod[]).find(m => map[m] !== false) || "cod";
-            return { ...f, payment: next };
-          }
-          return f;
-        });
-      }
+      const { data } = await supabase
+        .from("payment_settings")
+        .select("*")
+        .eq("enabled", true)
+        .order("sort_order", { ascending: true });
+      const rows = ((data as unknown as PayRow[]) || []).filter(r => r.enabled);
+      setMethods(rows);
+      setForm((f) => (rows.some(r => r.method === f.payment) ? f : { ...f, payment: rows[0]?.method ?? "cod" }));
     };
     load();
     const ch = supabase
@@ -73,6 +75,7 @@ const Checkout = () => {
       .subscribe();
     return () => { supabase.removeChannel(ch); };
   }, []);
+
 
   const qualifiesFree = count >= FREE_ITEM_THRESHOLD || total >= FREE_SUBTOTAL_THRESHOLD;
   const shipping = items.length === 0 ? 0 : (qualifiesFree ? 0 : SHIPPING_FEE);
@@ -129,14 +132,25 @@ const Checkout = () => {
         price: i.product.price, size: i.size, qty: i.qty,
       })),
     };
-    const { data, error } = await supabase.from("orders").insert(payload).select("id").single();
-    setSubmitting(false);
-    if (error) { toast.error(error.message); return; }
+    // Guests cannot read back their own row (orders are private), so only
+    // request the created row when the customer is signed in.
+    let orderId: string = crypto.randomUUID();
+    if (user?.id) {
+      const { data, error } = await supabase.from("orders").insert(payload).select("id").single();
+      setSubmitting(false);
+      if (error) { toast.error(error.message); return; }
+      orderId = data.id;
+    } else {
+      const { error } = await supabase.from("orders").insert(payload);
+      setSubmitting(false);
+      if (error) { toast.error(error.message); return; }
+    }
     const tracking = "DX" + Math.random().toString(36).slice(2, 10).toUpperCase();
     setConfirmed({
-      id: data.id, tracking, items: snapshotItems,
+      id: orderId, tracking, items: snapshotItems,
       subtotal: total, shipping, grand, payment: form.payment,
     });
+
     clear();
     toast.success("✅ Order Confirmed!");
   };
@@ -206,11 +220,8 @@ const Checkout = () => {
     );
   }
 
-  const methods: { id: PayMethod; label: string; desc: string }[] = [
-    { id: "cod", label: "Cash on Delivery", desc: "Pay when you receive" },
-    { id: "upi", label: "UPI", desc: "Google Pay, PhonePe, Paytm" },
-    { id: "card", label: "Credit / Debit Card", desc: "Visa, Mastercard, RuPay" },
-  ];
+
+
 
   return (
     <Layout>
@@ -246,21 +257,30 @@ const Checkout = () => {
 
             <h2 className="font-semibold uppercase tracking-[0.2em] text-sm pt-4">Payment Method</h2>
 
-            {methods.filter(m => enabledMethods[m.id]).map((p) => {
-              const active = form.payment === p.id;
+            {methods.map((p) => {
+              const active = form.payment === p.method;
               return (
-                <div key={p.id} className={`border rounded-md transition-all overflow-hidden ${active ? "border-foreground bg-secondary/40" : "border-border hover:border-foreground/50"}`}>
+                <div key={p.method} className={`border rounded-md transition-all overflow-hidden ${active ? "border-foreground bg-secondary/40" : "border-border hover:border-foreground/50"}`}>
                   <label className="flex items-start gap-3 p-4 cursor-pointer">
-                    <input type="radio" name="pay" checked={active} onChange={() => setForm({...form, payment: p.id})} className="mt-1 accent-foreground" />
+                    <input type="radio" name="pay" checked={active} onChange={() => setForm({...form, payment: p.method})} className="mt-1 accent-foreground" />
                     <div>
-                      <p className="text-sm font-medium">{p.label}</p>
-                      <p className="text-xs text-muted-foreground mt-0.5">{p.desc}</p>
+                      <p className="text-sm font-medium">{p.label || p.method.toUpperCase()}</p>
+                      {p.description && <p className="text-xs text-muted-foreground mt-0.5">{p.description}</p>}
                     </div>
                   </label>
 
-                  {active && p.id === "upi" && (
+                  {active && (p.instructions || p.upi_vpa) && (
+                    <div className="mx-4 mb-4 bg-gold/10 border border-gold/30 rounded-md p-3 text-xs space-y-1 animate-fade-in">
+                      {p.upi_vpa && (
+                        <p>Pay to <strong className="font-mono">{p.upi_vpa}</strong>{p.payee_name ? ` · ${p.payee_name}` : ""}</p>
+                      )}
+                      {p.instructions && <p className="text-muted-foreground">{p.instructions}</p>}
+                    </div>
+                  )}
+
+                  {active && p.method === "upi" && (
                     <div className="px-4 pb-4 animate-fade-in">
-                      <label className="text-[10px] uppercase tracking-[0.22em] text-muted-foreground block mb-2">UPI ID / VPA</label>
+                      <label className="text-[10px] uppercase tracking-[0.22em] text-muted-foreground block mb-2">Your UPI ID / VPA</label>
                       <input
                         value={form.upiId}
                         onChange={(e) => setForm({...form, upiId: e.target.value.trim()})}
@@ -273,7 +293,8 @@ const Checkout = () => {
                     </div>
                   )}
 
-                  {active && p.id === "card" && (
+                  {active && p.method === "card" && (
+
                     <div className="px-4 pb-4 space-y-3 animate-fade-in">
                       <div>
                         <label className="text-[10px] uppercase tracking-[0.22em] text-muted-foreground block mb-1.5">Cardholder Name</label>
