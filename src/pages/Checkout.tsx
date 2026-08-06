@@ -246,21 +246,30 @@ const Checkout = () => {
 
             <h2 className="font-semibold uppercase tracking-[0.2em] text-sm pt-4">Payment Method</h2>
 
-            {methods.filter(m => enabledMethods[m.id]).map((p) => {
-              const active = form.payment === p.id;
+            {methods.map((p) => {
+              const active = form.payment === p.method;
               return (
-                <div key={p.id} className={`border rounded-md transition-all overflow-hidden ${active ? "border-foreground bg-secondary/40" : "border-border hover:border-foreground/50"}`}>
+                <div key={p.method} className={`border rounded-md transition-all overflow-hidden ${active ? "border-foreground bg-secondary/40" : "border-border hover:border-foreground/50"}`}>
                   <label className="flex items-start gap-3 p-4 cursor-pointer">
-                    <input type="radio" name="pay" checked={active} onChange={() => setForm({...form, payment: p.id})} className="mt-1 accent-foreground" />
+                    <input type="radio" name="pay" checked={active} onChange={() => setForm({...form, payment: p.method})} className="mt-1 accent-foreground" />
                     <div>
-                      <p className="text-sm font-medium">{p.label}</p>
-                      <p className="text-xs text-muted-foreground mt-0.5">{p.desc}</p>
+                      <p className="text-sm font-medium">{p.label || p.method.toUpperCase()}</p>
+                      {p.description && <p className="text-xs text-muted-foreground mt-0.5">{p.description}</p>}
                     </div>
                   </label>
 
-                  {active && p.id === "upi" && (
+                  {active && (p.instructions || p.upi_vpa) && (
+                    <div className="mx-4 mb-4 bg-gold/10 border border-gold/30 rounded-md p-3 text-xs space-y-1 animate-fade-in">
+                      {p.upi_vpa && (
+                        <p>Pay to <strong className="font-mono">{p.upi_vpa}</strong>{p.payee_name ? ` · ${p.payee_name}` : ""}</p>
+                      )}
+                      {p.instructions && <p className="text-muted-foreground">{p.instructions}</p>}
+                    </div>
+                  )}
+
+                  {active && p.method === "upi" && (
                     <div className="px-4 pb-4 animate-fade-in">
-                      <label className="text-[10px] uppercase tracking-[0.22em] text-muted-foreground block mb-2">UPI ID / VPA</label>
+                      <label className="text-[10px] uppercase tracking-[0.22em] text-muted-foreground block mb-2">Your UPI ID / VPA</label>
                       <input
                         value={form.upiId}
                         onChange={(e) => setForm({...form, upiId: e.target.value.trim()})}
@@ -272,6 +281,9 @@ const Checkout = () => {
                       )}
                     </div>
                   )}
+
+                  {active && p.method === "card" && (
+
 
                   {active && p.id === "card" && (
                     <div className="px-4 pb-4 space-y-3 animate-fade-in">
