@@ -10,6 +10,8 @@ import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import AuditLog from "@/components/admin/AuditLog";
+import PaymentMethods from "@/components/admin/PaymentMethods";
+
 
 
 const CATS: Category[] = ["Shirts","T-Shirts","Pants","Jeans","Jackets","Hoodies","Suits","Activewear","Innerwear","Accessories"];
