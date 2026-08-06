@@ -132,14 +132,25 @@ const Checkout = () => {
         price: i.product.price, size: i.size, qty: i.qty,
       })),
     };
-    const { data, error } = await supabase.from("orders").insert(payload).select("id").single();
-    setSubmitting(false);
-    if (error) { toast.error(error.message); return; }
+    // Guests cannot read back their own row (orders are private), so only
+    // request the created row when the customer is signed in.
+    let orderId = crypto.randomUUID();
+    if (user?.id) {
+      const { data, error } = await supabase.from("orders").insert(payload).select("id").single();
+      setSubmitting(false);
+      if (error) { toast.error(error.message); return; }
+      orderId = data.id;
+    } else {
+      const { error } = await supabase.from("orders").insert(payload);
+      setSubmitting(false);
+      if (error) { toast.error(error.message); return; }
+    }
     const tracking = "DX" + Math.random().toString(36).slice(2, 10).toUpperCase();
     setConfirmed({
-      id: data.id, tracking, items: snapshotItems,
+      id: orderId, tracking, items: snapshotItems,
       subtotal: total, shipping, grand, payment: form.payment,
     });
+
     clear();
     toast.success("✅ Order Confirmed!");
   };
