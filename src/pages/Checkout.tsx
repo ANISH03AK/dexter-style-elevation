@@ -134,7 +134,7 @@ const Checkout = () => {
     };
     // Guests cannot read back their own row (orders are private), so only
     // request the created row when the customer is signed in.
-    let orderId = crypto.randomUUID();
+    let orderId: string = crypto.randomUUID();
     if (user?.id) {
       const { data, error } = await supabase.from("orders").insert(payload).select("id").single();
       setSubmitting(false);
