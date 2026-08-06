@@ -284,8 +284,6 @@ const Checkout = () => {
 
                   {active && p.method === "card" && (
 
-
-                  {active && p.id === "card" && (
                     <div className="px-4 pb-4 space-y-3 animate-fade-in">
                       <div>
                         <label className="text-[10px] uppercase tracking-[0.22em] text-muted-foreground block mb-1.5">Cardholder Name</label>
