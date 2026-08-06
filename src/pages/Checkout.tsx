@@ -12,9 +12,21 @@ const SHIPPING_FEE = 162;
 const FREE_ITEM_THRESHOLD = 3;
 const FREE_SUBTOTAL_THRESHOLD = 2500;
 
-type PayMethod = "cod" | "upi" | "card";
+type PayMethod = string;
+
+type PayRow = {
+  method: string;
+  enabled: boolean;
+  label: string | null;
+  description: string | null;
+  instructions: string | null;
+  upi_vpa: string | null;
+  payee_name: string | null;
+  sort_order: number;
+};
 
 const UPI_REGEX = /^[\w.\-]{2,256}@[a-zA-Z]{2,64}$/;
+
 
 const Checkout = () => {
   const { items, total, count, clear } = useCart();
