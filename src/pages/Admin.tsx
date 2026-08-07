@@ -1,7 +1,7 @@
 import { useEffect, useState, useCallback } from "react";
 import { Trash2, Plus, Search, Loader2, LogOut, Upload, Pencil, X, IndianRupee, Clock, Package, ShoppingBag, CreditCard, Wallet, Banknote, Pin, Save, Image as ImageIcon, Tag as TagIcon, Settings as SettingsIcon, Layers, ShieldCheck, RefreshCw, ExternalLink, AlertTriangle } from "lucide-react";
 import { toast } from "sonner";
-import { Navigate, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import Layout from "@/components/Layout";
 import { useProducts } from "@/context/ProductsContext";
 import { Category } from "@/data/products";
@@ -334,7 +334,7 @@ const Admin = () => {
               <button onClick={() => navigate("/")} className="text-[10px] uppercase tracking-[0.2em] flex items-center gap-2 border border-white/20 px-4 py-2.5 rounded-lg hover:bg-white/10 transition">
                 <ExternalLink className="h-3.5 w-3.5" /> View store
               </button>
-              <button onClick={async () => { localStorage.removeItem("admin_token"); await signOut(); navigate("/"); }} className="text-[10px] uppercase tracking-[0.2em] flex items-center gap-2 bg-gradient-to-r from-red-cta to-gold text-black font-extrabold px-4 py-2.5 rounded-lg hover:opacity-90 transition">
+              <button onClick={async () => { await signOut(); navigate("/"); }} className="text-[10px] uppercase tracking-[0.2em] flex items-center gap-2 bg-gradient-to-r from-red-cta to-gold text-black font-extrabold px-4 py-2.5 rounded-lg hover:opacity-90 transition">
                 <LogOut className="h-3.5 w-3.5" /> Sign Out
               </button>
             </div>
