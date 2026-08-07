@@ -5,9 +5,10 @@ import { supabase } from "@/integrations/supabase/client";
 
 /**
  * AdminGuard — gate for /admin routes.
- * Requires localStorage.admin_token (set by the owner login at /dexter-boss)
- * and verifies that a backend owner session exists, since every write
- * (products, storefront, promos, lookbook, orders) is validated server-side.
+ * Requires a real backend session whose account holds the `admin` role.
+ * Role membership is read through RLS (users may only read their own roles),
+ * so this cannot be spoofed from the browser. Every write is additionally
+ * enforced server-side by row-level security.
  */
 const AdminGuard = ({ children }: { children: ReactNode }) => {
   const [allowed, setAllowed] = useState<boolean | null>(null);
@@ -15,25 +16,24 @@ const AdminGuard = ({ children }: { children: ReactNode }) => {
   useEffect(() => {
     let active = true;
     (async () => {
-      let token = false;
-      try {
-        token = !!localStorage.getItem("admin_token");
-      } catch {
-        token = false;
-      }
-      if (!token) {
-        if (active) setAllowed(false);
+      const { data: userData } = await supabase.auth.getUser();
+      const user = userData.user;
+      if (!active) return;
+      if (!user) {
+        setAllowed(false);
         return;
       }
-      const { data } = await supabase.auth.getSession();
+
+      const { data: role } = await supabase
+        .from("user_roles")
+        .select("role")
+        .eq("user_id", user.id)
+        .eq("role", "admin")
+        .maybeSingle();
+
       if (!active) return;
-      if (!data.session) {
-        toast.error("Owner session expired — sign in again to save changes.");
-        try {
-          localStorage.removeItem("admin_token");
-        } catch {
-          /* ignore */
-        }
+      if (!role) {
+        toast.error("You are not authorized to access store operations.");
         setAllowed(false);
         return;
       }
