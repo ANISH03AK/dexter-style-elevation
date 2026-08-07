@@ -7,9 +7,8 @@ import {
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 
-const OWNER_PHONE = "8668183926";
-const OWNER_PIN = "DexterAdmin";
 const MAX_ATTEMPTS = 5;
+
 
 const DexterBoss = () => {
   const navigate = useNavigate();
