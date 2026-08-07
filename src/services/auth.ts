@@ -53,6 +53,6 @@ export const getProfile = async (userId: string): Promise<ServiceResult<any>> =>
 };
 
 export const updateProfile = async (userId: string, patch: Record<string, any>) => {
-  const { error } = await supabase.from("profiles").update(patch).eq("id", userId);
+  const { error } = await supabase.from("profiles").update(patch as never).eq("id", userId);
   return { error: error?.message ?? null };
 };
