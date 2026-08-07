@@ -1,3 +1,4 @@
+import { lazy, Suspense } from "react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Route, Routes, useLocation } from "react-router-dom";
 import { AnimatePresence, motion } from "framer-motion";
@@ -12,18 +13,18 @@ import { StoreSettingsProvider } from "@/context/StoreSettingsContext";
 import { LookbookProvider } from "@/context/LookbookContext";
 import { MotionPreferenceProvider } from "@/context/MotionPreferenceContext";
 import Index from "./pages/Index.tsx";
-import Shop from "./pages/Shop.tsx";
-import ProductDetails from "./pages/ProductDetails.tsx";
-import Cart from "./pages/Cart.tsx";
-import Checkout from "./pages/Checkout.tsx";
-import Wishlist from "./pages/Wishlist.tsx";
-import Auth from "./pages/Auth.tsx";
-import About from "./pages/About.tsx";
-import Admin from "./pages/Admin.tsx";
-import Contact from "./pages/Contact.tsx";
-import DexterBoss from "./pages/DexterBoss.tsx";
-import TrackOrder from "./pages/TrackOrder.tsx";
-import NotFound from "./pages/NotFound.tsx";
+const Shop = lazy(() => import("./pages/Shop.tsx"));
+const ProductDetails = lazy(() => import("./pages/ProductDetails.tsx"));
+const Cart = lazy(() => import("./pages/Cart.tsx"));
+const Checkout = lazy(() => import("./pages/Checkout.tsx"));
+const Wishlist = lazy(() => import("./pages/Wishlist.tsx"));
+const Auth = lazy(() => import("./pages/Auth.tsx"));
+const About = lazy(() => import("./pages/About.tsx"));
+const Admin = lazy(() => import("./pages/Admin.tsx"));
+const Contact = lazy(() => import("./pages/Contact.tsx"));
+const DexterBoss = lazy(() => import("./pages/DexterBoss.tsx"));
+const TrackOrder = lazy(() => import("./pages/TrackOrder.tsx"));
+const NotFound = lazy(() => import("./pages/NotFound.tsx"));
 import ScrollToTop from "./components/ScrollToTop";
 import NavArrows from "./components/NavArrows";
 import DbStatusBanner from "./components/DbStatusBanner";
@@ -31,6 +32,13 @@ import ExitIntentPopup from "./components/ExitIntentPopup";
 import AdminGuard from "./components/AdminGuard";
 import SmoothScroll from "./components/motion/SmoothScroll";
 import LoadingScreen from "./components/motion/LoadingScreen";
+
+const RouteFallback = () => (
+  <div className="min-h-[60vh] flex items-center justify-center">
+    <div className="h-8 w-8 rounded-full border-2 border-gold border-t-transparent animate-spin" aria-label="Loading" />
+  </div>
+);
+
 
 const queryClient = new QueryClient();
 
@@ -45,6 +53,7 @@ const AnimatedRoutes = () => {
         exit={{ opacity: 0, y: -12, filter: "blur(6px)" }}
         transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
       >
+      <Suspense fallback={<RouteFallback />}>
       <Routes location={location}>
         <Route path="/" element={<Index />} />
         <Route path="/shop" element={<Shop />} />
@@ -60,6 +69,8 @@ const AnimatedRoutes = () => {
         <Route path="/admin" element={<AdminGuard><Admin /></AdminGuard>} />
         <Route path="*" element={<NotFound />} />
       </Routes>
+      </Suspense>
+
       </motion.div>
     </AnimatePresence>
   );
