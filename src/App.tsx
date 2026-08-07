@@ -53,6 +53,7 @@ const AnimatedRoutes = () => {
         exit={{ opacity: 0, y: -12, filter: "blur(6px)" }}
         transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
       >
+      <Suspense fallback={<RouteFallback />}>
       <Routes location={location}>
         <Route path="/" element={<Index />} />
         <Route path="/shop" element={<Shop />} />
@@ -68,6 +69,8 @@ const AnimatedRoutes = () => {
         <Route path="/admin" element={<AdminGuard><Admin /></AdminGuard>} />
         <Route path="*" element={<NotFound />} />
       </Routes>
+      </Suspense>
+
       </motion.div>
     </AnimatePresence>
   );
