@@ -124,10 +124,9 @@ const Admin = () => {
     return () => URL.revokeObjectURL(url);
   }, [file]);
 
-  // Local-only gate. AdminGuard already enforced this; double-check here defensively.
-  if (typeof window !== "undefined" && !localStorage.getItem("admin_token")) {
-    return <Navigate to="/" replace />;
-  }
+  // Access is enforced by AdminGuard (real session + server-side admin role)
+  // and by row-level security on every database write.
+
 
   // ============ PRODUCT CRUD ============
   const resetForm = () => { setForm(empty); setFile(null); setEditingId(null); };
