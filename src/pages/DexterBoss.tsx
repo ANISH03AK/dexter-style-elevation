@@ -45,39 +45,38 @@ const DexterBoss = () => {
     if (locked) return toast.error(`Locked. Try again in ${lockSeconds}s`);
     setBusy(true);
 
-    if (phone.replace(/\D/g, "") === OWNER_PHONE && pin === OWNER_PIN) {
-      // Establish a real backend session for the owner so all admin writes
-      // (products, storefront, promos, lookbook, orders) pass security rules.
-      const email = `${OWNER_PHONE}@dexter.phone`;
-      let { error } = await supabase.auth.signInWithPassword({ email, password: OWNER_PIN });
-      if (error) {
-        const { error: signUpError } = await supabase.auth.signUp({
-          email,
-          password: OWNER_PIN,
-          options: {
-            emailRedirectTo: `${window.location.origin}/`,
-            data: { full_name: "Dexter Owner", phone: OWNER_PHONE },
-          },
-        });
-        if (!signUpError) {
-          ({ error } = await supabase.auth.signInWithPassword({ email, password: OWNER_PIN }));
-        }
-      }
-      setBusy(false);
+    // Real backend authentication — no client-side credentials.
+    const digits = phone.replace(/\D/g, "");
+    const email = `${digits}@dexter.phone`;
+    const { data: signInData, error } = await supabase.auth.signInWithPassword({
+      email,
+      password: pin,
+    });
 
-      if (error) {
-        toast.error("Owner session could not be created — edits may not save. " + error.message);
-      } else {
+    if (!error && signInData.session) {
+      // Server-verified authorization: the account must hold the admin role.
+      const { data: roles } = await supabase
+        .from("user_roles")
+        .select("role")
+        .eq("user_id", signInData.session.user.id)
+        .eq("role", "admin")
+        .maybeSingle();
+
+      if (roles) {
+        setBusy(false);
+        if (remember) localStorage.setItem("admin_last_phone", phone);
+        else localStorage.removeItem("admin_last_phone");
         toast.success("Owner verified — entering control room");
+        navigate("/admin", { replace: true });
+        return;
       }
 
-      localStorage.setItem("admin_token", "true");
-      localStorage.setItem("admin_login_at", String(Date.now()));
-      if (remember) localStorage.setItem("admin_last_phone", phone);
-      else localStorage.removeItem("admin_last_phone");
-      navigate("/admin", { replace: true });
+      await supabase.auth.signOut();
+      setBusy(false);
+      toast.error("This account is not authorized for store operations.");
       return;
     }
+
 
     await new Promise((r) => setTimeout(r, 400));
     setBusy(false);
