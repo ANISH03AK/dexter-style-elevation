@@ -13,15 +13,20 @@ Vercel → **Add New → Project** → import this repo. It auto-detects Vite:
 
 ## 2. Environment variables
 
-Add exactly two variables (Production, Preview and Development):
+Add these variables (Production, Preview and Development). The variable names
+must match exactly — the generated Supabase client reads
+`VITE_SUPABASE_PUBLISHABLE_KEY`, not `VITE_SUPABASE_ANON_KEY`.
 
 | Name | Value |
 | --- | --- |
 | `VITE_SUPABASE_URL` | `https://<project-ref>.supabase.co` |
-| `VITE_SUPABASE_ANON_KEY` | your anon public key |
+| `VITE_SUPABASE_PUBLISHABLE_KEY` | your anon public key |
+| `VITE_SUPABASE_PROJECT_ID` | your project ref (optional) |
 
 Nothing else is required. Vite inlines these at build time, so **redeploy after
-changing them**.
+changing them**. If you set `VITE_SUPABASE_ANON_KEY` instead of
+`VITE_SUPABASE_PUBLISHABLE_KEY`, the client gets an undefined key and every
+backend call (products, orders, login) silently fails.
 
 ## 3. Deploy
 
