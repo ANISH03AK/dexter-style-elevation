@@ -6,11 +6,13 @@ Copy `.env.example` to `.env` and fill in:
 
 ```
 VITE_SUPABASE_URL=https://<project-ref>.supabase.co
-VITE_SUPABASE_ANON_KEY=<anon public key>
+VITE_SUPABASE_PUBLISHABLE_KEY=<anon public key>
 ```
 
 Both values are public by design — data is protected by Row Level Security.
-The build accepts either `VITE_SUPABASE_ANON_KEY` or `VITE_SUPABASE_PUBLISHABLE_KEY`.
+The generated client reads `VITE_SUPABASE_PUBLISHABLE_KEY` specifically; setting
+`VITE_SUPABASE_ANON_KEY` instead will leave the key undefined and break all
+backend calls.
 
 ## 2. Client
 
