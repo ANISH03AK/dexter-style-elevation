@@ -9,7 +9,7 @@
  *
  * Credentials come from environment variables only — nothing is hardcoded:
  *   VITE_SUPABASE_URL
- *   VITE_SUPABASE_ANON_KEY   (alias: VITE_SUPABASE_PUBLISHABLE_KEY)
+ *   VITE_SUPABASE_PUBLISHABLE_KEY
  */
 import { supabase } from "@/integrations/supabase/client";
 
