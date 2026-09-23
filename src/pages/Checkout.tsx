@@ -25,7 +25,7 @@ type PayRow = {
   sort_order: number;
 };
 
-const UPI_REGEX = /^[\w.\-]{2,256}@[a-zA-Z]{2,64}$/;
+const UPI_REGEX = /^[\w.-]{2,256}@[a-zA-Z]{2,64}$/;
 
 
 const Checkout = () => {

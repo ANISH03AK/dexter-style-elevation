@@ -49,26 +49,36 @@ export const ProductsProvider = ({ children }: { children: ReactNode }) => {
   const [loading, setLoading] = useState(true);
 
   const refresh = useCallback(async () => {
-    const { data, error } = await supabase
-      .from("products")
-      .select("*")
-      .order("created_at", { ascending: false });
-    if (!error && data) setLive(data.map(mapRow));
-    setLoading(false);
+    try {
+      const { data, error } = await supabase
+        .from("products")
+        .select("*")
+        .order("created_at", { ascending: false });
+      if (!error && data && data.length > 0) {
+        setLive(data.map(mapRow));
+      }
+    } catch {
+      // Fallback gracefully
+    } finally {
+      setLoading(false);
+    }
   }, []);
 
   useEffect(() => {
     refresh();
-    const channel = supabase
-      .channel("products-changes")
-      .on("postgres_changes", { event: "*", schema: "public", table: "products" }, () => refresh())
-      .subscribe();
-    return () => { supabase.removeChannel(channel); };
+    try {
+      const channel = supabase
+        .channel("products-changes")
+        .on("postgres_changes", { event: "*", schema: "public", table: "products" }, () => refresh())
+        .subscribe();
+      return () => { supabase.removeChannel(channel); };
+    } catch {
+      // Ignore channel errors if offline
+    }
   }, [refresh]);
 
   // Live (admin-managed) products take precedence; seed list shown as fallback inventory
-  // Live admin-managed catalogue is the single source of truth.
-  const all = live;
+  const all = live.length > 0 ? live : products;
 
   const addProduct: Ctx["addProduct"] = async (p) => {
     const { error } = await supabase.from("products").insert({

@@ -80,29 +80,34 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     });
 
     (async () => {
-      // Session-only mode: the user did not tick "remember me", and this is a
-      // fresh browser session (no tab marker) — drop the persisted session.
-      const wantsRemember = safeGet(localStorage, REMEMBER_KEY) !== "0";
-      const sameBrowserSession = safeGet(sessionStorage, TAB_KEY) === "1";
-      if (!wantsRemember && !sameBrowserSession) {
-        await supabase.auth.signOut();
-        safeRemove(localStorage, REMEMBER_KEY);
-        setRemembered(true);
-        setSession(null);
-        setUser(null);
-        setRole(null);
-        setLoading(false);
-        return;
-      }
+      try {
+        // Session-only mode: the user did not tick "remember me", and this is a
+        // fresh browser session (no tab marker) — drop the persisted session.
+        const wantsRemember = safeGet(localStorage, REMEMBER_KEY) !== "0";
+        const sameBrowserSession = safeGet(sessionStorage, TAB_KEY) === "1";
+        if (!wantsRemember && !sameBrowserSession) {
+          try { await supabase.auth.signOut(); } catch { /* ignore */ }
+          safeRemove(localStorage, REMEMBER_KEY);
+          setRemembered(true);
+          setSession(null);
+          setUser(null);
+          setRole(null);
+          setLoading(false);
+          return;
+        }
 
-      const { data } = await supabase.auth.getSession();
-      setSession(data.session);
-      setUser(data.session?.user ?? null);
-      if (data.session?.user) {
-        safeSet(sessionStorage, TAB_KEY, "1");
-        fetchRole(data.session.user.id);
+        const { data } = await supabase.auth.getSession();
+        setSession(data?.session ?? null);
+        setUser(data?.session?.user ?? null);
+        if (data?.session?.user) {
+          safeSet(sessionStorage, TAB_KEY, "1");
+          fetchRole(data.session.user.id);
+        }
+      } catch (err) {
+        console.warn("Auth initialization fallback:", err);
+      } finally {
+        setLoading(false);
       }
-      setLoading(false);
     })();
 
     return () => sub.subscription.unsubscribe();
