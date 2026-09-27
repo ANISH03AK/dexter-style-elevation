@@ -1,5 +1,5 @@
 import { createContext, useContext, useState, ReactNode, useEffect, useCallback } from "react";
-import { Product, Category } from "@/data/products";
+import { products, type Product, type Category } from "@/data/products";
 import { supabase } from "@/integrations/supabase/client";
 
 type NewProductInput = {
