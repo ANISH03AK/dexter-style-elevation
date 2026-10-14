@@ -30,7 +30,7 @@ const rightLinks = [
   { to: "/contact", label: "Contact" },
 ];
 
-const allLinks = [...leftLinks, ...rightLinks, { to: "/about", label: "About" }];
+const allLinks = [...leftLinks, ...rightLinks, { to: "/about", label: "About" }, { to: "/track", label: "Track Order" }];
 
 const Navbar = () => {
   const { count } = useCart();
@@ -104,14 +104,19 @@ const Navbar = () => {
             <MotionToggle className="hidden sm:inline-flex" />
 
             {user ? (
-              <button
-                onClick={async () => { await signOut(); navigate("/"); }}
-                aria-label="Sign out"
-                title="Sign out"
-                className="hidden sm:block hover:text-red-cta transition-smooth"
-              >
-                <LogOut className="h-[18px] w-[18px]" />
-              </button>
+              <div className="hidden sm:flex items-center gap-2">
+                <Link to="/account" aria-label="My Account" title="My Account" className="hover:text-red-cta transition-smooth flex items-center">
+                  <User className="h-[18px] w-[18px] text-red-cta" />
+                </Link>
+                <button
+                  onClick={async () => { await signOut(); navigate("/"); }}
+                  aria-label="Sign out"
+                  title="Sign out"
+                  className="hover:text-red-cta transition-smooth text-muted-foreground hover:text-foreground"
+                >
+                  <LogOut className="h-[17px] w-[17px]" />
+                </button>
+              </div>
             ) : (
               <Link to="/auth" aria-label="Account" className="hidden sm:block hover:text-red-cta transition-smooth">
                 <User className="h-[18px] w-[18px]" />
@@ -224,20 +229,29 @@ const Navbar = () => {
                     </Link>
                   </motion.div>
                 )}
-                <motion.div variants={itemVariants}>
-                  {user ? (
-                    <button
-                      onClick={async () => { await signOut(); setOpen(false); }}
-                      className="block w-full text-left px-5 py-3 text-sm uppercase tracking-[0.18em] font-bold text-foreground hover:bg-muted hover:text-red-cta"
-                    >
-                      Sign Out
-                    </button>
-                  ) : (
-                    <Link to="/auth" onClick={() => setOpen(false)} className="block px-5 py-3 text-sm uppercase tracking-[0.18em] font-bold text-foreground hover:bg-muted hover:text-red-cta">
-                      Sign In
+                {user ? (
+                  <>
+                    <motion.div variants={itemVariants}>
+                      <Link to="/account" onClick={() => setOpen(false)} className="block px-5 py-3 text-sm uppercase tracking-[0.18em] font-bold text-foreground hover:bg-muted hover:text-red-cta border-b border-border/50">
+                        My Account & Orders
+                      </Link>
+                    </motion.div>
+                    <motion.div variants={itemVariants}>
+                      <button
+                        onClick={async () => { await signOut(); setOpen(false); }}
+                        className="block w-full text-left px-5 py-3 text-sm uppercase tracking-[0.18em] font-bold text-foreground hover:bg-muted hover:text-red-cta border-b border-border/50"
+                      >
+                        Sign Out
+                      </button>
+                    </motion.div>
+                  </>
+                ) : (
+                  <motion.div variants={itemVariants}>
+                    <Link to="/auth" onClick={() => setOpen(false)} className="block px-5 py-3 text-sm uppercase tracking-[0.18em] font-bold text-foreground hover:bg-muted hover:text-red-cta border-b border-border/50">
+                      Sign In / Register
                     </Link>
-                  )}
-                </motion.div>
+                  </motion.div>
+                )}
                 <motion.div variants={itemVariants} className="px-5 py-3 border-t border-border/50">
                   <MotionToggle withLabel className="text-foreground" />
                 </motion.div>

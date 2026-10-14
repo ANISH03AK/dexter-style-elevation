@@ -41,23 +41,36 @@ const Footer = () => (
 
       <div>
         <h4 className="text-xs uppercase tracking-[0.25em] text-gold mb-5 font-bold">Customer Care</h4>
-        <ul className="space-y-3 text-sm text-primary-foreground/80">
-          <li><Link to="/contact" className="link-underline">Contact Us</Link></li>
-          <li><Link to="/about" className="link-underline">About DEXTER</Link></li>
-          <li><Link to="/cart" className="link-underline">Cart</Link></li>
-          <li><span className="opacity-80">Open daily from 9:30 AM</span></li>
+        <ul className="space-y-2.5 text-sm text-primary-foreground/80">
+          <li><Link to="/track" className="link-underline text-gold font-semibold">Track Order</Link></li>
+          <li><Link to="/policies?tab=shipping" className="link-underline">Shipping Policy</Link></li>
+          <li><Link to="/policies?tab=returns" className="link-underline">Returns & Exchanges</Link></li>
+          <li><Link to="/policies?tab=cancellation" className="link-underline">Cancellation & Refunds</Link></li>
+          <li><Link to="/policies?tab=privacy" className="link-underline">Privacy Policy</Link></li>
+          <li><Link to="/policies?tab=terms" className="link-underline">Terms & Conditions</Link></li>
+          <li><Link to="/contact" className="link-underline">Contact & Support</Link></li>
         </ul>
-        <a href="tel:08925259787" className="mt-5 inline-flex items-center gap-2 bg-red-cta text-white px-5 py-2.5 text-xs uppercase tracking-[0.2em] font-bold rounded">
+        <a href="tel:08925259787" className="mt-5 inline-flex items-center gap-2 bg-red-cta text-white px-5 py-2.5 text-xs uppercase tracking-[0.2em] font-bold rounded hover:bg-gold hover:text-ink transition-colors">
           <Phone className="h-3.5 w-3.5" /> Call Store Now
         </a>
       </div>
     </div>
     <div className="border-t border-white/10">
-      <div className="container-px mx-auto max-w-[1400px] py-6 flex flex-col md:flex-row justify-between items-center gap-2 text-xs text-primary-foreground/60">
+      <div className="container-px mx-auto max-w-[1400px] py-6 flex flex-col md:flex-row justify-between items-center gap-4 text-xs text-primary-foreground/60">
         <p>© {new Date().getFullYear()} DEXTER MENS CLOTHING. All rights reserved.</p>
-        <MotionToggle withLabel className="text-primary-foreground/70 hover:text-gold" />
-        <p><a href="https://www.dextermensclothing.in/" className="hover:text-gold">www.dextermensclothing.in</a></p>
-
+        <div className="flex items-center gap-4 flex-wrap justify-center text-[11px]">
+          <Link to="/privacy" className="hover:text-gold transition">Privacy</Link>
+          <span>·</span>
+          <Link to="/terms" className="hover:text-gold transition">Terms</Link>
+          <span>·</span>
+          <Link to="/shipping-policy" className="hover:text-gold transition">Shipping</Link>
+          <span>·</span>
+          <Link to="/returns" className="hover:text-gold transition">Returns</Link>
+        </div>
+        <div className="flex items-center gap-4">
+          <MotionToggle withLabel className="text-primary-foreground/70 hover:text-gold" />
+          <a href="https://www.dextermensclothing.in/" className="hover:text-gold">www.dextermensclothing.in</a>
+        </div>
       </div>
     </div>
   </footer>

@@ -67,6 +67,36 @@ const Checkout = () => {
       const rows = ((data as unknown as PayRow[]) || []).filter(r => r.enabled);
       setMethods(rows);
       setForm((f) => (rows.some(r => r.method === f.payment) ? f : { ...f, payment: rows[0]?.method ?? "cod" }));
+
+      // If user is logged in, prefill profile and recent delivery address
+      if (user?.id) {
+        try {
+          const { data: profile } = await supabase
+            .from("profiles")
+            .select("full_name, phone")
+            .eq("id", user.id)
+            .maybeSingle();
+
+          const { data: lastOrder } = await supabase
+            .from("orders")
+            .select("customer_name, phone, address, city, pincode")
+            .eq("user_id", user.id)
+            .order("created_at", { ascending: false })
+            .limit(1)
+            .maybeSingle();
+
+          setForm((prev) => ({
+            ...prev,
+            name: prev.name || profile?.full_name || lastOrder?.customer_name || (user.user_metadata?.full_name as string) || "",
+            phone: prev.phone || profile?.phone?.replace(/\D/g, "") || lastOrder?.phone?.replace(/\D/g, "") || (user.email?.split("@")[0]?.replace(/\D/g, "")) || "",
+            address: prev.address || lastOrder?.address || "",
+            city: prev.city || lastOrder?.city || "Jayankondam",
+            pincode: prev.pincode || lastOrder?.pincode || "621802",
+          }));
+        } catch {
+          // ignore prefill error
+        }
+      }
     };
     load();
     const ch = supabase
@@ -74,7 +104,7 @@ const Checkout = () => {
       .on("postgres_changes", { event: "*", schema: "public", table: "payment_settings" }, load)
       .subscribe();
     return () => { supabase.removeChannel(ch); };
-  }, []);
+  }, [user]);
 
 
   const qualifiesFree = count >= FREE_ITEM_THRESHOLD || total >= FREE_SUBTOTAL_THRESHOLD;

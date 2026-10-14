@@ -51,6 +51,8 @@ const Admin = () => {
   // Orders + payments
   const [orders, setOrders] = useState<Order[]>([]);
   const [ordersLoading, setOrdersLoading] = useState(true);
+  const [orderQuery, setOrderQuery] = useState("");
+  const [statusFilter, setStatusFilter] = useState("all");
   const [paySettings, setPaySettings] = useState<Record<string, boolean>>({ cod: true, upi: true, card: true });
 
   // Store settings
@@ -603,13 +605,55 @@ const Admin = () => {
 
           {/* ============ ORDERS TAB ============ */}
           <TabsContent value="orders">
+            <div className="mb-6 flex flex-col sm:flex-row gap-3 items-stretch sm:items-center justify-between">
+              <div className="relative flex-1 max-w-md">
+                <Search className="h-4 w-4 absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
+                <input
+                  value={orderQuery}
+                  onChange={(e) => setOrderQuery(e.target.value)}
+                  placeholder="Search by customer name, mobile, or order ID..."
+                  className="w-full pl-9 pr-4 py-2.5 text-xs bg-background border border-border rounded-lg outline-none focus:border-gold"
+                />
+              </div>
+
+              <div className="flex gap-1.5 flex-wrap">
+                {["all", "pending", "shipped", "delivered", "cancelled"].map((st) => (
+                  <button
+                    key={st}
+                    onClick={() => setStatusFilter(st)}
+                    className={`px-3 py-1.5 rounded text-[11px] uppercase tracking-wider font-bold transition ${
+                      statusFilter === st
+                        ? "bg-gold text-ink"
+                        : "bg-secondary text-muted-foreground hover:text-foreground"
+                    }`}
+                  >
+                    {st}
+                  </button>
+                ))}
+              </div>
+            </div>
+
             {ordersLoading ? (
               <div className="py-16 grid place-items-center"><Loader2 className="h-6 w-6 animate-spin text-muted-foreground" /></div>
-            ) : orders.length === 0 ? (
-              <div className="border border-dashed border-border p-12 text-center rounded-md"><p className="text-muted-foreground text-sm">No orders yet.</p></div>
+            ) : orders.filter(o => {
+              const q = orderQuery.toLowerCase().trim();
+              const matchesQ = !q || o.customer_name?.toLowerCase().includes(q) || o.phone?.includes(q) || o.id?.toLowerCase().includes(q);
+              const matchesSt = statusFilter === "all" || o.status?.toLowerCase() === statusFilter;
+              return matchesQ && matchesSt;
+            }).length === 0 ? (
+              <div className="border border-dashed border-border p-12 text-center rounded-md">
+                <p className="text-muted-foreground text-sm">
+                  {orderQuery || statusFilter !== "all" ? "No matching orders found." : "No orders yet."}
+                </p>
+              </div>
             ) : (
               <div className="space-y-4">
-                {orders.map(o => (
+                {orders.filter(o => {
+                  const q = orderQuery.toLowerCase().trim();
+                  const matchesQ = !q || o.customer_name?.toLowerCase().includes(q) || o.phone?.includes(q) || o.id?.toLowerCase().includes(q);
+                  const matchesSt = statusFilter === "all" || o.status?.toLowerCase() === statusFilter;
+                  return matchesQ && matchesSt;
+                }).map(o => (
                   <div key={o.id} className="border border-border rounded-md p-5 bg-card">
                     <div className="flex items-start justify-between flex-wrap gap-3 mb-4">
                       <div>

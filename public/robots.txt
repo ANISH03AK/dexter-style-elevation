@@ -1,14 +1,23 @@
-User-agent: Googlebot
-Allow: /
-
-User-agent: Bingbot
-Allow: /
-
-User-agent: Twitterbot
-Allow: /
-
-User-agent: facebookexternalhit
-Allow: /
+# DEXTER MENS CLOTHING — Premium Menswear, Jayankondam
+# https://www.dextermensclothing.in/
 
 User-agent: *
 Allow: /
+Allow: /shop
+Allow: /product/
+Allow: /about
+Allow: /contact
+Allow: /policies
+Allow: /privacy
+Allow: /terms
+Allow: /shipping-policy
+Allow: /returns
+Allow: /track
+
+# Restrict private administrative and customer-session endpoints
+Disallow: /admin
+Disallow: /dexter-boss
+Disallow: /account
+Disallow: /checkout
+
+Sitemap: https://www.dextermensclothing.in/sitemap.xml
