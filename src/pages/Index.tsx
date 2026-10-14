@@ -1,6 +1,4 @@
 import { Link } from "react-router-dom";
-import { useRef, useState } from "react";
-import { motion, useScroll, useTransform } from "framer-motion";
 import { ArrowRight, Truck, ShieldCheck, RotateCcw, MapPin, Phone, Sparkles } from "lucide-react";
 import Layout from "@/components/Layout";
 import ProductCard from "@/components/ProductCard";
@@ -8,20 +6,16 @@ import ProductCardSkeleton from "@/components/ProductCardSkeleton";
 import Reviews from "@/components/Reviews";
 import OfferBannerSlider from "@/components/OfferBannerSlider";
 import Reveal from "@/components/Reveal";
-import Magnetic from "@/components/motion/Magnetic";
+import FashionHero from "@/components/FashionHero";
 import Counter from "@/components/motion/Counter";
-import FloatingBackground from "@/components/motion/FloatingBackground";
 import { useProducts } from "@/context/ProductsContext";
 import { useStoreSettings } from "@/context/StoreSettingsContext";
 import { useLookbook } from "@/context/LookbookContext";
-import hero from "@/assets/hero-model.jpg";
-import dexterLogo from "@/assets/dexter-logo.png";
 import catShirts from "@/assets/cat-shirts-street.jpg";
 import catTees from "@/assets/cat-tees-street.jpg";
 import catJeans from "@/assets/cat-pants-waistdown.jpg";
 import catJackets from "@/assets/cat-hoodies-street.jpg";
 
-const EASE = [0.22, 1, 0.36, 1] as const;
 
 const categories = [
   { name: "Shirts", image: catShirts, cat: "Shirts" },
@@ -34,22 +28,8 @@ const Index = () => {
   const { products, loading } = useProducts();
   const { settings } = useStoreSettings();
   const { items: lookbook } = useLookbook();
-  const heroImg = settings.hero_image_url || hero;
   const pinned = products.filter(p => p.pinned);
 
-  // Layered hero parallax (scroll + mouse)
-  const heroRef = useRef<HTMLElement>(null);
-  const { scrollYProgress } = useScroll({ target: heroRef, offset: ["start start", "end start"] });
-  const heroY = useTransform(scrollYProgress, [0, 1], ["0%", "18%"]);
-  const heroScale = useTransform(scrollYProgress, [0, 1], [1, 1.14]);
-  const heroFade = useTransform(scrollYProgress, [0, 0.85], [1, 0]);
-  const [mouse, setMouse] = useState({ x: 0, y: 0 });
-  const onHeroMouse = (e: React.MouseEvent) => {
-    const el = heroRef.current;
-    if (!el || window.matchMedia("(pointer: coarse)").matches) return;
-    const r = el.getBoundingClientRect();
-    setMouse({ x: (e.clientX - r.left) / r.width - 0.5, y: (e.clientY - r.top) / r.height - 0.5 });
-  };
 
 
   return (
