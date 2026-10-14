@@ -41,11 +41,10 @@ const LoadingScreen = () => {
       {show && (
         <motion.div
           key="curtain"
-          className="fixed inset-0 z-[200] grid place-items-center bg-ink"
+          className="fixed inset-0 z-[200] grid place-items-center bg-background"
           exit={{ opacity: 0, scale: 1.04, filter: "blur(10px)" }}
           transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
         >
-          <div className="absolute inset-0 opacity-40 bg-[radial-gradient(600px_circle_at_50%_40%,hsl(var(--gold)/0.18),transparent_60%)]" />
           <div className="relative flex flex-col items-center gap-8 px-8">
             <motion.img
               src={dexterLogo}
@@ -59,13 +58,13 @@ const LoadingScreen = () => {
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ delay: 0.35, duration: 0.6 }}
-              className="text-[10px] uppercase tracking-[0.5em] text-white/60 font-bold"
+              className="text-[10px] uppercase tracking-[0.5em] text-muted-foreground font-bold"
             >
               Jayankondam · Est. Style
             </motion.p>
-            <div className="w-56 h-px bg-white/15 overflow-hidden">
+            <div className="w-56 h-px bg-border overflow-hidden">
               <div
-                className="h-full bg-gradient-to-r from-red-cta via-gold to-red-cta transition-all duration-300 ease-out"
+                className="h-full bg-red-cta transition-all duration-300 ease-out"
                 style={{ width: `${progress}%` }}
               />
             </div>

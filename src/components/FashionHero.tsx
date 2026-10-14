@@ -8,6 +8,8 @@ import type { StoreSettings } from "@/context/StoreSettingsContext";
 import logo from "@/assets/dexter-logo.png";
 import shirt from "@/assets/dexter-editorial-shirt.jpg";
 import jacket from "@/assets/dexter-editorial-jacket.jpg";
+import shirtMobile from "@/assets/dexter-editorial-shirt-mobile.webp";
+import jacketMobile from "@/assets/dexter-editorial-jacket-mobile.webp";
 
 const campaign = [
   { src: shirt, alt: "Male model wearing a textured black shirt and tailored trousers in the DEXTER editorial studio" },
@@ -63,12 +65,12 @@ const FashionHero = ({ settings }: { settings: StoreSettings }) => {
       onPointerEnter={e => { if (e.pointerType === "mouse") setHovered(true); }}
     >
       <motion.div className="fashion-hero-photos" style={{ x: reduced ? 0 : x }}
-        initial={reduced ? false : { opacity: 0, x: 10 }} animate={{ opacity: 1, x: 0 }}
+        initial={reduced ? false : { opacity: 0 }} animate={{ opacity: 1 }}
         transition={{ duration: reduced ? 0 : 1.25, ease }}>
         {looks.map((look, i) => (
           <div key={look.src} className={`fashion-hero-look ${i === index % looks.length ? "is-active" : ""}`}>
             <picture>
-              {!settings.hero_image_url && <source media="(max-width: 767px)" srcSet={i === 0 ? "/src/assets/dexter-editorial-shirt-mobile.webp" : "/src/assets/dexter-editorial-jacket-mobile.webp"} />}
+              {!settings.hero_image_url && <source media="(max-width: 767px)" srcSet={i === 0 ? shirtMobile : jacketMobile} />}
               <img src={look.src} alt={look.alt} width={1920} height={1024}
                 loading={i === 0 ? "eager" : "lazy"} fetchPriority={i === 0 ? "high" : "auto"} decoding="async" />
             </picture>

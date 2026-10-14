@@ -7,7 +7,7 @@ const Footer = () => (
   <footer className="bg-ink text-primary-foreground mt-24">
     <div className="container-px mx-auto max-w-[1400px] py-16 grid gap-12 md:grid-cols-4">
       <div>
-        <img src={dexterLogo} alt="DEXTER MENS CLOTHING" className="h-14 w-auto object-contain mb-5 brightness-0 invert" />
+        <img src={dexterLogo} alt="DEXTER MENS CLOTHING" className="h-28 w-auto object-contain mb-5 bg-background" />
         <p className="text-sm text-primary-foreground/70 leading-relaxed">
           DEXTER MENS CLOTHING — Premium menswear in Jayankondam. Shirts, tees, pants, hoodies, innerwear and accessories.
         </p>
