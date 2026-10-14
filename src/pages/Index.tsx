@@ -1,4 +1,6 @@
 import { Link } from "react-router-dom";
+import { useRef, useState } from "react";
+import { motion, useScroll, useTransform } from "framer-motion";
 import { ArrowRight, Truck, ShieldCheck, RotateCcw, MapPin, Phone, Sparkles } from "lucide-react";
 import Layout from "@/components/Layout";
 import ProductCard from "@/components/ProductCard";
@@ -6,16 +8,20 @@ import ProductCardSkeleton from "@/components/ProductCardSkeleton";
 import Reviews from "@/components/Reviews";
 import OfferBannerSlider from "@/components/OfferBannerSlider";
 import Reveal from "@/components/Reveal";
-import FashionHero from "@/components/FashionHero";
+import Magnetic from "@/components/motion/Magnetic";
 import Counter from "@/components/motion/Counter";
+import FloatingBackground from "@/components/motion/FloatingBackground";
 import { useProducts } from "@/context/ProductsContext";
 import { useStoreSettings } from "@/context/StoreSettingsContext";
 import { useLookbook } from "@/context/LookbookContext";
+import hero from "@/assets/hero-store-bokeh.jpg";
+import dexterLogo from "@/assets/dexter-logo.png";
 import catShirts from "@/assets/cat-shirts-street.jpg";
 import catTees from "@/assets/cat-tees-street.jpg";
 import catJeans from "@/assets/cat-pants-waistdown.jpg";
 import catJackets from "@/assets/cat-hoodies-street.jpg";
 
+const EASE = [0.22, 1, 0.36, 1] as const;
 
 const categories = [
   { name: "Shirts", image: catShirts, cat: "Shirts" },
@@ -28,8 +34,22 @@ const Index = () => {
   const { products, loading } = useProducts();
   const { settings } = useStoreSettings();
   const { items: lookbook } = useLookbook();
+  const heroImg = settings.hero_image_url || hero;
   const pinned = products.filter(p => p.pinned);
 
+  // Layered hero parallax (scroll + mouse)
+  const heroRef = useRef<HTMLElement>(null);
+  const { scrollYProgress } = useScroll({ target: heroRef, offset: ["start start", "end start"] });
+  const heroY = useTransform(scrollYProgress, [0, 1], ["0%", "18%"]);
+  const heroScale = useTransform(scrollYProgress, [0, 1], [1, 1.14]);
+  const heroFade = useTransform(scrollYProgress, [0, 0.85], [1, 0]);
+  const [mouse, setMouse] = useState({ x: 0, y: 0 });
+  const onHeroMouse = (e: React.MouseEvent) => {
+    const el = heroRef.current;
+    if (!el || window.matchMedia("(pointer: coarse)").matches) return;
+    const r = el.getBoundingClientRect();
+    setMouse({ x: (e.clientX - r.left) / r.width - 0.5, y: (e.clientY - r.top) / r.height - 0.5 });
+  };
 
 
   return (
@@ -43,7 +63,100 @@ const Index = () => {
 
       <OfferBannerSlider />
 
-      <FashionHero settings={settings} />
+      {/* HERO — warm modern menswear boutique interior with optical bokeh lights */}
+      <section
+        ref={heroRef}
+        onMouseMove={onHeroMouse}
+        onMouseLeave={() => setMouse({ x: 0, y: 0 })}
+        className="relative w-full h-[70vh] min-h-[520px] md:h-[82vh] md:min-h-[640px] overflow-hidden bg-ink"
+      >
+        {/* Boutique clothing store interior background with depth and warm bokeh */}
+        <motion.img
+          src={heroImg}
+          alt={settings.hero_headline}
+          style={{ y: heroY, scale: heroScale, x: mouse.x * -12 }}
+          className="absolute -inset-[6%] w-[112%] h-[112%] object-cover object-center will-change-transform"
+        />
+
+        {/* Soft, warm atmospheric vignette (keeps center bright & clear for the logo while blending with page) */}
+        <div
+          className="absolute inset-0 pointer-events-none"
+          style={{
+            background:
+              "radial-gradient(ellipse at 50% 50%, rgba(0, 0, 0, 0.12) 0%, rgba(0, 0, 0, 0.35) 60%, rgba(0, 0, 0, 0.72) 100%)",
+          }}
+        />
+        <div className="absolute inset-0 bg-gradient-to-b from-black/45 via-transparent to-black/75 pointer-events-none" />
+
+        <FloatingBackground />
+
+        {/* Centered Hero Content with Dexter logo perfectly merged directly on the background (no blur box/card) */}
+        <motion.div
+          style={{ opacity: heroFade }}
+          className="absolute inset-0 flex flex-col items-center justify-center px-4 sm:px-6 text-center z-10"
+        >
+          {/* Logo directly on background image, razor-sharp with natural depth shadows */}
+          <motion.img
+            src={dexterLogo}
+            alt={settings.hero_headline}
+            initial={{ opacity: 0, y: 22, scale: 0.96 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            transition={{ duration: 0.85, ease: EASE, delay: 0.1 }}
+            style={{
+              x: mouse.x * 20,
+              y: mouse.y * 12,
+              filter:
+                "drop-shadow(0 2px 5px rgba(0, 0, 0, 0.95)) drop-shadow(0 8px 24px rgba(0, 0, 0, 0.85)) drop-shadow(0 0 35px rgba(255, 193, 7, 0.32))",
+            }}
+            className="w-[280px] sm:w-[390px] md:w-[490px] lg:w-[580px] max-w-full h-auto object-contain will-change-transform"
+          />
+          <h1 className="sr-only">{settings.hero_headline}</h1>
+
+          <motion.p
+            initial={{ opacity: 0, y: 16 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8, ease: EASE, delay: 0.28 }}
+            style={{
+              x: mouse.x * 10,
+              filter: "drop-shadow(0 2px 8px rgba(0, 0, 0, 0.95))",
+            }}
+            className="mt-5 text-gold text-xs sm:text-sm md:text-base uppercase tracking-[0.4em] font-extrabold"
+          >
+            {settings.hero_subtext}
+          </motion.p>
+
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8, ease: EASE, delay: 0.42 }}
+            className="mt-8 flex flex-wrap justify-center gap-3 sm:gap-4"
+          >
+            <Magnetic>
+              <Link
+                to="/shop"
+                className="inline-flex items-center gap-2.5 sm:gap-3 bg-red-cta text-white px-7 sm:px-8 py-3.5 sm:py-4 text-xs uppercase tracking-[0.25em] font-extrabold rounded-lg shadow-xl hover:bg-gold hover:text-ink hover:scale-[1.04] active:scale-95 transition-all duration-300"
+              >
+                Shop Collection <ArrowRight className="h-4 w-4" />
+              </Link>
+            </Magnetic>
+            <Magnetic>
+              <a
+                href="tel:08925259787"
+                className="inline-flex items-center gap-2.5 sm:gap-3 bg-gold text-ink px-7 sm:px-8 py-3.5 sm:py-4 text-xs uppercase tracking-[0.25em] font-extrabold rounded-lg shadow-xl hover:bg-red-cta hover:text-white hover:scale-[1.04] active:scale-95 transition-all duration-300"
+              >
+                <Phone className="h-4 w-4" /> 089252 59787
+              </a>
+            </Magnetic>
+          </motion.div>
+        </motion.div>
+
+        {/* Scroll cue */}
+        <div className="absolute bottom-5 inset-x-0 flex justify-center pointer-events-none">
+          <span className="h-9 w-5 rounded-full border border-white/40 grid place-items-start p-1 animate-levitate">
+            <span className="h-2 w-1 rounded-full bg-gold" />
+          </span>
+        </div>
+      </section>
 
       {/* LIVE STORE COUNTERS */}
       <section className="bg-background border-b border-border">
