@@ -84,7 +84,7 @@ const Navbar = () => {
           <img
             src={dexterLogo}
             alt="DEXTER MENS CLOTHING"
-            className="h-24 sm:h-28 lg:h-36 w-auto object-contain drop-shadow-sm"
+            className="h-24 sm:h-28 lg:h-36 w-auto object-contain"
           />
         </Link>
 
