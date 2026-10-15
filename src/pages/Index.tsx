@@ -10,11 +10,11 @@ import OfferBannerSlider from "@/components/OfferBannerSlider";
 import Reveal from "@/components/Reveal";
 import Magnetic from "@/components/motion/Magnetic";
 import Counter from "@/components/motion/Counter";
-import FloatingBackground from "@/components/motion/FloatingBackground";
 import { useProducts } from "@/context/ProductsContext";
 import { useStoreSettings } from "@/context/StoreSettingsContext";
 import { useLookbook } from "@/context/LookbookContext";
-import hero from "@/assets/hero-store-bokeh.jpg";
+import heroStreetwearDesktop from "@/assets/hero-streetwear-pc.jpg";
+import heroStreetwearMobile from "@/assets/hero-streetwear-mobile.jpg";
 import dexterLogo from "@/assets/dexter-logo.png";
 import catShirts from "@/assets/cat-shirts-street.jpg";
 import catTees from "@/assets/cat-tees-street.jpg";
@@ -34,14 +34,14 @@ const Index = () => {
   const { products, loading } = useProducts();
   const { settings } = useStoreSettings();
   const { items: lookbook } = useLookbook();
-  const heroImg = settings.hero_image_url || hero;
+  const heroDesktopImg = settings.hero_image_url || heroStreetwearDesktop;
+  const heroMobileImg = settings.hero_image_url || heroStreetwearMobile;
   const pinned = products.filter(p => p.pinned);
 
-  // Layered hero parallax (scroll + mouse)
+  // Layered hero parallax (gentle scroll + mouse, zero over-zoom)
   const heroRef = useRef<HTMLElement>(null);
   const { scrollYProgress } = useScroll({ target: heroRef, offset: ["start start", "end start"] });
-  const heroY = useTransform(scrollYProgress, [0, 1], ["0%", "18%"]);
-  const heroScale = useTransform(scrollYProgress, [0, 1], [1, 1.14]);
+  const heroY = useTransform(scrollYProgress, [0, 1], ["0%", "8%"]);
   const heroFade = useTransform(scrollYProgress, [0, 0.85], [1, 0]);
   const [mouse, setMouse] = useState({ x: 0, y: 0 });
   const onHeroMouse = (e: React.MouseEvent) => {
@@ -63,53 +63,91 @@ const Index = () => {
 
       <OfferBannerSlider />
 
-      {/* HERO — warm modern menswear boutique interior with optical bokeh lights */}
+      {/* HERO — curated white streetwear aesthetic (works seamlessly on PC & Mobile) */}
       <section
         ref={heroRef}
         onMouseMove={onHeroMouse}
         onMouseLeave={() => setMouse({ x: 0, y: 0 })}
-        className="relative w-full h-[70vh] min-h-[520px] md:h-[82vh] md:min-h-[640px] overflow-hidden bg-ink"
+        className="relative w-full h-[68vh] min-h-[520px] md:h-[82vh] md:min-h-[620px] max-h-[880px] overflow-hidden bg-[#0d0e12]"
       >
-        {/* Boutique clothing store interior background with depth and warm bokeh */}
+        {/* Desktop widescreen streetwear image (exact original photo zoomed to fill edge-to-edge without blur or splitting) */}
         <motion.img
-          src={heroImg}
+          src={heroDesktopImg}
           alt={settings.hero_headline}
-          style={{ y: heroY, scale: heroScale, x: mouse.x * -12 }}
-          className="absolute -inset-[6%] w-[112%] h-[112%] object-cover object-center will-change-transform"
+          style={{ y: heroY, x: mouse.x * -8 }}
+          className="hidden md:block absolute inset-0 w-full h-full object-cover object-[center_22%] will-change-transform"
         />
 
-        {/* Soft, warm atmospheric vignette (keeps center bright & clear for the logo while blending with page) */}
+        {/* Mobile portrait streetwear image (exact original photo, full height framing) */}
+        <motion.img
+          src={heroMobileImg}
+          alt={settings.hero_headline}
+          style={{ y: heroY }}
+          className="block md:hidden absolute inset-0 w-full h-full object-cover object-[center_18%] will-change-transform"
+        />
+
+        {/* Pure neutral contrast vignette centered behind the logo for crystal-clear readability (zero glow light) */}
         <div
           className="absolute inset-0 pointer-events-none"
           style={{
             background:
-              "radial-gradient(ellipse at 50% 50%, rgba(0, 0, 0, 0.12) 0%, rgba(0, 0, 0, 0.35) 60%, rgba(0, 0, 0, 0.72) 100%)",
+              "radial-gradient(ellipse 65% 55% at 50% 50%, rgba(0, 0, 0, 0.45) 0%, rgba(0, 0, 0, 0.22) 55%, transparent 85%)",
           }}
         />
-        <div className="absolute inset-0 bg-gradient-to-b from-black/45 via-transparent to-black/75 pointer-events-none" />
+        <div className="absolute inset-0 bg-gradient-to-b from-black/45 via-transparent to-black/65 pointer-events-none" />
 
-        <FloatingBackground />
-
-        {/* Centered Hero Content with Dexter logo perfectly merged directly on the background (no blur box/card) */}
+        {/* Centered Hero Content with animated Dexter logo razor-sharp in the center point (no glow lights) */}
         <motion.div
           style={{ opacity: heroFade }}
           className="absolute inset-0 flex flex-col items-center justify-center px-4 sm:px-6 text-center z-10"
         >
-          {/* Logo directly on background image, razor-sharp with natural depth shadows */}
-          <motion.img
-            src={dexterLogo}
-            alt={settings.hero_headline}
-            initial={{ opacity: 0, y: 22, scale: 0.96 }}
-            animate={{ opacity: 1, y: 0, scale: 1 }}
-            transition={{ duration: 0.85, ease: EASE, delay: 0.1 }}
+          {/* Animated 3D Floating Logo Container */}
+          <motion.div
             style={{
-              x: mouse.x * 20,
-              y: mouse.y * 12,
-              filter:
-                "drop-shadow(0 2px 5px rgba(0, 0, 0, 0.95)) drop-shadow(0 8px 24px rgba(0, 0, 0, 0.85)) drop-shadow(0 0 35px rgba(255, 193, 7, 0.32))",
+              perspective: 1000,
+              x: mouse.x * 16,
+              y: mouse.y * 10,
+              rotateX: mouse.y * -6,
+              rotateY: mouse.x * 10,
             }}
-            className="w-[280px] sm:w-[390px] md:w-[490px] lg:w-[580px] max-w-full h-auto object-contain will-change-transform"
-          />
+            className="relative will-change-transform select-none"
+          >
+            {/* Smooth floating + breathing animation (clean, natural, zero glow lights) */}
+            <motion.div
+              animate={{
+                y: [-8, 8, -8],
+                scale: [1, 1.025, 1],
+              }}
+              transition={{
+                duration: 3.8,
+                repeat: Infinity,
+                ease: "easeInOut",
+              }}
+              className="relative inline-block"
+            >
+              <motion.img
+                src={dexterLogo}
+                alt={settings.hero_headline}
+                initial={{ opacity: 0, y: 24, scale: 0.92 }}
+                animate={{
+                  opacity: 1,
+                  y: 0,
+                  scale: 1,
+                }}
+                transition={{
+                  duration: 0.9,
+                  ease: EASE,
+                  delay: 0.1,
+                }}
+                style={{
+                  filter:
+                    "drop-shadow(0 4px 14px rgba(0, 0, 0, 0.75)) drop-shadow(0 14px 32px rgba(0, 0, 0, 0.6))",
+                }}
+                className="w-[280px] sm:w-[390px] md:w-[490px] lg:w-[580px] max-w-full h-auto object-contain pointer-events-none"
+              />
+            </motion.div>
+          </motion.div>
+
           <h1 className="sr-only">{settings.hero_headline}</h1>
 
           <motion.p
@@ -118,9 +156,10 @@ const Index = () => {
             transition={{ duration: 0.8, ease: EASE, delay: 0.28 }}
             style={{
               x: mouse.x * 10,
-              filter: "drop-shadow(0 2px 8px rgba(0, 0, 0, 0.95))",
+              filter: "drop-shadow(0 2px 8px rgba(0, 0, 0, 0.98))",
+              textShadow: "0 2px 10px rgba(0, 0, 0, 0.95), 0 0 20px rgba(0, 0, 0, 0.85)",
             }}
-            className="mt-5 text-gold text-xs sm:text-sm md:text-base uppercase tracking-[0.4em] font-extrabold"
+            className="mt-5 text-gold text-xs sm:text-sm md:text-base uppercase tracking-[0.4em] font-black"
           >
             {settings.hero_subtext}
           </motion.p>
