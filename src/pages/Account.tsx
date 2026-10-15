@@ -83,7 +83,7 @@ const Account = () => {
         .order("created_at", { ascending: false });
 
       if (!error && data) {
-        setOrders(data as unknown as Order[]);
+        setOrders(data as Order[]);
       }
       setLoadingOrders(false);
     };
@@ -104,6 +104,7 @@ const Account = () => {
         full_name: fullName.trim(),
         phone: phone.trim(),
         email: email.trim(),
+        updated_at: new Date().toISOString(),
       });
 
     setSavingProfile(false);
