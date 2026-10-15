@@ -13,8 +13,7 @@ import Counter from "@/components/motion/Counter";
 import { useProducts } from "@/context/ProductsContext";
 import { useStoreSettings } from "@/context/StoreSettingsContext";
 import { useLookbook } from "@/context/LookbookContext";
-import heroStreetwearDesktop from "@/assets/hero-streetwear-pc.jpg";
-import heroStreetwearMobile from "@/assets/hero-streetwear-mobile.jpg";
+import heroDexterFit from "@/assets/hero-dexter-fit.jpg";
 import dexterLogo from "@/assets/dexter-logo.png";
 import catShirts from "@/assets/cat-shirts-street.jpg";
 import catTees from "@/assets/cat-tees-street.jpg";
@@ -34,14 +33,12 @@ const Index = () => {
   const { products, loading } = useProducts();
   const { settings } = useStoreSettings();
   const { items: lookbook } = useLookbook();
-  const heroDesktopImg = settings.hero_image_url || heroStreetwearDesktop;
-  const heroMobileImg = settings.hero_image_url || heroStreetwearMobile;
+  const heroImg = settings.hero_image_url || heroDexterFit;
   const pinned = products.filter(p => p.pinned);
 
   // Layered hero parallax (gentle scroll + mouse, zero over-zoom)
   const heroRef = useRef<HTMLElement>(null);
   const { scrollYProgress } = useScroll({ target: heroRef, offset: ["start start", "end start"] });
-  const heroY = useTransform(scrollYProgress, [0, 1], ["0%", "8%"]);
   const heroFade = useTransform(scrollYProgress, [0, 0.85], [1, 0]);
   const [mouse, setMouse] = useState({ x: 0, y: 0 });
   const onHeroMouse = (e: React.MouseEvent) => {
@@ -61,45 +58,19 @@ const Index = () => {
         </div>
       )}
 
-      <OfferBannerSlider />
-
-      {/* HERO — curated white streetwear aesthetic (works seamlessly on PC & Mobile) */}
+      {/* HERO — light brand panel + full-height lookbook plate.
+          The photo keeps its exact original framing on PC (no resize, no stretch, no crop)
+          and fills the phone screen edge-to-edge. */}
       <section
         ref={heroRef}
         onMouseMove={onHeroMouse}
         onMouseLeave={() => setMouse({ x: 0, y: 0 })}
-        className="relative w-full h-[68vh] min-h-[520px] md:h-[82vh] md:min-h-[620px] max-h-[880px] overflow-hidden bg-[#0d0e12]"
+        className="relative w-full overflow-hidden bg-background md:grid md:grid-cols-[1fr_auto] md:h-[72vh] md:max-h-[700px]"
       >
-        {/* Desktop widescreen streetwear image (exact original photo zoomed to fill edge-to-edge without blur or splitting) */}
-        <motion.img
-          src={heroDesktopImg}
-          alt={settings.hero_headline}
-          style={{ y: heroY, x: mouse.x * -8 }}
-          className="hidden md:block absolute inset-0 w-full h-full object-cover object-[center_22%] will-change-transform"
-        />
-
-        {/* Mobile portrait streetwear image (exact original photo, full height framing) */}
-        <motion.img
-          src={heroMobileImg}
-          alt={settings.hero_headline}
-          style={{ y: heroY }}
-          className="block md:hidden absolute inset-0 w-full h-full object-cover object-[center_18%] will-change-transform"
-        />
-
-        {/* Pure neutral contrast vignette centered behind the logo for crystal-clear readability (zero glow light) */}
-        <div
-          className="absolute inset-0 pointer-events-none"
-          style={{
-            background:
-              "radial-gradient(ellipse 65% 55% at 50% 50%, rgba(0, 0, 0, 0.45) 0%, rgba(0, 0, 0, 0.22) 55%, transparent 85%)",
-          }}
-        />
-        <div className="absolute inset-0 bg-gradient-to-b from-black/45 via-transparent to-black/65 pointer-events-none" />
-
-        {/* Centered Hero Content with animated Dexter logo razor-sharp in the center point (no glow lights) */}
+        {/* Brand panel — the black DEXTER wordmark sits on a clean light surface, razor-sharp */}
         <motion.div
           style={{ opacity: heroFade }}
-          className="absolute inset-0 flex flex-col items-center justify-center px-4 sm:px-6 text-center z-10"
+          className="relative z-10 flex flex-col items-center justify-center text-center px-5 sm:px-8 pt-6 pb-5 md:items-start md:text-left md:px-12 lg:px-20"
         >
           {/* Animated 3D Floating Logo Container */}
           <motion.div
@@ -140,26 +111,27 @@ const Index = () => {
                   delay: 0.1,
                 }}
                 style={{
-                  filter:
-                    "drop-shadow(0 4px 14px rgba(0, 0, 0, 0.75)) drop-shadow(0 14px 32px rgba(0, 0, 0, 0.6))",
+                  filter: "drop-shadow(0 10px 26px rgba(0, 0, 0, 0.16))",
                 }}
-                className="w-[280px] sm:w-[390px] md:w-[490px] lg:w-[580px] max-w-full h-auto object-contain pointer-events-none"
+                className="w-[190px] sm:w-[300px] md:w-[420px] lg:w-[520px] max-w-full h-auto object-contain pointer-events-none"
               />
             </motion.div>
           </motion.div>
 
           <h1 className="sr-only">{settings.hero_headline}</h1>
 
+          <motion.span
+            initial={{ opacity: 0, scaleX: 0 }}
+            animate={{ opacity: 1, scaleX: 1 }}
+            transition={{ duration: 0.7, ease: EASE, delay: 0.24 }}
+            className="mt-4 h-px w-14 bg-gold origin-center md:origin-left"
+          />
+
           <motion.p
             initial={{ opacity: 0, y: 16 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, ease: EASE, delay: 0.28 }}
-            style={{
-              x: mouse.x * 10,
-              filter: "drop-shadow(0 2px 8px rgba(0, 0, 0, 0.98))",
-              textShadow: "0 2px 10px rgba(0, 0, 0, 0.95), 0 0 20px rgba(0, 0, 0, 0.85)",
-            }}
-            className="mt-5 text-gold text-xs sm:text-sm md:text-base uppercase tracking-[0.4em] font-black"
+            className="mt-3 text-foreground text-[10px] sm:text-xs md:text-sm uppercase tracking-[0.4em] font-black"
           >
             {settings.hero_subtext}
           </motion.p>
@@ -168,7 +140,7 @@ const Index = () => {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, ease: EASE, delay: 0.42 }}
-            className="mt-8 flex flex-wrap justify-center gap-3 sm:gap-4"
+            className="mt-6 flex flex-wrap justify-center md:justify-start gap-2.5 sm:gap-4"
           >
             <Magnetic>
               <Link
@@ -189,13 +161,24 @@ const Index = () => {
           </motion.div>
         </motion.div>
 
+        {/* The fit — photo at its exact original framing: full height on PC, full width on phone */}
+        <div className="relative w-full h-[62vh] min-h-[420px] md:h-full md:min-h-0 md:w-auto overflow-hidden bg-ink md:border-l md:border-gold/60 md:shadow-[-28px_0_70px_rgba(0,0,0,0.16)]">
+          <img
+            src={heroImg}
+            alt={`${settings.hero_headline} — signature fit`}
+            className="absolute inset-0 h-full w-full object-cover object-bottom md:static md:h-full md:w-auto md:max-w-none"
+          />
+        </div>
+
         {/* Scroll cue */}
         <div className="absolute bottom-5 inset-x-0 flex justify-center pointer-events-none">
-          <span className="h-9 w-5 rounded-full border border-white/40 grid place-items-start p-1 animate-levitate">
+          <span className="h-9 w-5 rounded-full border border-gold/70 grid place-items-start p-1 animate-levitate">
             <span className="h-2 w-1 rounded-full bg-gold" />
           </span>
         </div>
       </section>
+
+      <OfferBannerSlider />
 
       {/* LIVE STORE COUNTERS */}
       <section className="bg-background border-b border-border">
