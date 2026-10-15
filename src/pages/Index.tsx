@@ -110,9 +110,6 @@ const Index = () => {
                   ease: EASE,
                   delay: 0.1,
                 }}
-                style={{
-                  filter: "drop-shadow(0 10px 26px rgba(0, 0, 0, 0.16))",
-                }}
                 className="w-[190px] sm:w-[300px] md:w-[420px] lg:w-[520px] max-w-full h-auto object-contain pointer-events-none"
               />
             </motion.div>
