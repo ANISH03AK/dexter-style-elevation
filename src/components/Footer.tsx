@@ -24,6 +24,7 @@ const Footer = () => (
       <div>
         <h4 className="text-xs uppercase tracking-[0.25em] text-gold mb-5 font-bold">Shop</h4>
         <ul className="space-y-3 text-sm text-primary-foreground/80">
+          <li><Link to="/advertisements" className="link-underline text-gold font-bold">Campaigns & Offers ✦</Link></li>
           {["Shirts","T-Shirts","Pants","Hoodies","Innerwear","Accessories"].map(i => (
             <li key={i}><Link to={`/shop?cat=${encodeURIComponent(i)}`} className="link-underline">{i}</Link></li>
           ))}

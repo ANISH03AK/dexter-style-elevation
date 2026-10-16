@@ -27,7 +27,7 @@ const leftLinks = [
 
 const rightLinks = [
   { to: "/shop?cat=Pants", label: "Pants" },
-  { to: "/shop?cat=Activewear", label: "Activewear" },
+  { to: "/advertisements", label: "Offers & Ads" },
   { to: "/contact", label: "Contact" },
 ];
 

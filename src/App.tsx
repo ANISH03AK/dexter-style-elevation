@@ -27,6 +27,7 @@ const DexterBoss = lazy(() => import("./pages/DexterBoss.tsx"));
 const TrackOrder = lazy(() => import("./pages/TrackOrder.tsx"));
 const Account = lazy(() => import("./pages/Account.tsx"));
 const Policies = lazy(() => import("./pages/Policies.tsx"));
+const Advertisements = lazy(() => import("./pages/Advertisements.tsx"));
 const NotFound = lazy(() => import("./pages/NotFound.tsx"));
 import ScrollToTop from "./components/ScrollToTop";
 import NavArrows from "./components/NavArrows";
@@ -74,6 +75,9 @@ const AnimatedRoutes = () => {
         <Route path="/about" element={<About />} />
         <Route path="/contact" element={<Contact />} />
         <Route path="/track" element={<TrackOrder />} />
+        <Route path="/advertisements" element={<Advertisements />} />
+        <Route path="/offers" element={<Advertisements />} />
+        <Route path="/campaigns" element={<Advertisements />} />
         <Route path="/dexter-boss" element={<DexterBoss />} />
         <Route path="/admin" element={<AdminGuard><Admin /></AdminGuard>} />
         <Route path="*" element={<NotFound />} />

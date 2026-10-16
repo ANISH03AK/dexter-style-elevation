@@ -25,9 +25,11 @@ export type NewProductInput = {
 type Ctx = {
   products: Product[];
   loading: boolean;
+  error: string | null;
   addProduct: (p: NewProductInput) => Promise<{ error: string | null; id?: string }>;
   updateProduct: (id: string, p: Partial<NewProductInput>) => Promise<{ error: string | null }>;
   removeProduct: (id: string) => Promise<{ error: string | null }>;
+  deductStock: (items: Array<{ id: string; size: string; qty: number }>) => Promise<void>;
   getProduct: (id: string) => Product | undefined;
   refresh: () => Promise<void>;
 };
@@ -35,6 +37,7 @@ type Ctx = {
 const ProductsCtx = createContext<Ctx | null>(null);
 
 const LS_PRODUCTS_KEY = "dexter_live_products";
+const LS_DELETED_KEY = "dexter_deleted_products";
 
 const safeReadProducts = (): Product[] => {
   try {
@@ -49,6 +52,23 @@ const safeReadProducts = (): Product[] => {
 const safeWriteProducts = (items: Product[]) => {
   try {
     localStorage.setItem(LS_PRODUCTS_KEY, JSON.stringify(items));
+  } catch (err) {
+    console.warn("localStorage write failed:", err);
+  }
+};
+
+const safeReadDeleted = (): string[] => {
+  try {
+    const raw = localStorage.getItem(LS_DELETED_KEY);
+    return raw ? JSON.parse(raw) : [];
+  } catch {
+    return [];
+  }
+};
+
+const safeWriteDeleted = (ids: string[]) => {
+  try {
+    localStorage.setItem(LS_DELETED_KEY, JSON.stringify(ids));
   } catch (err) {
     console.warn("localStorage write failed:", err);
   }
@@ -97,22 +117,29 @@ const mapRow = (r: any): Product => {
 
 export const ProductsProvider = ({ children }: { children: ReactNode }) => {
   const [live, setLive] = useState<Product[]>(() => safeReadProducts());
+  const [deletedIds, setDeletedIds] = useState<string[]>(() => safeReadDeleted());
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   const refresh = useCallback(async () => {
+    setLoading(true);
+    setError(null);
     try {
-      const { data, error } = await supabase
+      const { data, error: sbError } = await supabase
         .from("products")
         .select("*")
         .order("created_at", { ascending: false });
 
-      if (!error && data && data.length > 0) {
+      if (sbError) {
+        console.warn("Supabase products fetch note:", sbError.message);
+        setError(sbError.message);
+      } else if (data && data.length > 0) {
         const mapped = data.map(mapRow);
         setLive(mapped);
         safeWriteProducts(mapped);
       }
-    } catch {
-      // Fallback gracefully to local state
+    } catch (err: any) {
+      setError(err?.message || "Failed to fetch live products from database");
     } finally {
       setLoading(false);
     }
@@ -134,13 +161,14 @@ export const ProductsProvider = ({ children }: { children: ReactNode }) => {
     }
   }, [refresh]);
 
-  // Live products take precedence; merged with default fallback catalog
-  const allProducts = live.length > 0
-    ? [
-        ...live,
-        ...defaultProducts.filter((def) => !live.some((l) => l.id === def.id)),
-      ]
-    : defaultProducts;
+  // Live products take precedence; merged with default fallback catalog while excluding deleted IDs
+  const allProducts = useMemo(() => {
+    const activeLive = live.filter((p) => !deletedIds.includes(p.id));
+    const activeDefaults = defaultProducts.filter(
+      (def) => !deletedIds.includes(def.id) && !activeLive.some((l) => l.id === def.id)
+    );
+    return [...activeLive, ...activeDefaults];
+  }, [live, deletedIds]);
 
   const addProduct: Ctx["addProduct"] = async (p) => {
     const newId = `prod-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`;

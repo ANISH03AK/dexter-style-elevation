@@ -1,8 +1,14 @@
-import { createContext, useContext, useState, useEffect, useCallback, ReactNode } from "react";
+import { createContext, useContext, useState, useEffect, useCallback, useMemo, ReactNode } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import heroStreetwearDesktop from "@/assets/hero-streetwear-pc.jpg";
 import heroStreetwearMobile from "@/assets/hero-streetwear-mobile.jpg";
+import slideFestival from "@/assets/slide-rack-festival.jpg";
+import slideTees from "@/assets/slide-rack-tees.jpg";
+import slideBrands from "@/assets/slide-rack-brands.jpg";
+import catShirts from "@/assets/cat-shirts-street.jpg";
+import catJeans from "@/assets/cat-pants-waistdown.jpg";
+import catHoodies from "@/assets/cat-hoodies-street.jpg";
 
 // ==========================================
 // TYPES
@@ -15,6 +21,7 @@ export type Advertisement = {
   name: string;
   title: string;
   subtitle?: string;
+  description?: string;
   image_url: string;
   desktop_image_url?: string;
   mobile_image_url?: string;
@@ -30,6 +37,15 @@ export type Advertisement = {
   text_alignment?: "left" | "center" | "right";
   overlay_opacity?: number;
   created_at: string;
+  campaign_category?: string;
+  offer_percentage?: number;
+  original_price?: number;
+  promotional_price?: number;
+  associated_products?: string[];
+  associated_categories?: string[];
+  promotional_badge?: string;
+  impressions?: number;
+  clicks?: number;
 };
 
 export type BannerPlacement = "announcement" | "compact_card" | "medium_promo" | "large_banner" | "shop_top";
@@ -186,18 +202,111 @@ const DEFAULT_ADVERTISEMENTS: Advertisement[] = [
     name: "Streetwear Elevation Season Drop",
     title: "ELEVATE YOUR EVERYDAY STYLE",
     subtitle: "Engineered fabrics, relaxed tailored fits, and authentic luxury menswear aesthetics.",
+    description: "Discover our flagship streetwear edit designed for modern silhouettes. Heavyweight pure cotton, drop-shoulder shoulders, and reinforced hems crafted for effortless comfort and durable street appeal.",
     image_url: heroStreetwearDesktop,
     desktop_image_url: heroStreetwearDesktop,
     mobile_image_url: heroStreetwearMobile,
     button_text: "Shop New Collection",
     button_url: "/shop",
     placement: "home_promo",
+    campaign_category: "Streetwear",
+    promotional_badge: "HOT DROP",
+    offer_percentage: 30,
+    original_price: 1999,
+    promotional_price: 1399,
+    associated_categories: ["Hoodies", "Pants", "T-Shirts"],
     is_active: true,
     sort_order: 1,
     background_color: "#0d0e12",
     text_color: "#ffffff",
     text_alignment: "center",
     overlay_opacity: 0.35,
+    impressions: 1420,
+    clicks: 184,
+    created_at: new Date().toISOString(),
+  },
+  {
+    id: "ad-heavyweight-tees",
+    name: "Heavyweight Drop-Shoulder Festival",
+    title: "OVERSIZED TEES STARTING AT ₹300",
+    subtitle: "Heavyweight 240 GSM combed cotton with relaxed drop-shoulder structure.",
+    description: "Engineered for superior drape and breathability. Available in curated earthy and pastel colorways. Mix, match, and conquer your everyday aesthetic with Jayankondam's premier streetwear.",
+    image_url: slideTees,
+    desktop_image_url: slideTees,
+    mobile_image_url: slideTees,
+    button_text: "Grab Tees Combo",
+    button_url: "/shop?cat=T-Shirts",
+    placement: "banner_strip",
+    campaign_category: "T-Shirts",
+    promotional_badge: "LIMITED PERIOD",
+    offer_percentage: 25,
+    original_price: 899,
+    promotional_price: 599,
+    associated_categories: ["T-Shirts"],
+    is_active: true,
+    sort_order: 2,
+    background_color: "#18181b",
+    text_color: "#ffffff",
+    text_alignment: "left",
+    overlay_opacity: 0.40,
+    impressions: 980,
+    clicks: 142,
+    created_at: new Date().toISOString(),
+  },
+  {
+    id: "ad-urban-cargos",
+    name: "Tactical Urban Utility Cargos",
+    title: "TACTICAL CARGOS & CHINOS — FLAT 40% OFF",
+    subtitle: "Multi-pocket tactical utility fits crafted with durable stretch cotton twill.",
+    description: "Built for urban movement. Featuring 6 deep tactical cargo pockets, ergonomic knee paneling, and elasticized drawstring cuffs for maximum shoe visibility.",
+    image_url: catJeans,
+    desktop_image_url: catJeans,
+    mobile_image_url: catJeans,
+    button_text: "Shop Cargos",
+    button_url: "/shop?cat=Pants",
+    placement: "shop",
+    campaign_category: "Pants",
+    promotional_badge: "TRENDING",
+    offer_percentage: 40,
+    original_price: 1999,
+    promotional_price: 1199,
+    associated_categories: ["Pants", "Jeans"],
+    is_active: true,
+    sort_order: 3,
+    background_color: "#0a0a0c",
+    text_color: "#ffffff",
+    text_alignment: "left",
+    overlay_opacity: 0.35,
+    impressions: 740,
+    clicks: 96,
+    created_at: new Date().toISOString(),
+  },
+  {
+    id: "ad-formal-shirts",
+    name: "Crisp Formal & Casual Shirts",
+    title: "PREMIUM SHIRTS UNDER ₹999",
+    subtitle: "Wrinkle-resistant fine cotton shirts for business meetings, festive gatherings, and weekend dinner dates.",
+    description: "Elevate your formal wardrobe with sharp spread collars, mother-of-pearl buttons, and tailored slim-fit cuts. Verified Jayankondam store favorites.",
+    image_url: catShirts,
+    desktop_image_url: catShirts,
+    mobile_image_url: catShirts,
+    button_text: "Explore Shirts",
+    button_url: "/shop?cat=Shirts",
+    placement: "home_promo",
+    campaign_category: "Shirts",
+    promotional_badge: "BESTSELLER",
+    offer_percentage: 35,
+    original_price: 1499,
+    promotional_price: 999,
+    associated_categories: ["Shirts"],
+    is_active: true,
+    sort_order: 4,
+    background_color: "#111827",
+    text_color: "#ffffff",
+    text_alignment: "left",
+    overlay_opacity: 0.35,
+    impressions: 890,
+    clicks: 115,
     created_at: new Date().toISOString(),
   },
 ];
@@ -268,6 +377,14 @@ type CmsContextType = {
   saveAdvertisement: (ad: Omit<Advertisement, "id" | "created_at"> & { id?: string }) => Promise<{ error: string | null; id?: string }>;
   deleteAdvertisement: (id: string) => Promise<{ error: string | null }>;
   toggleAdStatus: (id: string, active: boolean) => Promise<{ error: string | null }>;
+  recordAdImpression: (id: string) => void;
+  recordAdClick: (id: string) => void;
+  adStats: {
+    totalImpressions: number;
+    totalClicks: number;
+    ctr: number;
+    topCampaigns: Advertisement[];
+  };
 
   // Promotional Banners
   promotionalBanners: PromotionalBanner[];
@@ -559,6 +676,78 @@ export const CmsProvider = ({ children }: { children: ReactNode }) => {
     }
     return { error: null };
   };
+
+  // Ad Analytics Tracking
+  const recordAdImpression = useCallback((id: string) => {
+    if (typeof window === "undefined") return;
+    const sessionKey = `ad_imp_${id}`;
+    if (sessionStorage.getItem(sessionKey)) return;
+    sessionStorage.setItem(sessionKey, "1");
+
+    setAdvertisements((prev) => {
+      const next = prev.map((a) => (a.id === id ? { ...a, impressions: (a.impressions || 0) + 1 } : a));
+      safeWrite(LS_ADS, next);
+      return next;
+    });
+
+    try {
+      supabase
+        .from("advertisements")
+        .select("impressions")
+        .eq("id", id)
+        .maybeSingle()
+        .then(({ data }) => {
+          if (data) {
+            supabase
+              .from("advertisements")
+              .update({ impressions: (Number(data.impressions) || 0) + 1 } as any)
+              .eq("id", id);
+          }
+        });
+    } catch {
+      // offline
+    }
+  }, []);
+
+  const recordAdClick = useCallback((id: string) => {
+    if (typeof window === "undefined") return;
+    setAdvertisements((prev) => {
+      const next = prev.map((a) => (a.id === id ? { ...a, clicks: (a.clicks || 0) + 1 } : a));
+      safeWrite(LS_ADS, next);
+      return next;
+    });
+
+    try {
+      supabase
+        .from("advertisements")
+        .select("clicks")
+        .eq("id", id)
+        .maybeSingle()
+        .then(({ data }) => {
+          if (data) {
+            supabase
+              .from("advertisements")
+              .update({ clicks: (Number(data.clicks) || 0) + 1 } as any)
+              .eq("id", id);
+          }
+        });
+    } catch {
+      // offline
+    }
+  }, []);
+
+  const adStats = useMemo(() => {
+    const totalImpressions = advertisements.reduce((acc, a) => acc + (a.impressions || 0), 0);
+    const totalClicks = advertisements.reduce((acc, a) => acc + (a.clicks || 0), 0);
+    const ctr = totalImpressions > 0 ? Number(((totalClicks / totalImpressions) * 100).toFixed(2)) : 0;
+    const topCampaigns = [...advertisements].sort((a, b) => (b.clicks || 0) - (a.clicks || 0));
+    return {
+      totalImpressions,
+      totalClicks,
+      ctr,
+      topCampaigns,
+    };
+  }, [advertisements]);
 
   // Save Promotional Banner
   const savePromotionalBanner: CmsContextType["savePromotionalBanner"] = async (bannerData) => {
@@ -930,6 +1119,9 @@ export const CmsProvider = ({ children }: { children: ReactNode }) => {
         saveAdvertisement,
         deleteAdvertisement,
         toggleAdStatus,
+        recordAdImpression,
+        recordAdClick,
+        adStats,
         promotionalBanners,
         activeBannersForPlacement,
         savePromotionalBanner,
