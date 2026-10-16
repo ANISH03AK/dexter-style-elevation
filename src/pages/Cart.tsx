@@ -7,6 +7,7 @@ import { useStoreSettings } from "@/context/StoreSettingsContext";
 import { formatINR } from "@/lib/format";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
+import { useCms } from "@/context/CmsContext";
 
 const FREE_ITEM_THRESHOLD = 3;
 const PROMO_KEY = "dexter:promo";
@@ -16,6 +17,7 @@ type Promo = { code: string; label: string; off: number } | null;
 const Cart = () => {
   const { items, setQty, remove, count, total } = useCart();
   const { settings } = useStoreSettings();
+  const { discountCampaigns } = useCms();
   const FREE_SUBTOTAL_THRESHOLD = settings.free_shipping_threshold;
   const SHIPPING_FEE = settings.flat_shipping_fee;
 
@@ -31,6 +33,33 @@ const Cart = () => {
   const validateCode = async (raw: string, subtotal: number): Promise<Promo> => {
     const code = raw.trim().toUpperCase();
     if (!code) return null;
+
+    // 1. Check CMS discount campaigns
+    const campaign = discountCampaigns.find(
+      (c) => c.is_active && c.coupon_code && c.coupon_code.toUpperCase() === code
+    );
+    if (campaign) {
+      if (campaign.min_purchase_amount && subtotal < campaign.min_purchase_amount) {
+        toast.error(`Minimum order amount of ${formatINR(campaign.min_purchase_amount)} required for this coupon`);
+        return null;
+      }
+      let off = 0;
+      if (campaign.offer_type === "percentage" || campaign.offer_type === "coupon_code") {
+        off = Math.round(subtotal * (campaign.discount_value / 100));
+        if (campaign.max_discount_amount) {
+          off = Math.min(off, campaign.max_discount_amount);
+        }
+      } else {
+        off = Math.min(campaign.discount_value, subtotal);
+      }
+      return {
+        code: campaign.coupon_code.toUpperCase(),
+        label: campaign.display_label || `${campaign.discount_value}% OFF`,
+        off,
+      };
+    }
+
+    // 2. Check legacy promo_codes table
     const { data } = await supabase
       .from("promo_codes")
       .select("code, kind, value, active")

@@ -6,6 +6,7 @@ import Layout from "@/components/Layout";
 import ProductCard from "@/components/ProductCard";
 import ProductCardSkeleton from "@/components/ProductCardSkeleton";
 import { useProducts } from "@/context/ProductsContext";
+import { useCms } from "@/context/CmsContext";
 
 const allCats = ["Shirts", "T-Shirts", "Jeans", "Jackets", "Hoodies", "Suits", "Activewear", "Accessories"] as const;
 const allSizes = ["S", "M", "L", "XL", "XXL"];
@@ -13,6 +14,7 @@ const PER_PAGE = 24;
 
 const Shop = () => {
   const { products, loading } = useProducts();
+  const { activeAdsForPlacement, activeBannersForPlacement } = useCms();
   const [params, setParams] = useSearchParams();
   const initialCat = params.get("cat");
   const initialQ = params.get("q") || "";
@@ -23,6 +25,9 @@ const Shop = () => {
   const [open, setOpen] = useState(false);
   const [page, setPage] = useState(1);
   const [q, setQ] = useState(initialQ);
+
+  const shopAds = activeAdsForPlacement("shop");
+  const shopBanners = activeBannersForPlacement("shop_top");
 
   useEffect(() => {
     const c = params.get("cat");
@@ -122,6 +127,62 @@ const Shop = () => {
           </aside>
 
           <div>
+            {/* Dynamic Promotional Banner for Shop */}
+            {shopBanners.length > 0 && (
+              <div
+                style={{
+                  backgroundColor: shopBanners[0].background_color || "#dc2626",
+                  color: shopBanners[0].text_color || "#ffffff",
+                }}
+                className="rounded-xl p-4 sm:p-5 mb-8 shadow-card flex flex-col sm:flex-row items-center justify-between gap-4"
+              >
+                <div>
+                  <h3 className="font-display text-lg sm:text-xl font-bold">{shopBanners[0].title}</h3>
+                  {shopBanners[0].subtitle && (
+                    <p className="text-xs sm:text-sm opacity-90 mt-0.5">{shopBanners[0].subtitle}</p>
+                  )}
+                </div>
+                {shopBanners[0].button_text && shopBanners[0].button_url && (
+                  <Link
+                    to={shopBanners[0].button_url}
+                    className="px-5 py-2 bg-ink text-white hover:bg-gold hover:text-ink text-xs uppercase tracking-wider font-extrabold rounded-lg transition-colors shrink-0 shadow"
+                  >
+                    {shopBanners[0].button_text} →
+                  </Link>
+                )}
+              </div>
+            )}
+
+            {/* Dynamic Advertisement for Shop */}
+            {shopAds.length > 0 && (
+              <div
+                style={{
+                  backgroundColor: shopAds[0].background_color || "#0d0e12",
+                  color: shopAds[0].text_color || "#ffffff",
+                }}
+                className="relative rounded-2xl overflow-hidden mb-8 border border-border shadow-elevated"
+              >
+                <div className="grid md:grid-cols-[1.2fr_1fr] items-center">
+                  <div className="p-6 md:p-8">
+                    <span className="text-[10px] uppercase tracking-[0.3em] text-gold font-bold">{shopAds[0].name}</span>
+                    <h3 className="font-display text-xl md:text-3xl font-extrabold mt-1">{shopAds[0].title}</h3>
+                    {shopAds[0].subtitle && <p className="text-xs md:text-sm opacity-80 mt-2">{shopAds[0].subtitle}</p>}
+                    {shopAds[0].button_text && shopAds[0].button_url && (
+                      <Link
+                        to={shopAds[0].button_url}
+                        className="mt-4 inline-flex items-center gap-2 px-6 py-2.5 bg-red-cta hover:bg-gold hover:text-ink text-white text-xs uppercase tracking-wider font-bold rounded-lg transition-all shadow"
+                      >
+                        {shopAds[0].button_text} →
+                      </Link>
+                    )}
+                  </div>
+                  <div className="h-44 md:h-full min-h-[160px] overflow-hidden">
+                    <img src={shopAds[0].image_url} alt="" className="w-full h-full object-cover" />
+                  </div>
+                </div>
+              </div>
+            )}
+
             <div className="flex items-center justify-between mb-8 pb-4 border-b border-border">
               <button onClick={() => setOpen(true)} className="lg:hidden inline-flex items-center gap-2 text-sm border border-border px-4 py-2">
                 <SlidersHorizontal className="h-4 w-4" /> Filters

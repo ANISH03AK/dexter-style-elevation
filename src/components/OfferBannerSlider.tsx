@@ -4,6 +4,7 @@ import { ArrowRight, ChevronLeft, ChevronRight, Flame, Sparkles, Tag } from "luc
 import slideFestival from "@/assets/slide-rack-festival.jpg";
 import slideTees from "@/assets/slide-rack-tees.jpg";
 import slideBrands from "@/assets/slide-rack-brands.jpg";
+import { useCms } from "@/context/CmsContext";
 
 type Slide = {
   eyebrow: string;
@@ -17,7 +18,7 @@ type Slide = {
   imageAlt: string;
 };
 
-const slides: Slide[] = [
+const defaultSlides: Slide[] = [
   {
     eyebrow: "Festival Drop",
     title: "UP TO 40% OFF",
@@ -54,11 +55,29 @@ const slides: Slide[] = [
 ];
 
 const OfferBannerSlider = () => {
+  const { promotionalBanners } = useCms();
+
+  const dynamicBanners = promotionalBanners
+    .filter((b) => b.is_active && (b.placement === "medium_promo" || b.placement === "large_banner" || b.layout_preset === "medium" || b.layout_preset === "large_hero"))
+    .map((b) => ({
+      eyebrow: b.subtitle || "DEXTER Special",
+      title: b.title,
+      sub: b.subtitle || "Limited Period Offer · In-store & Online",
+      cta: b.button_text || "Shop Now",
+      href: b.button_url || "/shop",
+      accent: (b.background_color?.includes("dc2626") ? "red" : "gold") as "red" | "gold",
+      icon: Sparkles,
+      image: b.desktop_image_url || b.image_url || slideFestival,
+      imageAlt: b.title,
+    }));
+
+  const slides = dynamicBanners.length > 0 ? [...dynamicBanners, ...defaultSlides] : defaultSlides;
+
   const [idx, setIdx] = useState(0);
   useEffect(() => {
     const t = setInterval(() => setIdx((i) => (i + 1) % slides.length), 4500);
     return () => clearInterval(t);
-  }, []);
+  }, [slides.length]);
 
   const go = (n: number) => setIdx((n + slides.length) % slides.length);
 

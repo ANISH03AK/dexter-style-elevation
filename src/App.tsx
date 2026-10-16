@@ -12,6 +12,7 @@ import { WishlistProvider } from "@/context/WishlistContext";
 import { StoreSettingsProvider } from "@/context/StoreSettingsContext";
 import { LookbookProvider } from "@/context/LookbookContext";
 import { MotionPreferenceProvider } from "@/context/MotionPreferenceContext";
+import { CmsProvider } from "@/context/CmsContext";
 import Index from "./pages/Index.tsx";
 const Shop = lazy(() => import("./pages/Shop.tsx"));
 const ProductDetails = lazy(() => import("./pages/ProductDetails.tsx"));
@@ -91,6 +92,7 @@ const App = () => (
       <BrowserRouter>
         <AuthProvider>
           <StoreSettingsProvider>
+          <CmsProvider>
           <LookbookProvider>
           <ProductsProvider>
             <WishlistProvider>
@@ -108,6 +110,7 @@ const App = () => (
             </WishlistProvider>
           </ProductsProvider>
           </LookbookProvider>
+          </CmsProvider>
           </StoreSettingsProvider>
         </AuthProvider>
       </BrowserRouter>

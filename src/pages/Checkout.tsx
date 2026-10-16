@@ -7,10 +7,9 @@ import { useAuth } from "@/hooks/useAuth";
 import { formatINR } from "@/lib/format";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { useStoreSettings } from "@/context/StoreSettingsContext";
 
-const SHIPPING_FEE = 162;
 const FREE_ITEM_THRESHOLD = 3;
-const FREE_SUBTOTAL_THRESHOLD = 2500;
 
 type PayMethod = string;
 
@@ -107,9 +106,23 @@ const Checkout = () => {
   }, [user]);
 
 
+  const { settings } = useStoreSettings();
+  const SHIPPING_FEE = settings.flat_shipping_fee;
+  const FREE_SUBTOTAL_THRESHOLD = settings.free_shipping_threshold;
+
+  const [promo] = useState<{ code: string; label: string; off: number } | null>(() => {
+    try {
+      const raw = sessionStorage.getItem("dexter:promo");
+      return raw ? JSON.parse(raw) : null;
+    } catch {
+      return null;
+    }
+  });
+
   const qualifiesFree = count >= FREE_ITEM_THRESHOLD || total >= FREE_SUBTOTAL_THRESHOLD;
   const shipping = items.length === 0 ? 0 : (qualifiesFree ? 0 : SHIPPING_FEE);
-  const grand = total + shipping;
+  const discount = promo?.off ?? 0;
+  const grand = Math.max(0, total + shipping - discount);
 
   if (items.length === 0 && !confirmed) {
     return (
@@ -182,6 +195,7 @@ const Checkout = () => {
     });
 
     clear();
+    sessionStorage.removeItem("dexter:promo");
     toast.success("✅ Order Confirmed!");
   };
 
@@ -401,6 +415,12 @@ const Checkout = () => {
             </div>
             <div className="space-y-2 text-sm border-t border-border pt-4">
               <div className="flex justify-between"><span className="text-muted-foreground">Subtotal</span><span>{formatINR(total)}</span></div>
+              {discount > 0 && (
+                <div className="flex justify-between text-emerald-600 font-semibold">
+                  <span>Discount ({promo?.code})</span>
+                  <span>-{formatINR(discount)}</span>
+                </div>
+              )}
               <div className="flex justify-between"><span className="text-muted-foreground">Shipping</span><span>{shipping === 0 ? "Free" : formatINR(shipping)}</span></div>
               <div className="flex justify-between font-semibold pt-2 border-t border-border text-base"><span>Total</span><span className="text-gold">{formatINR(grand)}</span></div>
             </div>

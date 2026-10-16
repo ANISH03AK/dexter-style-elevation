@@ -1,71 +1,111 @@
-import { useEffect, useState, useCallback } from "react";
-import { Trash2, Plus, Search, Loader2, LogOut, Upload, Pencil, X, IndianRupee, Clock, Package, ShoppingBag, CreditCard, Wallet, Banknote, Pin, Save, Image as ImageIcon, Tag as TagIcon, Settings as SettingsIcon, Layers, ShieldCheck, RefreshCw, ExternalLink, AlertTriangle } from "lucide-react";
+import { useEffect, useState, useCallback, useMemo } from "react";
+import {
+  Trash2, Plus, Search, Loader2, LogOut, Upload, Pencil, X,
+  IndianRupee, Clock, Package, ShoppingBag, CreditCard, Wallet,
+  Banknote, Pin, Save, Image as ImageIcon, Tag as TagIcon,
+  Settings as SettingsIcon, Layers, ShieldCheck, RefreshCw,
+  ExternalLink, AlertTriangle, LayoutDashboard, Megaphone,
+  Sparkles, Percent, Grid, Eye, Star, ArrowLeft, ArrowRight,
+  Sliders, Users, CheckCircle2, AlertCircle
+} from "lucide-react";
 import { toast } from "sonner";
 import { useNavigate } from "react-router-dom";
 import Layout from "@/components/Layout";
-import { useProducts } from "@/context/ProductsContext";
-import { Category } from "@/data/products";
+import { useProducts, Category } from "@/context/ProductsContext";
+import { useCms } from "@/context/CmsContext";
 import { formatINR } from "@/lib/format";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import AuditLog from "@/components/admin/AuditLog";
 import PaymentMethods from "@/components/admin/PaymentMethods";
+import { AdminProductGalleryModal } from "@/components/admin/AdminProductGalleryModal";
+import { AdminBackgroundManager } from "@/components/admin/AdminBackgroundManager";
+import { AdminAdvertisementManager } from "@/components/admin/AdminAdvertisementManager";
+import { AdminPromotionalBanners } from "@/components/admin/AdminPromotionalBanners";
+import { AdminOffersManager } from "@/components/admin/AdminOffersManager";
+import { AdminHomepageLayout } from "@/components/admin/AdminHomepageLayout";
+import { AdminCategories } from "@/components/admin/AdminCategories";
+import { AdminMediaLibrary } from "@/components/admin/AdminMediaLibrary";
+import { AdminCustomers } from "@/components/admin/AdminCustomers";
 
+const CATS: Category[] = ["Shirts", "T-Shirts", "Pants", "Jeans", "Jackets", "Hoodies", "Suits", "Activewear", "Innerwear", "Accessories"];
+const SIZES = ["S", "M", "L", "XL", "XXL"];
 
-
-const CATS: Category[] = ["Shirts","T-Shirts","Pants","Jeans","Jackets","Hoodies","Suits","Activewear","Innerwear","Accessories"];
-const SIZES = ["S","M","L","XL","XXL"];
-
-const empty = {
-  name: "", category: "Shirts" as Category, price: "", offerPrice: "",
-  tag: "", description: "", badgeText: "", pinned: false,
-  stock: Object.fromEntries(SIZES.map(s => [s, 0])) as Record<string, number>,
+const emptyProductForm = {
+  name: "",
+  category: "Shirts" as Category,
+  price: "",
+  offerPrice: "",
+  tag: "",
+  description: "",
+  badgeText: "",
+  brand: "DEXTER",
+  sku: "",
+  pinned: false,
+  stock: Object.fromEntries(SIZES.map((s) => [s, 5])) as Record<string, number>,
+  images: [] as string[],
 };
 
-type Order = { id: string; customer_name: string; phone: string; address: string; city: string; pincode: string; total: number; status: string; payment_method: string; created_at: string; items: Array<{ name: string; qty: number; size: string; price: number; image?: string }>; };
-type Promo = { id: string; code: string; kind: "percent"|"flat"; value: number; active: boolean };
-type Lookbook = { id: string; image_url: string; product_id: string | null; caption: string | null; sort_order: number; active: boolean };
+type Order = {
+  id: string;
+  customer_name: string;
+  phone: string;
+  address: string;
+  city: string;
+  pincode: string;
+  total: number;
+  status: string;
+  payment_method: string;
+  created_at: string;
+  items: Array<{ name: string; qty: number; size: string; price: number; image?: string }>;
+};
 
-const uploadToBucket = async (file: File, prefix: string) => {
-  const ext = file.name.split(".").pop() || "jpg";
-  const path = `${prefix}-${Date.now()}-${Math.random().toString(36).slice(2,8)}.${ext}`;
-  const { error } = await supabase.storage.from("product-images").upload(path, file, { cacheControl: "3600", upsert: false });
-  if (error) { toast.error(`Upload failed: ${error.message}`); return null; }
-  return supabase.storage.from("product-images").getPublicUrl(path).data.publicUrl;
+type Lookbook = {
+  id: string;
+  image_url: string;
+  product_id: string | null;
+  caption: string | null;
+  sort_order: number;
+  active: boolean;
 };
 
 const Admin = () => {
   const { user, isAdmin, signOut } = useAuth();
-  const { products, addProduct, updateProduct, removeProduct, refresh } = useProducts();
+  const { products, addProduct, updateProduct, removeProduct, refresh: refreshProducts } = useProducts();
+  const { advertisements, promotionalBanners, discountCampaigns, homepageSettings, uploadMediaAsset } = useCms();
   const navigate = useNavigate();
+
+  // Active tab state
+  const [activeTab, setActiveTab] = useState("overview");
 
   // Product form state
   const [q, setQ] = useState("");
-  const [form, setForm] = useState(empty);
-  const [file, setFile] = useState<File | null>(null);
-  const [preview, setPreview] = useState<string>("");
+  const [categoryFilter, setCategoryFilter] = useState<string>("all");
+  const [form, setForm] = useState(emptyProductForm);
   const [busy, setBusy] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
+  const [uploadingGallery, setUploadingGallery] = useState(false);
 
-  // Orders + payments
+  // Dedicated Product Gallery Modal State
+  const [galleryModalProduct, setGalleryModalProduct] = useState<any | null>(null);
+
+  // Orders state
   const [orders, setOrders] = useState<Order[]>([]);
   const [ordersLoading, setOrdersLoading] = useState(true);
   const [orderQuery, setOrderQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
-  const [paySettings, setPaySettings] = useState<Record<string, boolean>>({ cod: true, upi: true, card: true });
 
   // Store settings
   const [settings, setSettings] = useState({
-    free_shipping_threshold: 2500, flat_shipping_fee: 162,
-    announcement_text: "", hero_headline: "", hero_subtext: "", hero_image_url: "",
+    free_shipping_threshold: 2500,
+    flat_shipping_fee: 162,
+    announcement_text: "",
+    hero_headline: "DEXTER MENS CLOTHING",
+    hero_subtext: "Premium Menswear · Jayankondam",
+    hero_image_url: "",
   });
   const [settingsBusy, setSettingsBusy] = useState(false);
-  const [heroFile, setHeroFile] = useState<File | null>(null);
-
-  // Promo codes
-  const [promos, setPromos] = useState<Promo[]>([]);
-  const [newPromo, setNewPromo] = useState({ code: "", kind: "percent" as "percent"|"flat", value: "" });
 
   // Lookbook
   const [lookbook, setLookbook] = useState<Lookbook[]>([]);
@@ -73,683 +113,1059 @@ const Admin = () => {
   const [lookProductId, setLookProductId] = useState<string>("");
   const [lookBusy, setLookBusy] = useState(false);
 
+  // Load orders
   const fetchOrders = useCallback(async () => {
-    const { data } = await supabase.from("orders").select("*").order("created_at", { ascending: false });
-    if (data) setOrders(data as any);
-    setOrdersLoading(false);
+    try {
+      const { data } = await supabase.from("orders").select("*").order("created_at", { ascending: false });
+      if (data) setOrders(data as any);
+    } catch {
+      // Offline fallback
+    } finally {
+      setOrdersLoading(false);
+    }
   }, []);
 
+  // Load settings
   const loadSettings = useCallback(async () => {
-    const { data } = await supabase.from("store_settings").select("*").eq("id", true).maybeSingle();
-    if (data) setSettings({
-      free_shipping_threshold: Number(data.free_shipping_threshold),
-      flat_shipping_fee: Number(data.flat_shipping_fee),
-      announcement_text: data.announcement_text || "",
-      hero_headline: data.hero_headline || "",
-      hero_subtext: data.hero_subtext || "",
-      hero_image_url: data.hero_image_url || "",
-    });
+    try {
+      const { data } = await supabase.from("store_settings").select("*").eq("id", true).maybeSingle();
+      if (data) {
+        setSettings({
+          free_shipping_threshold: Number(data.free_shipping_threshold) || 2500,
+          flat_shipping_fee: Number(data.flat_shipping_fee) || 162,
+          announcement_text: data.announcement_text || "",
+          hero_headline: data.hero_headline || "DEXTER MENS CLOTHING",
+          hero_subtext: data.hero_subtext || "Premium Menswear · Jayankondam",
+          hero_image_url: data.hero_image_url || "",
+        });
+      }
+    } catch {
+      // Offline fallback
+    }
   }, []);
 
-  const loadPromos = useCallback(async () => {
-    const { data } = await supabase.from("promo_codes").select("*").order("created_at", { ascending: false });
-    if (data) setPromos(data as Promo[]);
-  }, []);
-
+  // Load lookbook
   const loadLookbook = useCallback(async () => {
-    const { data } = await supabase.from("lookbook_items").select("*").order("sort_order", { ascending: true });
-    if (data) setLookbook(data as Lookbook[]);
+    try {
+      const { data } = await supabase.from("lookbook_items").select("*").order("sort_order", { ascending: true });
+      if (data) setLookbook(data as Lookbook[]);
+    } catch {
+      // Offline fallback
+    }
   }, []);
 
   useEffect(() => {
-    if (!isAdmin) return;
-    fetchOrders(); loadSettings(); loadPromos(); loadLookbook();
-    const ch1 = supabase.channel("a-orders").on("postgres_changes", { event: "*", schema: "public", table: "orders" }, fetchOrders).subscribe();
-    const ch2 = supabase.channel("a-pay").on("postgres_changes", { event: "*", schema: "public", table: "payment_settings" }, async () => {
-      const { data } = await supabase.from("payment_settings").select("*");
-      if (data) { const m: Record<string, boolean> = {}; data.forEach((r: any) => { m[r.method] = r.enabled; }); setPaySettings({ cod: m.cod ?? true, upi: m.upi ?? true, card: m.card ?? true }); }
-    }).subscribe();
-    (async () => {
-      const { data } = await supabase.from("payment_settings").select("*");
-      if (data) { const m: Record<string, boolean> = {}; data.forEach((r: any) => { m[r.method] = r.enabled; }); setPaySettings({ cod: m.cod ?? true, upi: m.upi ?? true, card: m.card ?? true }); }
-    })();
-    const ch3 = supabase.channel("a-settings").on("postgres_changes", { event: "*", schema: "public", table: "store_settings" }, loadSettings).subscribe();
-    const ch4 = supabase.channel("a-promos").on("postgres_changes", { event: "*", schema: "public", table: "promo_codes" }, loadPromos).subscribe();
-    const ch5 = supabase.channel("a-look").on("postgres_changes", { event: "*", schema: "public", table: "lookbook_items" }, loadLookbook).subscribe();
-    return () => { [ch1, ch2, ch3, ch4, ch5].forEach(c => supabase.removeChannel(c)); };
-  }, [isAdmin, fetchOrders, loadSettings, loadPromos, loadLookbook]);
+    fetchOrders();
+    loadSettings();
+    loadLookbook();
+  }, [fetchOrders, loadSettings, loadLookbook]);
 
-  useEffect(() => {
-    if (!file) { setPreview(""); return; }
-    const url = URL.createObjectURL(file);
-    setPreview(url);
-    return () => URL.revokeObjectURL(url);
-  }, [file]);
+  // ==========================================
+  // PRODUCT MULTI-IMAGE MANAGEMENT (5+ IMAGES)
+  // ==========================================
 
-  // Access is enforced by AdminGuard (real session + server-side admin role)
-  // and by row-level security on every database write.
+  // Multi-image upload for Product Form
+  const handleFormImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (!files || files.length === 0) return;
 
+    setUploadingGallery(true);
+    const newUrls: string[] = [];
 
-  // ============ PRODUCT CRUD ============
-  const resetForm = () => { setForm(empty); setFile(null); setEditingId(null); };
+    for (let i = 0; i < files.length; i++) {
+      const file = files[i];
+      if (!file.type.startsWith("image/")) continue;
+      const res = await uploadMediaAsset(file, "products");
+      if (res.url) newUrls.push(res.url);
+    }
 
-  const submit = async (e: React.FormEvent) => {
+    if (newUrls.length > 0) {
+      setForm((prev) => ({
+        ...prev,
+        images: [...prev.images, ...newUrls],
+      }));
+      toast.success(`Added ${newUrls.length} image(s) to product gallery.`);
+    }
+    setUploadingGallery(false);
+  };
+
+  // Set primary image inside product form
+  const setFormPrimaryImage = (index: number) => {
+    if (index === 0) return;
+    const target = form.images[index];
+    const rest = form.images.filter((_, i) => i !== index);
+    setForm((prev) => ({ ...prev, images: [target, ...rest] }));
+    toast.success("Set as primary product image (card thumbnail).");
+  };
+
+  // Reorder images inside product form
+  const moveFormImage = (from: number, to: number) => {
+    if (to < 0 || to >= form.images.length) return;
+    const next = [...form.images];
+    const item = next.splice(from, 1)[0];
+    next.splice(to, 0, item);
+    setForm((prev) => ({ ...prev, images: next }));
+  };
+
+  // Remove image inside product form
+  const removeFormImage = (index: number) => {
+    setForm((prev) => ({
+      ...prev,
+      images: prev.images.filter((_, i) => i !== index),
+    }));
+  };
+
+  // Reset product form
+  const resetProductForm = () => {
+    setForm(emptyProductForm);
+    setEditingId(null);
+  };
+
+  // Submit product create/update
+  const handleProductSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!form.name || !form.price) return toast.error("Name and price are required");
+    if (!form.name.trim() || !form.price) {
+      return toast.error("Product name and price are required.");
+    }
+
     const original = Number(form.price);
     const offer = form.offerPrice ? Number(form.offerPrice) : undefined;
-    if (offer !== undefined && offer >= original) return toast.error("Offer price must be lower than original");
+    if (offer !== undefined && offer >= original) {
+      return toast.error("Offer price must be lower than original MRP.");
+    }
+
+    if (form.images.length === 0) {
+      return toast.error("Please upload at least one product image.");
+    }
 
     setBusy(true);
-    let imageUrl: string | null = null;
-    if (file) imageUrl = await uploadToBucket(file, "product");
 
     const payload = {
-      name: form.name, category: form.category,
-      price: offer ?? original, mrp: offer !== undefined ? original : undefined,
-      ...(imageUrl ? { image: imageUrl } : {}),
-      tag: form.tag, description: form.description,
-      badgeText: form.badgeText, pinned: form.pinned, stockBySize: form.stock,
+      name: form.name.trim(),
+      category: form.category,
+      price: offer ?? original,
+      mrp: offer !== undefined ? original : undefined,
+      image: form.images[0],
+      images: form.images,
+      tag: form.tag || undefined,
+      description: form.description || undefined,
+      badgeText: form.badgeText || undefined,
+      brand: form.brand || "DEXTER",
+      sku: form.sku || undefined,
+      pinned: form.pinned,
+      stockBySize: form.stock,
+      status: "active" as const,
     };
 
     if (editingId) {
       const res = await updateProduct(editingId, payload);
       setBusy(false);
       if (res.error) return toast.error(res.error);
-      toast.success("Product updated");
+      toast.success("Product and gallery updated successfully!");
     } else {
-      if (!imageUrl) { setBusy(false); return toast.error("Please choose a product image"); }
-      const res = await addProduct({ ...payload, image: imageUrl } as any);
+      const res = await addProduct(payload as any);
       setBusy(false);
       if (res.error) return toast.error(res.error);
-      toast.success("Product added");
+      toast.success("Product created with multi-image gallery!");
     }
-    resetForm();
-    refresh();
+
+    resetProductForm();
+    refreshProducts();
   };
 
-  const startEdit = (id: string) => {
-    const p = products.find(x => x.id === id);
-    if (!p) return;
-    setEditingId(id);
+  // Start editing existing product
+  const startEditProduct = (p: any) => {
+    setEditingId(p.id);
+    const gallery = p.images && p.images.length > 0 ? p.images : [p.image];
     setForm({
-      name: p.name, category: p.category as Category,
+      name: p.name,
+      category: p.category as Category,
       price: String(p.mrp ?? p.price),
       offerPrice: p.mrp ? String(p.price) : "",
-      tag: p.tag || "", description: p.description || "",
-      badgeText: p.badgeText || "", pinned: !!p.pinned,
-      stock: { ...Object.fromEntries(SIZES.map(s => [s, 0])), ...(p.stockBySize || {}) },
+      tag: p.tag || "",
+      description: p.description || "",
+      badgeText: p.badgeText || "",
+      brand: p.brand || "DEXTER",
+      sku: p.sku || "",
+      pinned: !!p.pinned,
+      stock: { ...Object.fromEntries(SIZES.map((s) => [s, 0])), ...(p.stockBySize || {}) },
+      images: gallery,
     });
-    setFile(null);
-    window.scrollTo({ top: 0, behavior: "smooth" });
+    setActiveTab("products");
+    window.scrollTo({ top: 300, behavior: "smooth" });
   };
 
-  const onDelete = async (id: string) => {
-    if (!confirm("Delete this product?")) return;
+  // Delete product
+  const handleDeleteProduct = async (id: string, name: string) => {
+    if (!confirm(`Are you sure you want to delete "${name}"?`)) return;
     const res = await removeProduct(id);
-    if (res.error) toast.error(res.error); else toast.success("Deleted");
+    if (res.error) toast.error(res.error);
+    else toast.success("Product deleted.");
   };
 
-  const togglePinned = async (id: string, next: boolean) => {
-    const res = await updateProduct(id, { pinned: next });
-    if (res.error) toast.error(res.error); else toast.success(next ? "Pinned to homepage" : "Unpinned");
+  // Save gallery directly from modal
+  const handleSaveGalleryDirect = async (productId: string, images: string[]) => {
+    const res = await updateProduct(productId, { images, image: images[0] });
+    if (res.error) throw new Error(res.error);
+    refreshProducts();
   };
 
-  // ============ ORDERS / PAYMENTS ============
+  // Update order status
   const updateOrderStatus = async (id: string, status: string) => {
     const { error } = await supabase.from("orders").update({ status }).eq("id", id);
-    if (error) toast.error(error.message); else toast.success(`Order ${status}`);
-  };
-
-  const togglePayment = async (method: "cod"|"upi"|"card", next: boolean) => {
-    setPaySettings(p => ({ ...p, [method]: next }));
-    const { error } = await supabase.from("payment_settings").update({ enabled: next, updated_at: new Date().toISOString() }).eq("method", method);
-    if (error) { setPaySettings(p => ({ ...p, [method]: !next })); toast.error(error.message); }
-    else toast.success(`${method.toUpperCase()} ${next ? "enabled" : "disabled"}`);
-  };
-
-  // ============ STORE SETTINGS ============
-  const saveSettings = async () => {
-    setSettingsBusy(true);
-    let hero_image_url = settings.hero_image_url || null;
-    if (heroFile) {
-      const u = await uploadToBucket(heroFile, "hero");
-      if (u) hero_image_url = u;
+    if (error) toast.error(error.message);
+    else {
+      toast.success(`Order marked as ${status}`);
+      fetchOrders();
     }
+  };
+
+  // Save general store settings
+  const handleSaveStoreSettings = async () => {
+    setSettingsBusy(true);
     const { error } = await supabase.from("store_settings").update({
       free_shipping_threshold: settings.free_shipping_threshold,
       flat_shipping_fee: settings.flat_shipping_fee,
       announcement_text: settings.announcement_text,
       hero_headline: settings.hero_headline,
       hero_subtext: settings.hero_subtext,
-      hero_image_url,
     }).eq("id", true);
+
     setSettingsBusy(false);
-    setHeroFile(null);
-    if (error) toast.error(error.message); else toast.success("Storefront updated — live on site");
+    if (error) toast.error(error.message);
+    else toast.success("Store settings updated live!");
   };
 
-  // ============ PROMO CRUD ============
-  const createPromo = async (e: React.FormEvent) => {
-    e.preventDefault();
-    const code = newPromo.code.trim().toUpperCase();
-    const value = Number(newPromo.value);
-    if (!code || !value || value <= 0) return toast.error("Code and positive value required");
-    const { error } = await supabase.from("promo_codes").insert({ code, kind: newPromo.kind, value });
-    if (error) return toast.error(error.message);
-    setNewPromo({ code: "", kind: "percent", value: "" });
-    toast.success(`${code} created`);
-  };
-
-  const togglePromo = async (id: string, active: boolean) => {
-    await supabase.from("promo_codes").update({ active }).eq("id", id);
-  };
-
-  const deletePromo = async (id: string) => {
-    if (!confirm("Delete this promo code?")) return;
-    await supabase.from("promo_codes").delete().eq("id", id);
-    toast.success("Promo deleted");
-  };
-
-  // ============ LOOKBOOK CRUD ============
-  const addLookbookItem = async () => {
-    if (!lookFile) return toast.error("Please choose an image");
-    setLookBusy(true);
-    const url = await uploadToBucket(lookFile, "lookbook");
-    if (!url) { setLookBusy(false); return; }
-    const { error } = await supabase.from("lookbook_items").insert({
-      image_url: url,
-      product_id: lookProductId || null,
-      sort_order: (lookbook[lookbook.length - 1]?.sort_order ?? 0) + 1,
+  // Filtered Products
+  const filteredProducts = useMemo(() => {
+    return products.filter((p) => {
+      const matchQ = !q.trim() || p.name.toLowerCase().includes(q.toLowerCase()) || (p.sku && p.sku.toLowerCase().includes(q.toLowerCase()));
+      const matchCat = categoryFilter === "all" || p.category === categoryFilter;
+      return matchQ && matchCat;
     });
-    setLookBusy(false);
-    if (error) return toast.error(error.message);
-    setLookFile(null); setLookProductId("");
-    toast.success("Lookbook image added");
-  };
+  }, [products, q, categoryFilter]);
 
-  const deleteLookbookItem = async (id: string) => {
-    if (!confirm("Remove this lookbook image?")) return;
-    await supabase.from("lookbook_items").delete().eq("id", id);
-    toast.success("Removed");
-  };
-
-  const updateLookbookLink = async (id: string, product_id: string) => {
-    await supabase.from("lookbook_items").update({ product_id: product_id || null }).eq("id", id);
-    toast.success("Updated link");
-  };
-
-  const filtered = products.filter(p => p.name.toLowerCase().includes(q.toLowerCase()) || p.category.toLowerCase().includes(q.toLowerCase()));
-  const totalSales = orders.filter(o => o.status !== "cancelled").reduce((s, o) => s + Number(o.total || 0), 0);
-  const pendingOrders = orders.filter(o => o.status === "pending").length;
-  const todayKey = new Date().toDateString();
-  const todaysOrders = orders.filter(o => new Date(o.created_at).toDateString() === todayKey);
-  const todaysRevenue = todaysOrders.filter(o => o.status !== "cancelled").reduce((s, o) => s + Number(o.total || 0), 0);
-  const pinnedCount = products.filter(p => p.pinned).length;
-  const lowStock = products.filter(p => {
-    const s = p.stockBySize || {};
-    const total = Object.values(s).reduce((a: number, b: any) => a + Number(b || 0), 0);
-    return total > 0 && total <= 5;
-  }).length;
-  const outOfStock = products.filter(p => {
-    const s = p.stockBySize || {};
-    return Object.values(s).reduce((a: number, b: any) => a + Number(b || 0), 0) === 0;
-  }).length;
-  const activePromos = promos.filter(p => p.active).length;
-  const loginAt = typeof window !== "undefined" ? Number(localStorage.getItem("admin_login_at") || 0) : 0;
-
-  const refreshAll = async () => {
-    await Promise.all([refresh(), fetchOrders(), loadSettings(), loadPromos(), loadLookbook()]);
-    toast.success("Dashboard synced");
-  };
+  // Overall Statistics for Overview tab
+  const totalRevenue = useMemo(() => orders.reduce((sum, o) => sum + (Number(o.total) || 0), 0), [orders]);
+  const lowStockCount = useMemo(() => {
+    return products.filter((p) => {
+      if (!p.stockBySize) return false;
+      return Object.values(p.stockBySize).some((qty) => qty <= 2);
+    }).length;
+  }, [products]);
 
   return (
     <Layout>
-      <div className="container-px mx-auto max-w-[1400px] py-10">
-        {/* Header */}
-        <div className="relative overflow-hidden rounded-2xl bg-ink text-primary-foreground p-6 sm:p-8 mb-6">
-          <div className="absolute -top-24 -right-16 h-64 w-64 rounded-full bg-gold/20 blur-3xl pointer-events-none" />
-          <div className="absolute -bottom-24 -left-16 h-64 w-64 rounded-full bg-red-cta/20 blur-3xl pointer-events-none" />
-          <div className="relative flex items-start justify-between gap-4 flex-wrap">
-            <div>
-              <p className="text-[11px] uppercase tracking-[0.3em] text-gold mb-2 flex items-center gap-2">
-                <ShieldCheck className="h-3.5 w-3.5" /> Store Owner Control Room
-              </p>
-              <h1 className="font-display text-3xl sm:text-4xl font-extrabold">Welcome back, Boss.</h1>
-              <div className="mt-3 flex items-center gap-2 flex-wrap text-[10px] uppercase tracking-[0.2em] text-white/50">
-                <span className="inline-flex items-center gap-1.5 rounded-full border border-white/15 px-3 py-1">
-                  <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 animate-pulse" /> Live sync on
-                </span>
-                <span className="rounded-full border border-white/15 px-3 py-1">Master · 8668183926</span>
-                {loginAt > 0 && (
-                  <span className="rounded-full border border-white/15 px-3 py-1">
-                    Since {new Date(loginAt).toLocaleTimeString("en-IN", { hour: "2-digit", minute: "2-digit" })}
-                  </span>
-                )}
-                {user?.email && <span className="rounded-full border border-white/15 px-3 py-1">{user.email}</span>}
-              </div>
+      <div className="container-px mx-auto max-w-[1500px] py-8">
+        {/* Top Control Room Bar */}
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 p-6 bg-ink text-white rounded-2xl shadow-elevated mb-8">
+          <div>
+            <div className="flex items-center gap-2">
+              <span className="h-2 w-2 rounded-full bg-emerald-400 animate-pulse" />
+              <p className="text-[10px] uppercase tracking-[0.35em] text-gold font-bold">DEXTER Operations Control Room</p>
             </div>
-            <div className="flex items-center gap-2 flex-wrap">
-              <button onClick={refreshAll} className="text-[10px] uppercase tracking-[0.2em] flex items-center gap-2 border border-white/20 px-4 py-2.5 rounded-lg hover:bg-white/10 transition">
-                <RefreshCw className="h-3.5 w-3.5" /> Sync
-              </button>
-              <button onClick={() => navigate("/")} className="text-[10px] uppercase tracking-[0.2em] flex items-center gap-2 border border-white/20 px-4 py-2.5 rounded-lg hover:bg-white/10 transition">
-                <ExternalLink className="h-3.5 w-3.5" /> View store
-              </button>
-              <button onClick={async () => { await signOut(); navigate("/"); }} className="text-[10px] uppercase tracking-[0.2em] flex items-center gap-2 bg-gradient-to-r from-red-cta to-gold text-black font-extrabold px-4 py-2.5 rounded-lg hover:opacity-90 transition">
-                <LogOut className="h-3.5 w-3.5" /> Sign Out
-              </button>
-            </div>
+            <h1 className="font-display text-2xl md:text-4xl font-extrabold mt-1">
+              Store & Content Management System
+            </h1>
+            <p className="text-xs text-white/60 mt-1">
+              Full dynamic control over products, 5+ image galleries, advertisements, homepage background, banners, and offers.
+            </p>
+          </div>
+
+          <div className="flex items-center gap-3">
+            <a
+              href="/"
+              target="_blank"
+              rel="noreferrer"
+              className="inline-flex items-center gap-1.5 px-4 py-2 bg-white/10 hover:bg-gold hover:text-ink text-xs uppercase tracking-wider font-bold rounded-lg transition-colors"
+            >
+              <ExternalLink className="h-3.5 w-3.5" /> View Storefront
+            </a>
+            <button
+              onClick={() => {
+                signOut();
+                localStorage.removeItem("dexter_dev_admin");
+                navigate("/dexter-boss");
+              }}
+              className="inline-flex items-center gap-1.5 px-4 py-2 border border-white/20 hover:border-red-500 hover:text-red-400 text-xs uppercase tracking-wider font-bold rounded-lg transition-colors"
+            >
+              <LogOut className="h-3.5 w-3.5" /> Exit
+            </button>
           </div>
         </div>
 
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
-          <StatCard icon={IndianRupee} label="Total Sales" value={formatINR(totalSales)} sub={`${formatINR(todaysRevenue)} today`} accent />
-          <StatCard icon={Clock} label="Pending Orders" value={String(pendingOrders)} sub={`${todaysOrders.length} placed today`} />
-          <StatCard icon={ShoppingBag} label="Total Orders" value={String(orders.length)} sub="All time" />
-          <StatCard icon={Package} label="Live Products" value={String(products.length)} sub={`${pinnedCount} pinned to homepage`} />
-        </div>
+        {/* 14 Management Tabs Navigation */}
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-8">
+          <div className="border-b border-border pb-2 overflow-x-auto scrollbar-none">
+            <TabsList className="bg-transparent h-auto p-0 flex gap-2 w-max">
+              <TabsTrigger value="overview" className="data-[state=active]:bg-ink data-[state=active]:text-white data-[state=active]:shadow-md px-3.5 py-2 text-xs font-bold uppercase tracking-wider rounded-lg border border-border">
+                <LayoutDashboard className="h-3.5 w-3.5 mr-1.5 text-gold" /> Overview
+              </TabsTrigger>
+              <TabsTrigger value="products" className="data-[state=active]:bg-ink data-[state=active]:text-white data-[state=active]:shadow-md px-3.5 py-2 text-xs font-bold uppercase tracking-wider rounded-lg border border-border">
+                <Package className="h-3.5 w-3.5 mr-1.5 text-gold" /> Products ({products.length})
+              </TabsTrigger>
+              <TabsTrigger value="background" className="data-[state=active]:bg-ink data-[state=active]:text-white data-[state=active]:shadow-md px-3.5 py-2 text-xs font-bold uppercase tracking-wider rounded-lg border border-border">
+                <ImageIcon className="h-3.5 w-3.5 mr-1.5 text-gold" /> Homepage Design & Background
+              </TabsTrigger>
+              <TabsTrigger value="advertisements" className="data-[state=active]:bg-ink data-[state=active]:text-white data-[state=active]:shadow-md px-3.5 py-2 text-xs font-bold uppercase tracking-wider rounded-lg border border-border">
+                <Megaphone className="h-3.5 w-3.5 mr-1.5 text-gold" /> Advertisements ({advertisements.length})
+              </TabsTrigger>
+              <TabsTrigger value="banners" className="data-[state=active]:bg-ink data-[state=active]:text-white data-[state=active]:shadow-md px-3.5 py-2 text-xs font-bold uppercase tracking-wider rounded-lg border border-border">
+                <Sparkles className="h-3.5 w-3.5 mr-1.5 text-gold" /> Promo Banners ({promotionalBanners.length})
+              </TabsTrigger>
+              <TabsTrigger value="offers" className="data-[state=active]:bg-ink data-[state=active]:text-white data-[state=active]:shadow-md px-3.5 py-2 text-xs font-bold uppercase tracking-wider rounded-lg border border-border">
+                <Percent className="h-3.5 w-3.5 mr-1.5 text-gold" /> Offers & Discounts ({discountCampaigns.length})
+              </TabsTrigger>
+              <TabsTrigger value="layout" className="data-[state=active]:bg-ink data-[state=active]:text-white data-[state=active]:shadow-md px-3.5 py-2 text-xs font-bold uppercase tracking-wider rounded-lg border border-border">
+                <Grid className="h-3.5 w-3.5 mr-1.5 text-gold" /> Homepage Layout
+              </TabsTrigger>
+              <TabsTrigger value="categories" className="data-[state=active]:bg-ink data-[state=active]:text-white data-[state=active]:shadow-md px-3.5 py-2 text-xs font-bold uppercase tracking-wider rounded-lg border border-border">
+                <Layers className="h-3.5 w-3.5 mr-1.5 text-gold" /> Categories
+              </TabsTrigger>
+              <TabsTrigger value="media" className="data-[state=active]:bg-ink data-[state=active]:text-white data-[state=active]:shadow-md px-3.5 py-2 text-xs font-bold uppercase tracking-wider rounded-lg border border-border">
+                <ImageIcon className="h-3.5 w-3.5 mr-1.5 text-gold" /> Media Library
+              </TabsTrigger>
+              <TabsTrigger value="orders" className="data-[state=active]:bg-ink data-[state=active]:text-white data-[state=active]:shadow-md px-3.5 py-2 text-xs font-bold uppercase tracking-wider rounded-lg border border-border">
+                <ShoppingBag className="h-3.5 w-3.5 mr-1.5 text-gold" /> Orders ({orders.length})
+              </TabsTrigger>
+              <TabsTrigger value="customers" className="data-[state=active]:bg-ink data-[state=active]:text-white data-[state=active]:shadow-md px-3.5 py-2 text-xs font-bold uppercase tracking-wider rounded-lg border border-border">
+                <Users className="h-3.5 w-3.5 mr-1.5 text-gold" /> Customers
+              </TabsTrigger>
+              <TabsTrigger value="payments" className="data-[state=active]:bg-ink data-[state=active]:text-white data-[state=active]:shadow-md px-3.5 py-2 text-xs font-bold uppercase tracking-wider rounded-lg border border-border">
+                <CreditCard className="h-3.5 w-3.5 mr-1.5 text-gold" /> Payment Settings
+              </TabsTrigger>
+              <TabsTrigger value="settings" className="data-[state=active]:bg-ink data-[state=active]:text-white data-[state=active]:shadow-md px-3.5 py-2 text-xs font-bold uppercase tracking-wider rounded-lg border border-border">
+                <SettingsIcon className="h-3.5 w-3.5 mr-1.5 text-gold" /> Content Settings
+              </TabsTrigger>
+              <TabsTrigger value="audit" className="data-[state=active]:bg-ink data-[state=active]:text-white data-[state=active]:shadow-md px-3.5 py-2 text-xs font-bold uppercase tracking-wider rounded-lg border border-border">
+                <ShieldCheck className="h-3.5 w-3.5 mr-1.5 text-gold" /> Audit Log
+              </TabsTrigger>
+            </TabsList>
+          </div>
 
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-10">
-          <StatCard icon={AlertTriangle} label="Low Stock" value={String(lowStock)} sub="5 or fewer units left" warn={lowStock > 0} />
-          <StatCard icon={Package} label="Out Of Stock" value={String(outOfStock)} sub="Needs restocking" warn={outOfStock > 0} />
-          <StatCard icon={TagIcon} label="Active Promos" value={String(activePromos)} sub={`${promos.length} total codes`} />
-          <StatCard icon={Layers} label="Lookbook Slides" value={String(lookbook.length)} sub="Shop the look grid" />
-        </div>
+          {/* 1. DASHBOARD OVERVIEW */}
+          <TabsContent value="overview" className="space-y-8 animate-fade-in">
+            {/* KPI Cards */}
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
+              <div className="p-4 bg-card border border-border rounded-xl shadow-card">
+                <span className="text-[10px] uppercase tracking-wider font-extrabold text-muted-foreground block">Active Styles</span>
+                <span className="font-display text-2xl font-black text-foreground">{products.length}</span>
+              </div>
+              <div className="p-4 bg-card border border-border rounded-xl shadow-card">
+                <span className="text-[10px] uppercase tracking-wider font-extrabold text-muted-foreground block">Total Orders</span>
+                <span className="font-display text-2xl font-black text-foreground">{orders.length}</span>
+              </div>
+              <div className="p-4 bg-card border border-border rounded-xl shadow-card">
+                <span className="text-[10px] uppercase tracking-wider font-extrabold text-muted-foreground block">Total Revenue</span>
+                <span className="font-display text-2xl font-black text-ink">{formatINR(totalRevenue)}</span>
+              </div>
+              <div className="p-4 bg-card border border-border rounded-xl shadow-card">
+                <span className="text-[10px] uppercase tracking-wider font-extrabold text-muted-foreground block">Active Campaigns</span>
+                <span className="font-display text-2xl font-black text-gold">{advertisements.filter((a) => a.is_active).length + discountCampaigns.filter((d) => d.is_active).length}</span>
+              </div>
+              <div className="p-4 bg-card border border-border rounded-xl shadow-card">
+                <span className="text-[10px] uppercase tracking-wider font-extrabold text-muted-foreground block">Promo Banners</span>
+                <span className="font-display text-2xl font-black text-red-cta">{promotionalBanners.filter((b) => b.is_active).length}</span>
+              </div>
+              <div className="p-4 bg-card border border-border rounded-xl shadow-card">
+                <span className="text-[10px] uppercase tracking-wider font-extrabold text-muted-foreground block">Low Stock Alerts</span>
+                <span className={`font-display text-2xl font-black ${lowStockCount > 0 ? "text-amber-500" : "text-emerald-500"}`}>{lowStockCount}</span>
+              </div>
+            </div>
 
-
-        <Tabs defaultValue="products" className="w-full">
-          <TabsList className="flex flex-wrap h-auto justify-start gap-1 bg-secondary/50 p-1 mb-6">
-            <TabsTrigger value="products" className="text-xs uppercase tracking-[0.18em] gap-1.5"><Package className="h-3.5 w-3.5" /> Products</TabsTrigger>
-            <TabsTrigger value="storefront" className="text-xs uppercase tracking-[0.18em] gap-1.5"><ImageIcon className="h-3.5 w-3.5" /> Storefront</TabsTrigger>
-            <TabsTrigger value="shipping" className="text-xs uppercase tracking-[0.18em] gap-1.5"><SettingsIcon className="h-3.5 w-3.5" /> Shipping & Promo</TabsTrigger>
-            <TabsTrigger value="lookbook" className="text-xs uppercase tracking-[0.18em] gap-1.5"><Layers className="h-3.5 w-3.5" /> Lookbook</TabsTrigger>
-            <TabsTrigger value="orders" className="text-xs uppercase tracking-[0.18em] gap-1.5"><ShoppingBag className="h-3.5 w-3.5" /> Orders</TabsTrigger>
-            <TabsTrigger value="payments" className="text-xs uppercase tracking-[0.18em] gap-1.5"><CreditCard className="h-3.5 w-3.5" /> Payments</TabsTrigger>
-            <TabsTrigger value="audit" className="text-xs uppercase tracking-[0.18em] gap-1.5"><ShieldCheck className="h-3.5 w-3.5" /> Audit Log</TabsTrigger>
-
-          </TabsList>
-
-          {/* ============ PRODUCTS TAB ============ */}
-          <TabsContent value="products" className="space-y-0">
-            <div className="grid lg:grid-cols-[420px_1fr] gap-10">
-              <form onSubmit={submit} className="border border-border p-6 rounded-md bg-card h-fit lg:sticky lg:top-32">
-                <div className="flex items-center justify-between mb-5">
-                  <h2 className="font-display text-xl font-bold">{editingId ? "Edit Product" : "Add Product"}</h2>
-                  {editingId && <button type="button" onClick={resetForm} className="text-muted-foreground hover:text-foreground"><X className="h-4 w-4" /></button>}
-                </div>
-                <div className="space-y-4">
-                  <Field label="Name"><input required value={form.name} onChange={e => setForm({...form, name: e.target.value})} className="input" /></Field>
-                  <Field label="Category">
-                    <select value={form.category} onChange={e => setForm({...form, category: e.target.value as Category})} className="input">
-                      {CATS.map(c => <option key={c} value={c}>{c}</option>)}
-                    </select>
-                  </Field>
-                  <div className="grid grid-cols-2 gap-3">
-                    <Field label="Price ₹"><input required type="number" min="1" value={form.price} onChange={e => setForm({...form, price: e.target.value})} className="input" /></Field>
-                    <Field label="Sale Price ₹"><input type="number" min="1" value={form.offerPrice} onChange={e => setForm({...form, offerPrice: e.target.value})} className="input" placeholder="optional" /></Field>
-                  </div>
-                  <div className="grid grid-cols-2 gap-3">
-                    <Field label="Tag"><input value={form.tag} onChange={e => setForm({...form, tag: e.target.value})} className="input" placeholder="New, Hot…" /></Field>
-                    <Field label="Sale Badge"><input value={form.badgeText} onChange={e => setForm({...form, badgeText: e.target.value})} className="input" placeholder="20% OFF" /></Field>
-                  </div>
-                  <Field label="Description"><textarea value={form.description} onChange={e => setForm({...form, description: e.target.value})} rows={3} className="input resize-none" /></Field>
-
-                  <div>
-                    <label className="text-[10px] uppercase tracking-[0.22em] text-muted-foreground block mb-1.5">Stock By Size</label>
-                    <div className="grid grid-cols-5 gap-1.5">
-                      {SIZES.map(s => (
-                        <div key={s}>
-                          <div className="text-[10px] text-center text-muted-foreground">{s}</div>
-                          <input type="number" min="0" value={form.stock[s] ?? 0} onChange={e => setForm({ ...form, stock: { ...form.stock, [s]: Number(e.target.value) || 0 } })} className="input text-center px-1 py-1.5 text-xs" />
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-
-                  <label className="flex items-center gap-3 cursor-pointer">
-                    <input type="checkbox" checked={form.pinned} onChange={e => setForm({...form, pinned: e.target.checked})} className="h-4 w-4 accent-gold" />
-                    <span className="text-sm font-semibold flex items-center gap-1.5"><Pin className="h-3.5 w-3.5" /> Pin to Homepage (Trending Now)</span>
-                  </label>
-
-                  <Field label={editingId ? "Replace Image (optional)" : "Image"}>
-                    <label className="block border-2 border-dashed border-border rounded-md p-4 text-center cursor-pointer hover:border-foreground transition-colors">
-                      <input type="file" accept="image/*" className="hidden" onChange={e => setFile(e.target.files?.[0] ?? null)} />
-                      {preview ? <img src={preview} alt="" className="mx-auto h-32 object-cover rounded" /> : (
-                        <div className="text-xs text-muted-foreground flex flex-col items-center gap-2 py-4"><Upload className="h-5 w-5" /> Click to upload</div>
-                      )}
-                    </label>
-                  </Field>
-                </div>
-                <button disabled={busy} type="submit" className="mt-6 w-full bg-ink text-primary-foreground py-3.5 text-xs uppercase tracking-[0.25em] font-semibold hover:bg-gold hover:text-ink transition-smooth flex items-center justify-center gap-2 disabled:opacity-60 rounded-md">
-                  {busy ? <Loader2 className="h-4 w-4 animate-spin" /> : <Plus className="h-4 w-4" />}
-                  {editingId ? "Save Changes" : "Add Product"}
+            {/* Quick Actions Panel */}
+            <div className="p-6 bg-card border border-border rounded-2xl shadow-card">
+              <h3 className="font-display text-lg font-bold text-foreground mb-4">Quick Content Actions</h3>
+              <div className="grid sm:grid-cols-2 md:grid-cols-4 gap-4">
+                <button
+                  type="button"
+                  onClick={() => { resetProductForm(); setActiveTab("products"); }}
+                  className="p-4 bg-secondary hover:bg-gold hover:text-ink text-left rounded-xl transition-all border border-border group"
+                >
+                  <Package className="h-6 w-6 text-gold group-hover:text-ink mb-2" />
+                  <p className="font-bold text-sm">Add New Product</p>
+                  <p className="text-xs text-muted-foreground mt-0.5">Upload 5+ images, size matrix & pricing</p>
                 </button>
-              </form>
 
-              <div>
-                <h2 className="font-display text-xl font-bold mb-4">Catalog Manager</h2>
-                <div className="flex items-center gap-3 border-b border-border pb-3 mb-5">
-                  <Search className="h-4 w-4 text-muted-foreground" />
-                  <input value={q} onChange={e => setQ(e.target.value)} placeholder="Search products…" className="flex-1 bg-transparent text-sm focus:outline-none" />
+                <button
+                  type="button"
+                  onClick={() => setActiveTab("background")}
+                  className="p-4 bg-secondary hover:bg-gold hover:text-ink text-left rounded-xl transition-all border border-border group"
+                >
+                  <ImageIcon className="h-6 w-6 text-red-cta mb-2" />
+                  <p className="font-bold text-sm">Change Background</p>
+                  <p className="text-xs text-muted-foreground mt-0.5">Adjust hero photo, focal point & opacity</p>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => setActiveTab("advertisements")}
+                  className="p-4 bg-secondary hover:bg-gold hover:text-ink text-left rounded-xl transition-all border border-border group"
+                >
+                  <Megaphone className="h-6 w-6 text-gold group-hover:text-ink mb-2" />
+                  <p className="font-bold text-sm">Create Advertisement</p>
+                  <p className="text-xs text-muted-foreground mt-0.5">Featured homepage & shop campaigns</p>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => setActiveTab("offers")}
+                  className="p-4 bg-secondary hover:bg-gold hover:text-ink text-left rounded-xl transition-all border border-border group"
+                >
+                  <Percent className="h-6 w-6 text-red-cta mb-2" />
+                  <p className="font-bold text-sm">Create New Offer</p>
+                  <p className="text-xs text-muted-foreground mt-0.5">Discounts, flash sales & coupons</p>
+                </button>
+              </div>
+            </div>
+
+            {/* Recent Orders Overview */}
+            <div className="p-6 bg-card border border-border rounded-2xl shadow-card">
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="font-display text-lg font-bold text-foreground">Recent Customer Orders</h3>
+                <button
+                  onClick={() => setActiveTab("orders")}
+                  className="text-xs uppercase tracking-wider font-bold text-gold hover:underline"
+                >
+                  View All Orders →
+                </button>
+              </div>
+
+              {orders.length === 0 ? (
+                <p className="text-xs text-muted-foreground py-6 text-center">No orders recorded yet.</p>
+              ) : (
+                <div className="divide-y divide-border">
+                  {orders.slice(0, 5).map((o) => (
+                    <div key={o.id} className="py-3 flex items-center justify-between gap-4 text-xs">
+                      <div>
+                        <p className="font-bold text-foreground">{o.customer_name} ({o.phone})</p>
+                        <p className="text-[11px] text-muted-foreground">Order #{o.id.slice(0, 8)} · {new Date(o.created_at).toLocaleDateString()}</p>
+                      </div>
+                      <div className="text-right">
+                        <p className="font-black text-ink">{formatINR(o.total)}</p>
+                        <span className="text-[10px] uppercase font-bold text-gold">{o.status}</span>
+                      </div>
+                    </div>
+                  ))}
                 </div>
-                {filtered.length === 0 ? (
-                  <div className="border border-dashed border-border p-12 text-center rounded-md">
-                    <p className="text-muted-foreground text-sm">No products yet.</p>
+              )}
+            </div>
+          </TabsContent>
+
+          {/* 2. PRODUCT MANAGEMENT WITH 4-5 OR MORE IMAGES */}
+          <TabsContent value="products" className="space-y-8 animate-fade-in">
+            {/* Add / Edit Product Form with 5+ Image Gallery */}
+            <div className="p-6 bg-card border border-border rounded-2xl shadow-card">
+              <div className="flex items-center justify-between pb-4 border-b border-border mb-6">
+                <div>
+                  <span className="text-[10px] uppercase tracking-[0.3em] text-red-cta font-extrabold">Inventory Control</span>
+                  <h3 className="font-display text-xl font-extrabold text-foreground mt-0.5">
+                    {editingId ? "Edit Product & Gallery" : "Add New Product (with 5+ Image Gallery)"}
+                  </h3>
+                </div>
+                {editingId && (
+                  <button
+                    type="button"
+                    onClick={resetProductForm}
+                    className="text-xs uppercase tracking-wider font-bold text-muted-foreground hover:text-foreground"
+                  >
+                    Cancel Editing ✕
+                  </button>
+                )}
+              </div>
+
+              <form onSubmit={handleProductSubmit} className="space-y-6">
+                {/* Basic Info */}
+                <div className="grid md:grid-cols-3 gap-4">
+                  <div className="space-y-1">
+                    <label className="text-xs font-bold text-foreground">Product Name *</label>
+                    <input
+                      type="text"
+                      required
+                      placeholder="e.g. Heavyweight Oversized Drop-Shoulder Tee"
+                      value={form.name}
+                      onChange={(e) => setForm({ ...form, name: e.target.value })}
+                      className="w-full bg-background border border-border px-3 py-2 text-xs rounded font-bold"
+                    />
                   </div>
-                ) : (
-                  <div className="grid sm:grid-cols-2 xl:grid-cols-3 gap-4">
-                    {filtered.map(p => (
-                      <div key={p.id} className="border border-border rounded-md overflow-hidden bg-card group">
-                        <div className="aspect-[4/5] bg-secondary overflow-hidden relative">
-                          <img src={p.image} alt={p.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
-                          {p.pinned && <span className="absolute top-2 left-2 bg-gold text-ink text-[9px] font-bold uppercase tracking-wider px-2 py-1 rounded-sm flex items-center gap-1"><Pin className="h-2.5 w-2.5" /> Pinned</span>}
-                          {p.badgeText && <span className="absolute top-2 right-2 bg-red-cta text-white text-[9px] font-bold uppercase tracking-wider px-2 py-1 rounded-sm">{p.badgeText}</span>}
-                        </div>
-                        <div className="p-3">
-                          <p className="text-[10px] uppercase tracking-[0.2em] text-muted-foreground">{p.category}</p>
-                          <h3 className="text-sm font-semibold line-clamp-1 mt-1">{p.name}</h3>
-                          <div className="mt-1 flex items-baseline gap-2">
-                            <span className="text-sm font-bold">{formatINR(p.price)}</span>
-                            {p.mrp && <span className="text-xs text-muted-foreground line-through">{formatINR(p.mrp)}</span>}
-                          </div>
-                          <div className="flex gap-2 mt-3">
-                            <button onClick={() => startEdit(p.id)} className="flex-1 text-[11px] uppercase tracking-[0.18em] border border-border py-2 hover:bg-muted flex items-center justify-center gap-1 rounded">
-                              <Pencil className="h-3 w-3" /> Edit
-                            </button>
-                            <button onClick={() => togglePinned(p.id, !p.pinned)} title={p.pinned ? "Unpin" : "Pin"} className={`text-[11px] px-3 py-2 rounded ${p.pinned ? "bg-gold text-ink" : "border border-border hover:bg-muted"}`}>
-                              <Pin className="h-3 w-3" />
-                            </button>
-                            <button onClick={() => onDelete(p.id)} className="text-[11px] uppercase tracking-[0.18em] bg-destructive text-destructive-foreground px-3 py-2 hover:opacity-90 flex items-center gap-1 rounded">
+
+                  <div className="space-y-1">
+                    <label className="text-xs font-bold text-foreground">Category *</label>
+                    <select
+                      value={form.category}
+                      onChange={(e) => setForm({ ...form, category: e.target.value as Category })}
+                      className="w-full bg-background border border-border px-3 py-2 text-xs rounded"
+                    >
+                      {CATS.map((c) => (
+                        <option key={c} value={c}>
+                          {c}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+
+                  <div className="space-y-1">
+                    <label className="text-xs font-bold text-foreground">Brand</label>
+                    <input
+                      type="text"
+                      placeholder="DEXTER"
+                      value={form.brand}
+                      onChange={(e) => setForm({ ...form, brand: e.target.value })}
+                      className="w-full bg-background border border-border px-3 py-2 text-xs rounded"
+                    />
+                  </div>
+                </div>
+
+                {/* Pricing & SKU */}
+                <div className="grid md:grid-cols-4 gap-4">
+                  <div className="space-y-1">
+                    <label className="text-xs font-bold text-foreground">MRP / Original Price (₹) *</label>
+                    <input
+                      type="number"
+                      required
+                      min={1}
+                      placeholder="e.g. 1499"
+                      value={form.price}
+                      onChange={(e) => setForm({ ...form, price: e.target.value })}
+                      className="w-full bg-background border border-border px-3 py-2 text-xs rounded font-mono font-bold"
+                    />
+                  </div>
+
+                  <div className="space-y-1">
+                    <label className="text-xs font-bold text-foreground">Special Offer Price (Optional ₹)</label>
+                    <input
+                      type="number"
+                      min={1}
+                      placeholder="e.g. 899"
+                      value={form.offerPrice}
+                      onChange={(e) => setForm({ ...form, offerPrice: e.target.value })}
+                      className="w-full bg-background border border-border px-3 py-2 text-xs rounded font-mono"
+                    />
+                  </div>
+
+                  <div className="space-y-1">
+                    <label className="text-xs font-bold text-foreground">SKU / Code</label>
+                    <input
+                      type="text"
+                      placeholder="e.g. DX-TEE-005"
+                      value={form.sku}
+                      onChange={(e) => setForm({ ...form, sku: e.target.value })}
+                      className="w-full bg-background border border-border px-3 py-2 text-xs rounded font-mono"
+                    />
+                  </div>
+
+                  <div className="space-y-1">
+                    <label className="text-xs font-bold text-foreground">Promotional Tag / Badge</label>
+                    <input
+                      type="text"
+                      placeholder="e.g. Bestseller / 240 GSM"
+                      value={form.tag}
+                      onChange={(e) => setForm({ ...form, tag: e.target.value })}
+                      className="w-full bg-background border border-border px-3 py-2 text-xs rounded"
+                    />
+                  </div>
+                </div>
+
+                {/* MULTIPLE PRODUCT IMAGES (5+ IMAGES SECTION) */}
+                <div className="p-5 bg-muted/20 border border-border rounded-xl space-y-4">
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                    <div>
+                      <h4 className="text-xs uppercase tracking-wider font-extrabold text-foreground flex items-center gap-2">
+                        <ImageIcon className="h-4 w-4 text-gold" /> Product Gallery Images (5+ Recommended)
+                      </h4>
+                      <p className="text-[11px] text-muted-foreground mt-0.5">
+                        Upload front-view, back-view, side-view, detail/texture, and model styling. The first image is the Primary Card Image.
+                      </p>
+                    </div>
+
+                    <label className="inline-flex items-center gap-2 px-4 py-2 bg-secondary hover:bg-gold hover:text-ink text-xs uppercase tracking-wider font-bold rounded-lg cursor-pointer transition-colors shrink-0">
+                      <Upload className="h-3.5 w-3.5" /> Upload Multiple Images
+                      <input
+                        type="file"
+                        multiple
+                        accept="image/*"
+                        onChange={handleFormImageUpload}
+                        disabled={uploadingGallery}
+                        className="hidden"
+                      />
+                    </label>
+                  </div>
+
+                  {uploadingGallery && (
+                    <p className="text-xs font-bold text-gold animate-pulse flex items-center gap-2">
+                      <RefreshCw className="h-3.5 w-3.5 animate-spin" /> Uploading image files to storage...
+                    </p>
+                  )}
+
+                  {/* Gallery Thumbnails List with Reorder, Set Primary, Delete */}
+                  {form.images.length === 0 ? (
+                    <div className="p-8 text-center border-2 border-dashed border-border rounded-xl">
+                      <p className="text-xs text-muted-foreground">
+                        No product images selected. Upload 4–5 or more angles for optimal customer presentation.
+                      </p>
+                    </div>
+                  ) : (
+                    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-3">
+                      {form.images.map((img, idx) => (
+                        <div
+                          key={idx}
+                          className={`relative aspect-[4/5] rounded-lg overflow-hidden border-2 transition-all ${
+                            idx === 0 ? "border-gold shadow-md" : "border-border"
+                          }`}
+                        >
+                          <img src={img} alt="" className="w-full h-full object-cover" />
+
+                          {/* Index badge */}
+                          <span className="absolute top-1.5 left-1.5 bg-black/80 text-white text-[9px] uppercase px-1.5 py-0.5 rounded font-bold">
+                            {idx === 0 ? "★ Primary" : `#${idx + 1}`}
+                          </span>
+
+                          {/* Controls bar */}
+                          <div className="absolute inset-x-0 bottom-0 bg-black/85 p-1.5 flex items-center justify-between text-white">
+                            <div className="flex items-center gap-1">
+                              {idx !== 0 && (
+                                <button
+                                  type="button"
+                                  onClick={() => setFormPrimaryImage(idx)}
+                                  title="Make Primary"
+                                  className="p-1 hover:text-gold"
+                                >
+                                  <Star className="h-3 w-3" />
+                                </button>
+                              )}
+                              <button
+                                type="button"
+                                onClick={() => moveFormImage(idx, idx - 1)}
+                                disabled={idx === 0}
+                                title="Move Left"
+                                className="p-1 disabled:opacity-20 hover:text-gold"
+                              >
+                                <ArrowLeft className="h-3 w-3" />
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => moveFormImage(idx, idx + 1)}
+                                disabled={idx === form.images.length - 1}
+                                title="Move Right"
+                                className="p-1 disabled:opacity-20 hover:text-gold"
+                              >
+                                <ArrowRight className="h-3 w-3" />
+                              </button>
+                            </div>
+                            <button
+                              type="button"
+                              onClick={() => removeFormImage(idx)}
+                              title="Delete Image"
+                              className="p-1 text-red-400 hover:text-red-300"
+                            >
                               <Trash2 className="h-3 w-3" />
                             </button>
                           </div>
                         </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+
+                {/* Stock Matrix per Size */}
+                <div className="space-y-2">
+                  <label className="text-xs font-bold text-foreground">Inventory Stock Matrix (Units by Size)</label>
+                  <div className="grid grid-cols-5 gap-3">
+                    {SIZES.map((sz) => (
+                      <div key={sz} className="p-2.5 bg-muted/30 border border-border rounded-lg text-center">
+                        <span className="text-xs font-bold text-foreground block mb-1">Size {sz}</span>
+                        <input
+                          type="number"
+                          min={0}
+                          value={form.stock[sz] || 0}
+                          onChange={(e) =>
+                            setForm({
+                              ...form,
+                              stock: { ...form.stock, [sz]: parseInt(e.target.value) || 0 },
+                            })
+                          }
+                          className="w-full bg-background border border-border px-2 py-1 text-xs text-center font-mono font-bold rounded"
+                        />
                       </div>
                     ))}
                   </div>
-                )}
-              </div>
-            </div>
-          </TabsContent>
+                </div>
 
-          {/* ============ STOREFRONT TAB ============ */}
-          <TabsContent value="storefront">
-            <div className="border border-border rounded-md p-6 bg-card max-w-3xl">
-              <h2 className="font-display text-xl font-bold mb-1">Storefront Editor</h2>
-              <p className="text-xs text-muted-foreground mb-6">Live-edit homepage text and hero. Saved instantly to all visitors.</p>
-              <div className="space-y-5">
-                <Field label="Top Announcement Bar">
-                  <input value={settings.announcement_text} onChange={e => setSettings({...settings, announcement_text: e.target.value})} className="input" placeholder="Free shipping over ₹2500…" />
-                </Field>
-                <Field label="Hero Headline">
-                  <input value={settings.hero_headline} onChange={e => setSettings({...settings, hero_headline: e.target.value})} className="input" />
-                </Field>
-                <Field label="Hero Subtext">
-                  <input value={settings.hero_subtext} onChange={e => setSettings({...settings, hero_subtext: e.target.value})} className="input" />
-                </Field>
-                <Field label="Hero Background Image">
-                  <label className="block border-2 border-dashed border-border rounded-md p-4 text-center cursor-pointer hover:border-foreground transition-colors">
-                    <input type="file" accept="image/*" className="hidden" onChange={e => setHeroFile(e.target.files?.[0] ?? null)} />
-                    {heroFile ? (
-                      <img src={URL.createObjectURL(heroFile)} alt="" className="mx-auto h-40 object-cover rounded" />
-                    ) : settings.hero_image_url ? (
-                      <img src={settings.hero_image_url} alt="" className="mx-auto h-40 object-cover rounded" />
-                    ) : (
-                      <div className="text-xs text-muted-foreground flex flex-col items-center gap-2 py-6"><Upload className="h-5 w-5" /> Click to upload hero image</div>
+                {/* Description */}
+                <div className="space-y-1">
+                  <label className="text-xs font-bold text-foreground">Product Description</label>
+                  <textarea
+                    rows={3}
+                    placeholder="Describe tailoring, cotton fabric, styling recommendations, and wash care..."
+                    value={form.description}
+                    onChange={(e) => setForm({ ...form, description: e.target.value })}
+                    className="w-full bg-background border border-border px-3 py-2 text-xs rounded"
+                  />
+                </div>
+
+                {/* Submit Actions */}
+                <div className="pt-4 border-t border-border flex items-center justify-between">
+                  <label className="flex items-center gap-2 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={form.pinned}
+                      onChange={(e) => setForm({ ...form, pinned: e.target.checked })}
+                      className="accent-gold h-4 w-4"
+                    />
+                    <span className="text-xs font-bold text-foreground">Pin to Homepage Trending Section</span>
+                  </label>
+
+                  <div className="flex items-center gap-3">
+                    {editingId && (
+                      <button
+                        type="button"
+                        onClick={resetProductForm}
+                        className="px-4 py-2 border border-border text-xs uppercase tracking-wider font-bold rounded"
+                      >
+                        Cancel
+                      </button>
                     )}
-                  </label>
-                </Field>
-                <button onClick={saveSettings} disabled={settingsBusy} className="bg-ink text-primary-foreground px-6 py-3 text-xs uppercase tracking-[0.25em] font-bold rounded inline-flex items-center gap-2 hover:bg-gold hover:text-ink transition disabled:opacity-60">
-                  {settingsBusy ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />} Save & Publish
-                </button>
-              </div>
-            </div>
-          </TabsContent>
-
-          {/* ============ SHIPPING & PROMO TAB ============ */}
-          <TabsContent value="shipping" className="space-y-8">
-            <div className="border border-border rounded-md p-6 bg-card max-w-3xl">
-              <h2 className="font-display text-xl font-bold mb-1">Shipping Math</h2>
-              <p className="text-xs text-muted-foreground mb-6">Drives the cart drawer instantly for every customer.</p>
-              <div className="grid sm:grid-cols-2 gap-4">
-                <Field label="Free Shipping Threshold ₹">
-                  <input type="number" min="0" value={settings.free_shipping_threshold} onChange={e => setSettings({...settings, free_shipping_threshold: Number(e.target.value) || 0})} className="input" />
-                </Field>
-                <Field label="Flat Shipping Fee ₹">
-                  <input type="number" min="0" value={settings.flat_shipping_fee} onChange={e => setSettings({...settings, flat_shipping_fee: Number(e.target.value) || 0})} className="input" />
-                </Field>
-              </div>
-              <button onClick={saveSettings} disabled={settingsBusy} className="mt-5 bg-ink text-primary-foreground px-6 py-3 text-xs uppercase tracking-[0.25em] font-bold rounded inline-flex items-center gap-2 hover:bg-gold hover:text-ink transition disabled:opacity-60">
-                {settingsBusy ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />} Update Shipping
-              </button>
-            </div>
-
-            <div className="border border-border rounded-md p-6 bg-card">
-              <h2 className="font-display text-xl font-bold mb-1">Promo Code Generator</h2>
-              <p className="text-xs text-muted-foreground mb-6">Create discount codes customers can apply at checkout.</p>
-              <form onSubmit={createPromo} className="grid sm:grid-cols-[1fr_140px_120px_auto] gap-3 mb-6 items-end">
-                <Field label="Code"><input required value={newPromo.code} onChange={e => setNewPromo({...newPromo, code: e.target.value.toUpperCase()})} placeholder="SUMMER25" className="input uppercase" /></Field>
-                <Field label="Type">
-                  <select value={newPromo.kind} onChange={e => setNewPromo({...newPromo, kind: e.target.value as any})} className="input">
-                    <option value="percent">% Percent</option>
-                    <option value="flat">₹ Flat</option>
-                  </select>
-                </Field>
-                <Field label="Value"><input required type="number" min="1" value={newPromo.value} onChange={e => setNewPromo({...newPromo, value: e.target.value})} className="input" /></Field>
-                <button type="submit" className="bg-ink text-primary-foreground px-5 h-[42px] text-xs uppercase tracking-[0.22em] font-bold rounded inline-flex items-center gap-2 hover:bg-gold hover:text-ink transition">
-                  <Plus className="h-4 w-4" /> Create
-                </button>
-              </form>
-              <div className="divide-y divide-border border-y border-border">
-                {promos.length === 0 ? (
-                  <p className="text-sm text-muted-foreground py-8 text-center">No promo codes yet. Create your first one above.</p>
-                ) : promos.map(p => (
-                  <div key={p.id} className="py-3 flex items-center gap-4 flex-wrap">
-                    <div className="flex items-center gap-2"><TagIcon className="h-4 w-4 text-gold" /><code className="font-mono font-bold text-sm">{p.code}</code></div>
-                    <span className="text-xs px-2 py-1 rounded bg-secondary">{p.kind === "percent" ? `${p.value}% off` : `${formatINR(p.value)} off`}</span>
-                    <div className="flex-1" />
-                    <label className="text-xs flex items-center gap-2 cursor-pointer">
-                      <input type="checkbox" checked={p.active} onChange={e => togglePromo(p.id, e.target.checked)} className="accent-gold" />
-                      <span className={p.active ? "text-gold font-semibold" : "text-muted-foreground"}>{p.active ? "Active" : "Inactive"}</span>
-                    </label>
-                    <button onClick={() => deletePromo(p.id)} className="text-destructive hover:bg-destructive/10 p-2 rounded"><Trash2 className="h-4 w-4" /></button>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </TabsContent>
-
-          {/* ============ LOOKBOOK TAB ============ */}
-          <TabsContent value="lookbook">
-            <div className="border border-border rounded-md p-6 bg-card mb-6">
-              <h2 className="font-display text-xl font-bold mb-1">Add Lookbook Image</h2>
-              <p className="text-xs text-muted-foreground mb-5">Upload editorial photos and optionally link to a product for "Shop This Look".</p>
-              <div className="grid sm:grid-cols-[1fr_280px_auto] gap-4 items-end">
-                <Field label="Image">
-                  <label className="block border-2 border-dashed border-border rounded-md p-3 text-center cursor-pointer hover:border-foreground transition-colors">
-                    <input type="file" accept="image/*" className="hidden" onChange={e => setLookFile(e.target.files?.[0] ?? null)} />
-                    {lookFile ? <img src={URL.createObjectURL(lookFile)} alt="" className="mx-auto h-24 object-cover rounded" /> : <div className="text-xs text-muted-foreground py-4 flex items-center justify-center gap-2"><Upload className="h-4 w-4" /> Choose image</div>}
-                  </label>
-                </Field>
-                <Field label="Link to Product (optional)">
-                  <select value={lookProductId} onChange={e => setLookProductId(e.target.value)} className="input">
-                    <option value="">— Not linked —</option>
-                    {products.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
-                  </select>
-                </Field>
-                <button onClick={addLookbookItem} disabled={lookBusy} className="bg-ink text-primary-foreground px-5 h-[42px] text-xs uppercase tracking-[0.22em] font-bold rounded inline-flex items-center gap-2 hover:bg-gold hover:text-ink transition disabled:opacity-60">
-                  {lookBusy ? <Loader2 className="h-4 w-4 animate-spin" /> : <Plus className="h-4 w-4" />} Add
-                </button>
-              </div>
-            </div>
-
-            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
-              {lookbook.map(l => (
-                <div key={l.id} className="border border-border rounded-md overflow-hidden bg-card">
-                  <div className="aspect-[4/5] bg-secondary"><img src={l.image_url} alt="" className="w-full h-full object-cover" /></div>
-                  <div className="p-2.5 space-y-2">
-                    <select value={l.product_id || ""} onChange={e => updateLookbookLink(l.id, e.target.value)} className="input text-xs py-1.5">
-                      <option value="">— Not linked —</option>
-                      {products.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
-                    </select>
-                    <button onClick={() => deleteLookbookItem(l.id)} className="w-full text-[11px] uppercase tracking-[0.18em] bg-destructive text-destructive-foreground py-1.5 hover:opacity-90 rounded flex items-center justify-center gap-1">
-                      <Trash2 className="h-3 w-3" /> Remove
+                    <button
+                      type="submit"
+                      disabled={busy}
+                      className="px-6 py-2.5 bg-red-cta text-white text-xs uppercase tracking-widest font-black rounded-lg hover:bg-gold hover:text-ink transition-all shadow-lg flex items-center gap-2"
+                    >
+                      {busy ? <RefreshCw className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
+                      {editingId ? "Update Product & Gallery" : "Save Product to Store"}
                     </button>
                   </div>
                 </div>
-              ))}
-              {lookbook.length === 0 && <p className="col-span-full text-sm text-muted-foreground text-center py-12">No lookbook images yet.</p>}
+              </form>
+            </div>
+
+            {/* Products Search & List */}
+            <div className="space-y-4">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                <div className="relative flex-1 max-w-md">
+                  <Search className="h-4 w-4 absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
+                  <input
+                    type="text"
+                    placeholder="Search by product name or SKU..."
+                    value={q}
+                    onChange={(e) => setQ(e.target.value)}
+                    className="w-full bg-card border border-border pl-9 pr-4 py-2 text-xs rounded-lg"
+                  />
+                </div>
+
+                <div className="flex items-center gap-2">
+                  <select
+                    value={categoryFilter}
+                    onChange={(e) => setCategoryFilter(e.target.value)}
+                    className="bg-card border border-border px-3 py-2 text-xs rounded-lg font-bold"
+                  >
+                    <option value="all">All Categories</option>
+                    {CATS.map((c) => (
+                      <option key={c} value={c}>
+                        {c}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+
+              {/* Table of Products */}
+              <div className="border border-border rounded-2xl overflow-hidden bg-card shadow-card">
+                <div className="overflow-x-auto">
+                  <table className="w-full text-xs text-left">
+                    <thead className="bg-muted/50 border-b border-border uppercase tracking-wider text-[10px] text-muted-foreground font-extrabold">
+                      <tr>
+                        <th className="py-3 px-4">Product / Gallery</th>
+                        <th className="py-3 px-4">Category</th>
+                        <th className="py-3 px-4">Price / MRP</th>
+                        <th className="py-3 px-4">Stock by Size</th>
+                        <th className="py-3 px-4 text-right">Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-border">
+                      {filteredProducts.map((p) => {
+                        const imgCount = p.images?.length || 1;
+                        return (
+                          <tr key={p.id} className="hover:bg-muted/20 transition-colors">
+                            <td className="py-3 px-4">
+                              <div className="flex items-center gap-3">
+                                <div className="w-12 h-14 bg-secondary rounded overflow-hidden shrink-0 border border-border relative">
+                                  <img src={p.image} alt="" className="w-full h-full object-cover" />
+                                  <span className="absolute bottom-0 inset-x-0 bg-ink/90 text-[8px] text-white text-center font-bold">
+                                    {imgCount} img
+                                  </span>
+                                </div>
+                                <div>
+                                  <p className="font-bold text-foreground text-sm line-clamp-1">{p.name}</p>
+                                  <p className="text-[10px] text-muted-foreground">
+                                    SKU: {p.sku || "—"} {p.brand ? `· ${p.brand}` : ""}
+                                  </p>
+                                </div>
+                              </div>
+                            </td>
+                            <td className="py-3 px-4 font-semibold text-muted-foreground">{p.category}</td>
+                            <td className="py-3 px-4">
+                              <span className="font-bold text-ink">{formatINR(p.price)}</span>
+                              {p.mrp && p.mrp > p.price && (
+                                <span className="text-[10px] text-muted-foreground line-through ml-1.5">
+                                  {formatINR(p.mrp)}
+                                </span>
+                              )}
+                            </td>
+                            <td className="py-3 px-4">
+                              <div className="flex gap-1.5">
+                                {Object.entries(p.stockBySize || {}).map(([sz, qty]) => (
+                                  <span
+                                    key={sz}
+                                    className={`px-1.5 py-0.5 rounded text-[10px] font-mono font-bold ${
+                                      qty <= 2 ? "bg-red-500/10 text-red-500" : "bg-muted text-muted-foreground"
+                                    }`}
+                                  >
+                                    {sz}:{qty}
+                                  </span>
+                                ))}
+                              </div>
+                            </td>
+                            <td className="py-3 px-4 text-right">
+                              <div className="flex items-center justify-end gap-1.5">
+                                <button
+                                  type="button"
+                                  onClick={() => setGalleryModalProduct(p)}
+                                  className="px-2.5 py-1 bg-secondary hover:bg-gold hover:text-ink text-[10px] uppercase tracking-wider font-extrabold rounded transition-colors"
+                                  title="Manage 5+ image gallery"
+                                >
+                                  Gallery ({imgCount})
+                                </button>
+                                <button
+                                  type="button"
+                                  onClick={() => startEditProduct(p)}
+                                  className="p-1.5 text-muted-foreground hover:text-foreground hover:bg-secondary rounded"
+                                  title="Edit product"
+                                >
+                                  <Pencil className="h-4 w-4" />
+                                </button>
+                                <button
+                                  type="button"
+                                  onClick={() => handleDeleteProduct(p.id, p.name)}
+                                  className="p-1.5 text-muted-foreground hover:text-red-500 hover:bg-red-500/10 rounded"
+                                  title="Delete product"
+                                >
+                                  <Trash2 className="h-4 w-4" />
+                                </button>
+                              </div>
+                            </td>
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
             </div>
           </TabsContent>
 
-          {/* ============ ORDERS TAB ============ */}
-          <TabsContent value="orders">
-            <div className="mb-6 flex flex-col sm:flex-row gap-3 items-stretch sm:items-center justify-between">
-              <div className="relative flex-1 max-w-md">
-                <Search className="h-4 w-4 absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
-                <input
-                  value={orderQuery}
-                  onChange={(e) => setOrderQuery(e.target.value)}
-                  placeholder="Search by customer name, mobile, or order ID..."
-                  className="w-full pl-9 pr-4 py-2.5 text-xs bg-background border border-border rounded-lg outline-none focus:border-gold"
-                />
+          {/* 3. HOMEPAGE DESIGN & BACKGROUND */}
+          <TabsContent value="background">
+            <AdminBackgroundManager />
+          </TabsContent>
+
+          {/* 4. ADVERTISEMENT MANAGER */}
+          <TabsContent value="advertisements">
+            <AdminAdvertisementManager />
+          </TabsContent>
+
+          {/* 5. PROMOTIONAL BANNER MANAGER */}
+          <TabsContent value="banners">
+            <AdminPromotionalBanners />
+          </TabsContent>
+
+          {/* 6. OFFERS & DISCOUNT MANAGER */}
+          <TabsContent value="offers">
+            <AdminOffersManager />
+          </TabsContent>
+
+          {/* 7. HOMEPAGE LAYOUT MANAGER */}
+          <TabsContent value="layout">
+            <AdminHomepageLayout />
+          </TabsContent>
+
+          {/* 8. CATEGORY MANAGEMENT */}
+          <TabsContent value="categories">
+            <AdminCategories />
+          </TabsContent>
+
+          {/* 9. CENTRAL MEDIA LIBRARY */}
+          <TabsContent value="media">
+            <AdminMediaLibrary />
+          </TabsContent>
+
+          {/* 10. CUSTOMER ORDERS */}
+          <TabsContent value="orders" className="space-y-6 animate-fade-in">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-4 border-b border-border">
+              <div>
+                <span className="text-[10px] uppercase tracking-[0.3em] text-red-cta font-extrabold">Fulfillment</span>
+                <h2 className="font-display text-2xl md:text-3xl font-extrabold text-foreground mt-1">
+                  Customer Orders
+                </h2>
+                <p className="text-xs text-muted-foreground mt-1">
+                  Manage pipeline status: Pending, Confirmed, Shipped, Delivered, Cancelled.
+                </p>
               </div>
 
-              <div className="flex gap-1.5 flex-wrap">
-                {["all", "pending", "shipped", "delivered", "cancelled"].map((st) => (
-                  <button
-                    key={st}
-                    onClick={() => setStatusFilter(st)}
-                    className={`px-3 py-1.5 rounded text-[11px] uppercase tracking-wider font-bold transition ${
-                      statusFilter === st
-                        ? "bg-gold text-ink"
-                        : "bg-secondary text-muted-foreground hover:text-foreground"
-                    }`}
-                  >
-                    {st}
-                  </button>
-                ))}
+              <div className="flex gap-2">
+                <input
+                  type="text"
+                  placeholder="Filter by customer / phone / ID..."
+                  value={orderQuery}
+                  onChange={(e) => setOrderQuery(e.target.value)}
+                  className="bg-card border border-border px-3 py-1.5 text-xs rounded-lg"
+                />
               </div>
             </div>
 
             {ordersLoading ? (
-              <div className="py-16 grid place-items-center"><Loader2 className="h-6 w-6 animate-spin text-muted-foreground" /></div>
-            ) : orders.filter(o => {
-              const q = orderQuery.toLowerCase().trim();
-              const matchesQ = !q || o.customer_name?.toLowerCase().includes(q) || o.phone?.includes(q) || o.id?.toLowerCase().includes(q);
-              const matchesSt = statusFilter === "all" || o.status?.toLowerCase() === statusFilter;
-              return matchesQ && matchesSt;
-            }).length === 0 ? (
-              <div className="border border-dashed border-border p-12 text-center rounded-md">
-                <p className="text-muted-foreground text-sm">
-                  {orderQuery || statusFilter !== "all" ? "No matching orders found." : "No orders yet."}
-                </p>
+              <div className="py-16 text-center">
+                <Loader2 className="h-8 w-8 animate-spin mx-auto text-gold" />
+              </div>
+            ) : orders.length === 0 ? (
+              <div className="p-12 text-center bg-card border border-border rounded-2xl">
+                <ShoppingBag className="h-10 w-10 text-muted-foreground/30 mx-auto mb-2" />
+                <p className="text-sm font-bold text-foreground">No orders recorded yet.</p>
               </div>
             ) : (
               <div className="space-y-4">
-                {orders.filter(o => {
-                  const q = orderQuery.toLowerCase().trim();
-                  const matchesQ = !q || o.customer_name?.toLowerCase().includes(q) || o.phone?.includes(q) || o.id?.toLowerCase().includes(q);
-                  const matchesSt = statusFilter === "all" || o.status?.toLowerCase() === statusFilter;
-                  return matchesQ && matchesSt;
-                }).map(o => (
-                  <div key={o.id} className="border border-border rounded-md p-5 bg-card">
-                    <div className="flex items-start justify-between flex-wrap gap-3 mb-4">
-                      <div>
-                        <p className="text-[10px] uppercase tracking-[0.2em] text-muted-foreground">Order DX-{o.id.slice(0, 8).toUpperCase()}</p>
-                        <h3 className="font-semibold mt-1">{o.customer_name}</h3>
-                        <p className="text-xs text-muted-foreground">{new Date(o.created_at).toLocaleString("en-IN")}</p>
+                {orders
+                  .filter((o) => !orderQuery || o.customer_name.toLowerCase().includes(orderQuery.toLowerCase()) || o.phone.includes(orderQuery))
+                  .map((o) => (
+                    <div key={o.id} className="p-5 bg-card border border-border rounded-2xl shadow-card space-y-4">
+                      <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 pb-3 border-b border-border">
+                        <div>
+                          <span className="font-mono text-xs text-gold font-bold">Order #{o.id.slice(0, 8)}</span>
+                          <h4 className="font-bold text-sm text-foreground mt-0.5">{o.customer_name}</h4>
+                          <p className="text-xs text-muted-foreground">{o.phone} · {o.address}, {o.city} - {o.pincode}</p>
+                        </div>
+
+                        <div className="flex items-center gap-3">
+                          <span className="font-black text-base text-ink">{formatINR(o.total)}</span>
+                          <select
+                            value={o.status}
+                            onChange={(e) => updateOrderStatus(o.id, e.target.value)}
+                            className="bg-background border border-border px-2.5 py-1 text-xs rounded font-bold uppercase tracking-wider"
+                          >
+                            <option value="pending">Pending</option>
+                            <option value="confirmed">Confirmed</option>
+                            <option value="shipped">Shipped</option>
+                            <option value="delivered">Delivered</option>
+                            <option value="cancelled">Cancelled</option>
+                          </select>
+                        </div>
                       </div>
-                      <div className="text-right">
-                        <p className="font-display font-bold text-lg text-gold">{formatINR(Number(o.total))}</p>
-                        <p className="text-[10px] uppercase tracking-[0.18em] text-muted-foreground">{o.payment_method}</p>
-                      </div>
-                    </div>
-                    <div className="grid md:grid-cols-3 gap-4 text-sm border-t border-border pt-4">
-                      <div>
-                        <p className="text-[10px] uppercase tracking-[0.18em] text-muted-foreground mb-1">Mobile</p>
-                        <a href={`tel:+91${o.phone}`} className="font-medium hover:text-gold">+91 {o.phone}</a>
-                      </div>
-                      <div className="md:col-span-2">
-                        <p className="text-[10px] uppercase tracking-[0.18em] text-muted-foreground mb-1">Address</p>
-                        <p className="text-sm">{o.address}, {o.city} — {o.pincode}</p>
-                      </div>
-                    </div>
-                    <div className="mt-4 border-t border-border pt-4">
-                      <p className="text-[10px] uppercase tracking-[0.18em] text-muted-foreground mb-2">Items ({o.items?.length || 0})</p>
-                      <div className="space-y-1.5">
+
+                      {/* Item list */}
+                      <div className="grid sm:grid-cols-2 md:grid-cols-3 gap-3">
                         {(o.items || []).map((it, idx) => (
-                          <div key={idx} className="flex items-center gap-3 text-sm">
-                            {it.image && <img src={it.image} alt="" className="h-10 w-9 object-cover rounded" />}
-                            <span className="flex-1 truncate">{it.name} <span className="text-muted-foreground">· {it.size} · ×{it.qty}</span></span>
-                            <span className="font-medium">{formatINR(Number(it.price) * it.qty)}</span>
+                          <div key={idx} className="p-2.5 bg-muted/20 rounded-lg flex items-center gap-3 text-xs">
+                            <div className="w-10 h-12 bg-secondary rounded overflow-hidden shrink-0">
+                              {it.image ? <img src={it.image} alt="" className="w-full h-full object-cover" /> : null}
+                            </div>
+                            <div className="min-w-0">
+                              <p className="font-bold text-foreground truncate">{it.name}</p>
+                              <p className="text-[10px] text-muted-foreground">Size: {it.size} · Qty: {it.qty} · {formatINR(it.price)}</p>
+                            </div>
                           </div>
                         ))}
                       </div>
                     </div>
-                    <div className="mt-4 flex items-center justify-between flex-wrap gap-2 border-t border-border pt-4">
-                      <span className={`text-[10px] uppercase tracking-[0.2em] px-3 py-1 rounded-full ${
-                        o.status === "pending" ? "bg-gold/20 text-gold" :
-                        o.status === "shipped" ? "bg-blue-500/15 text-blue-600" :
-                        o.status === "delivered" ? "bg-emerald-500/15 text-emerald-600" :
-                        "bg-muted text-muted-foreground"
-                      }`}>{o.status}</span>
-                      <div className="flex gap-2 text-[11px] uppercase tracking-[0.18em]">
-                        {o.status === "pending" && <button onClick={() => updateOrderStatus(o.id, "shipped")} className="border border-border px-3 py-1.5 hover:bg-muted rounded">Mark Shipped</button>}
-                        {o.status === "shipped" && <button onClick={() => updateOrderStatus(o.id, "delivered")} className="border border-border px-3 py-1.5 hover:bg-muted rounded">Mark Delivered</button>}
-                        {o.status !== "cancelled" && o.status !== "delivered" && <button onClick={() => updateOrderStatus(o.id, "cancelled")} className="border border-destructive/40 text-destructive px-3 py-1.5 hover:bg-destructive/10 rounded">Cancel</button>}
-                      </div>
-                    </div>
-                  </div>
-                ))}
+                  ))}
               </div>
             )}
           </TabsContent>
 
-          {/* ============ PAYMENTS TAB ============ */}
+          {/* 11. CUSTOMER MANAGEMENT */}
+          <TabsContent value="customers">
+            <AdminCustomers />
+          </TabsContent>
+
+          {/* 12. PAYMENT SETTINGS */}
           <TabsContent value="payments">
-            <p className="text-[11px] uppercase tracking-[0.25em] text-gold mb-2">Storefront Gateway</p>
-            <h2 className="font-display text-2xl font-bold mb-6">Payment Methods</h2>
             <PaymentMethods />
           </TabsContent>
 
+          {/* 13. WEBSITE CONTENT SETTINGS */}
+          <TabsContent value="settings" className="space-y-6 animate-fade-in">
+            <div className="p-6 bg-card border border-border rounded-2xl shadow-card space-y-6">
+              <div>
+                <span className="text-[10px] uppercase tracking-[0.3em] text-red-cta font-extrabold">Storefront Configuration</span>
+                <h3 className="font-display text-xl font-extrabold text-foreground mt-0.5">Website Content Settings</h3>
+                <p className="text-xs text-muted-foreground mt-1">Configure shipping rules, thresholds, and live top announcement banner text.</p>
+              </div>
 
-          {/* ============ AUDIT LOG TAB ============ */}
+              <div className="grid md:grid-cols-2 gap-4">
+                <div className="space-y-1">
+                  <label className="text-xs font-bold text-foreground">Free Shipping Threshold (₹)</label>
+                  <input
+                    type="number"
+                    value={settings.free_shipping_threshold}
+                    onChange={(e) => setSettings({ ...settings, free_shipping_threshold: Number(e.target.value) || 0 })}
+                    className="w-full bg-background border border-border px-3 py-2 text-xs rounded font-mono font-bold"
+                  />
+                  <p className="text-[10px] text-muted-foreground">Orders above this subtotal qualify for 100% free delivery.</p>
+                </div>
+
+                <div className="space-y-1">
+                  <label className="text-xs font-bold text-foreground">Flat Standard Shipping Fee (₹)</label>
+                  <input
+                    type="number"
+                    value={settings.flat_shipping_fee}
+                    onChange={(e) => setSettings({ ...settings, flat_shipping_fee: Number(e.target.value) || 0 })}
+                    className="w-full bg-background border border-border px-3 py-2 text-xs rounded font-mono font-bold"
+                  />
+                  <p className="text-[10px] text-muted-foreground">Applied to orders below the free shipping threshold.</p>
+                </div>
+              </div>
+
+              <div className="space-y-1">
+                <label className="text-xs font-bold text-foreground">Header Announcement Text</label>
+                <input
+                  type="text"
+                  placeholder="e.g. Free shipping on orders over ₹2500 · Call 089252 59787"
+                  value={settings.announcement_text}
+                  onChange={(e) => setSettings({ ...settings, announcement_text: e.target.value })}
+                  className="w-full bg-background border border-border px-3 py-2 text-xs rounded"
+                />
+              </div>
+
+              <div className="pt-4 border-t border-border flex justify-end">
+                <button
+                  type="button"
+                  onClick={handleSaveStoreSettings}
+                  disabled={settingsBusy}
+                  className="px-6 py-2.5 bg-red-cta text-white text-xs uppercase tracking-widest font-black rounded-lg hover:bg-gold hover:text-ink transition-all shadow-lg flex items-center gap-2"
+                >
+                  {settingsBusy && <RefreshCw className="h-4 w-4 animate-spin" />}
+                  Save Store Settings
+                </button>
+              </div>
+            </div>
+          </TabsContent>
+
+          {/* 14. AUDIT LOG */}
           <TabsContent value="audit">
-            <p className="text-[11px] uppercase tracking-[0.25em] text-gold mb-2">Accountability</p>
-            <h2 className="font-display text-2xl font-bold mb-6">Audit Log</h2>
             <AuditLog />
           </TabsContent>
         </Tabs>
 
+        {/* DEDICATED PRODUCT GALLERY MODAL */}
+        {galleryModalProduct && (
+          <AdminProductGalleryModal
+            product={galleryModalProduct}
+            isOpen={true}
+            onClose={() => setGalleryModalProduct(null)}
+            onSaveGallery={handleSaveGalleryDirect}
+          />
+        )}
       </div>
-
-      <style>{`
-        .input { width: 100%; background: transparent; border: 1px solid hsl(var(--border)); padding: 0.625rem 0.75rem; border-radius: 4px; font-size: 0.875rem; outline: none; transition: border-color .15s; }
-        .input:focus { border-color: hsl(var(--foreground)); }
-      `}</style>
     </Layout>
   );
 };
-
-const StatCard = ({ icon: Icon, label, value, sub, accent, warn }: { icon: any; label: string; value: string; sub?: string; accent?: boolean; warn?: boolean }) => (
-  <div className={`border rounded-xl p-5 transition-all duration-300 hover:-translate-y-0.5 hover:shadow-elevated ${accent ? "bg-ink text-primary-foreground border-ink" : warn ? "bg-card border-red-cta/40" : "bg-card border-border"}`}>
-    <div className="flex items-center justify-between">
-      <p className={`text-[10px] uppercase tracking-[0.22em] ${accent ? "text-gold" : warn ? "text-red-cta" : "text-muted-foreground"}`}>{label}</p>
-      <div className={`h-9 w-9 grid place-items-center rounded-full ${accent ? "bg-gold/20 text-gold" : warn ? "bg-red-cta/10 text-red-cta" : "bg-secondary text-foreground"}`}><Icon className="h-4 w-4" /></div>
-    </div>
-    <p className="font-display text-2xl font-bold mt-3">{value}</p>
-    {sub && <p className={`mt-1 text-[10px] uppercase tracking-[0.18em] ${accent ? "text-white/45" : "text-muted-foreground"}`}>{sub}</p>}
-  </div>
-);
-
-
-const Field = ({ label, children }: { label: string; children: React.ReactNode }) => (
-  <div>
-    <label className="text-[10px] uppercase tracking-[0.22em] text-muted-foreground block mb-1.5">{label}</label>
-    {children}
-  </div>
-);
 
 export default Admin;

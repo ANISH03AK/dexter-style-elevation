@@ -13,9 +13,10 @@ import Counter from "@/components/motion/Counter";
 import { useProducts } from "@/context/ProductsContext";
 import { useStoreSettings } from "@/context/StoreSettingsContext";
 import { useLookbook } from "@/context/LookbookContext";
+import { useCms } from "@/context/CmsContext";
 import heroStreetwearDesktop from "@/assets/hero-streetwear-pc.jpg";
 import heroStreetwearMobile from "@/assets/hero-streetwear-mobile.jpg";
-import dexterLogo from "@/assets/dexter-logo.png";
+import dexterLogo from "@/assets/dexter-logo-clean.png";
 import catShirts from "@/assets/cat-shirts-street.jpg";
 import catTees from "@/assets/cat-tees-street.jpg";
 import catJeans from "@/assets/cat-pants-waistdown.jpg";
@@ -34,8 +35,25 @@ const Index = () => {
   const { products, loading } = useProducts();
   const { settings } = useStoreSettings();
   const { items: lookbook } = useLookbook();
-  const heroDesktopImg = settings.hero_image_url || heroStreetwearDesktop;
-  const heroMobileImg = settings.hero_image_url || heroStreetwearMobile;
+  const { homepageSettings, activeAdsForPlacement, activeBannersForPlacement } = useCms();
+
+  // Dynamic Background Image & Controls from Admin Dashboard
+  const heroDesktopImg = homepageSettings.background_image_url || settings.hero_image_url || heroStreetwearDesktop;
+  const heroMobileImg = homepageSettings.background_mobile_image_url || homepageSettings.background_image_url || settings.hero_image_url || heroStreetwearMobile;
+  const focalPoint = homepageSettings.focal_point || "center 18%";
+  const backgroundSizing = homepageSettings.background_sizing || "cover";
+  const overlayOpacity = homepageSettings.overlay_opacity ?? 0.40;
+
+  // Active promotional advertisements and banners
+  const promoAds = activeAdsForPlacement("home_promo");
+  const topBanners = activeBannersForPlacement("announcement");
+  const heroAds = activeAdsForPlacement("hero");
+
+  // Section visibility helper from layout manager
+  const getSection = (id: string) => {
+    return homepageSettings.sections_order?.find((s) => s.id === id) || { enabled: true, title: "", subtitle: "" };
+  };
+
   const pinned = products.filter(p => p.pinned);
 
   // Layered hero parallax (gentle scroll + mouse, zero over-zoom)
@@ -54,47 +72,66 @@ const Index = () => {
 
   return (
     <Layout>
-      {/* DYNAMIC ANNOUNCEMENT BAR (admin-editable) */}
-      {settings.announcement_text && (
-        <div className="bg-red-cta text-white text-center text-[11px] sm:text-xs uppercase tracking-[0.25em] font-bold py-2 px-4">
-          <span className="inline-flex items-center gap-2"><Sparkles className="h-3 w-3" /> {settings.announcement_text}</span>
+      {/* DYNAMIC ANNOUNCEMENT BAR (admin-editable via CMS or settings) */}
+      {(topBanners.length > 0 || settings.announcement_text) && (
+        <div
+          style={{
+            backgroundColor: topBanners[0]?.background_color || "#dc2626",
+            color: topBanners[0]?.text_color || "#ffffff",
+          }}
+          className="text-center text-[11px] sm:text-xs uppercase tracking-[0.25em] font-bold py-2.5 px-4 transition-colors"
+        >
+          <div className="flex items-center justify-center gap-2">
+            <Sparkles className="h-3 w-3 shrink-0" />
+            <span>{topBanners[0]?.title || settings.announcement_text}</span>
+            {topBanners[0]?.button_url && topBanners[0]?.button_text && (
+              <Link to={topBanners[0].button_url} className="ml-2 underline font-extrabold hover:text-gold transition-colors">
+                {topBanners[0].button_text} →
+              </Link>
+            )}
+          </div>
         </div>
       )}
 
-      <OfferBannerSlider />
+      {getSection("promo_banners").enabled && <OfferBannerSlider />}
 
-      {/* HERO — curated white streetwear aesthetic (works seamlessly on PC & Mobile) */}
-      <section
-        ref={heroRef}
-        onMouseMove={onHeroMouse}
-        onMouseLeave={() => setMouse({ x: 0, y: 0 })}
-        className="relative w-full h-[68vh] min-h-[520px] md:h-[82vh] md:min-h-[620px] max-h-[880px] overflow-hidden bg-[#0d0e12]"
-      >
-        {/* Desktop widescreen streetwear image (exact original photo zoomed to fill edge-to-edge without blur or splitting) */}
-        <motion.img
-          src={heroDesktopImg}
-          alt={settings.hero_headline}
-          style={{ y: heroY, x: mouse.x * -8 }}
-          className="hidden md:block absolute inset-0 w-full h-full object-cover object-[center_22%] will-change-transform"
-        />
+      {/* HERO — curated streetwear aesthetic with dynamic CMS controls */}
+      {getSection("hero").enabled && (
+        <section
+          ref={heroRef}
+          onMouseMove={onHeroMouse}
+          onMouseLeave={() => setMouse({ x: 0, y: 0 })}
+          className="relative w-full h-[70vh] min-h-[520px] md:h-[84vh] md:min-h-[620px] max-h-[900px] overflow-hidden bg-[#0d0e12]"
+        >
+          {/* Desktop widescreen streetwear image (zoomed edge-to-edge, zero side blur, zero split) */}
+          <motion.img
+            src={heroDesktopImg}
+            alt={getSection("hero").title || settings.hero_headline}
+            style={{ y: heroY, x: mouse.x * -8, objectPosition: focalPoint }}
+            className={`hidden md:block absolute inset-0 w-full h-full ${backgroundSizing === "contain" ? "object-contain" : "object-cover"} will-change-transform`}
+          />
 
-        {/* Mobile portrait streetwear image (exact original photo, full height framing) */}
-        <motion.img
-          src={heroMobileImg}
-          alt={settings.hero_headline}
-          style={{ y: heroY }}
-          className="block md:hidden absolute inset-0 w-full h-full object-cover object-[center_18%] will-change-transform"
-        />
+          {/* Mobile portrait streetwear image (natural vertical framing, full model visible) */}
+          <motion.img
+            src={heroMobileImg}
+            alt={getSection("hero").title || settings.hero_headline}
+            style={{ y: heroY, objectPosition: focalPoint }}
+            className={`block md:hidden absolute inset-0 w-full h-full ${backgroundSizing === "contain" ? "object-contain" : "object-cover"} will-change-transform`}
+          />
 
-        {/* Pure neutral contrast vignette centered behind the logo for crystal-clear readability (zero glow light) */}
-        <div
-          className="absolute inset-0 pointer-events-none"
-          style={{
-            background:
-              "radial-gradient(ellipse 65% 55% at 50% 50%, rgba(0, 0, 0, 0.45) 0%, rgba(0, 0, 0, 0.22) 55%, transparent 85%)",
-          }}
-        />
-        <div className="absolute inset-0 bg-gradient-to-b from-black/45 via-transparent to-black/65 pointer-events-none" />
+          {/* Dynamic neutral contrast overlay controlled by Admin opacity slider — zero glow */}
+          <div
+            className="absolute inset-0 pointer-events-none"
+            style={{
+              background: `radial-gradient(ellipse 70% 55% at 50% 50%, rgba(0, 0, 0, ${overlayOpacity}) 0%, rgba(0, 0, 0, ${overlayOpacity * 0.45}) 55%, transparent 85%)`,
+            }}
+          />
+          <div
+            className="absolute inset-0 pointer-events-none"
+            style={{
+              background: `linear-gradient(to bottom, rgba(0,0,0,${overlayOpacity * 1.1}) 0%, transparent 40%, transparent 60%, rgba(0,0,0,${overlayOpacity * 1.4}) 100%)`,
+            }}
+          />
 
         {/* Centered Hero Content with animated Dexter logo razor-sharp in the center point (no glow lights) */}
         <motion.div
@@ -105,21 +142,21 @@ const Index = () => {
           <motion.div
             style={{
               perspective: 1000,
-              x: mouse.x * 16,
-              y: mouse.y * 10,
-              rotateX: mouse.y * -6,
-              rotateY: mouse.x * 10,
+              x: mouse.x * 14,
+              y: mouse.y * 8,
+              rotateX: mouse.y * -5,
+              rotateY: mouse.x * 8,
             }}
             className="relative will-change-transform select-none"
           >
             {/* Smooth floating + breathing animation (clean, natural, zero glow lights) */}
             <motion.div
               animate={{
-                y: [-8, 8, -8],
+                y: [-7, 7, -7],
                 scale: [1, 1.025, 1],
               }}
               transition={{
-                duration: 3.8,
+                duration: 4,
                 repeat: Infinity,
                 ease: "easeInOut",
               }}
@@ -128,22 +165,22 @@ const Index = () => {
               <motion.img
                 src={dexterLogo}
                 alt={settings.hero_headline}
-                initial={{ opacity: 0, y: 24, scale: 0.92 }}
+                initial={{ opacity: 0, y: 22, scale: 0.94 }}
                 animate={{
                   opacity: 1,
                   y: 0,
                   scale: 1,
                 }}
                 transition={{
-                  duration: 0.9,
+                  duration: 0.85,
                   ease: EASE,
                   delay: 0.1,
                 }}
                 style={{
                   filter:
-                    "drop-shadow(0 4px 14px rgba(0, 0, 0, 0.75)) drop-shadow(0 14px 32px rgba(0, 0, 0, 0.6))",
+                    "drop-shadow(0 4px 16px rgba(0, 0, 0, 0.72)) drop-shadow(0 14px 32px rgba(0, 0, 0, 0.5))",
                 }}
-                className="w-[280px] sm:w-[390px] md:w-[490px] lg:w-[580px] max-w-full h-auto object-contain pointer-events-none"
+                className="w-[270px] sm:w-[370px] md:w-[470px] lg:w-[560px] max-w-[85vw] h-auto object-contain pointer-events-none"
               />
             </motion.div>
           </motion.div>
@@ -196,6 +233,7 @@ const Index = () => {
           </span>
         </div>
       </section>
+      )}
 
       {/* LIVE STORE COUNTERS */}
       <section className="bg-background border-b border-border">
@@ -345,6 +383,50 @@ const Index = () => {
           ))}
         </div>
       </section>
+
+      {/* DYNAMIC PROMOTIONAL ADVERTISEMENTS (Managed via Advertisement Manager) */}
+      {getSection("advertisements").enabled && promoAds.length > 0 && (
+        <section className="container-px mx-auto max-w-[1400px] pb-20">
+          <Reveal className="text-center mb-10">
+            <p className="text-xs uppercase tracking-[0.3em] text-gold mb-3 font-bold">Featured Highlights</p>
+            <h2 className="font-display text-3xl md:text-5xl font-extrabold text-foreground">
+              {getSection("advertisements").title || "Promotional Campaigns"}
+            </h2>
+          </Reveal>
+          <div className="grid gap-6">
+            {promoAds.map((ad, i) => (
+              <Reveal key={ad.id} delay={i * 80}>
+                <div
+                  style={{ backgroundColor: ad.background_color || "#0d0e12", color: ad.text_color || "#ffffff" }}
+                  className="relative overflow-hidden rounded-2xl shadow-elevated border border-border/40"
+                >
+                  <div className="grid md:grid-cols-[1.25fr_1fr] items-center min-h-[300px]">
+                    <div className="relative p-8 md:p-12 z-10 flex flex-col justify-center">
+                      <span className="text-[10px] uppercase tracking-[0.35em] text-gold font-bold mb-2">{ad.name}</span>
+                      <h3 className="font-display text-2xl md:text-4xl font-extrabold leading-tight mb-3 drop-shadow">{ad.title}</h3>
+                      {ad.subtitle && <p className="text-xs md:text-sm opacity-80 max-w-lg mb-6 leading-relaxed">{ad.subtitle}</p>}
+                      {ad.button_text && ad.button_url && (
+                        <div>
+                          <Link
+                            to={ad.button_url}
+                            className="inline-flex items-center gap-2 bg-red-cta text-white px-7 py-3 text-xs uppercase tracking-[0.25em] font-extrabold rounded hover:bg-gold hover:text-ink transition-all duration-300 shadow-lg"
+                          >
+                            {ad.button_text} <ArrowRight className="h-4 w-4" />
+                          </Link>
+                        </div>
+                      )}
+                    </div>
+                    <div className="relative h-64 md:h-full min-h-[260px] overflow-hidden">
+                      <img src={ad.image_url} alt={ad.title} className="w-full h-full object-cover" />
+                      <div className="absolute inset-0 bg-gradient-to-t md:bg-gradient-to-r from-[#0d0e12]/80 via-transparent to-transparent pointer-events-none" />
+                    </div>
+                  </div>
+                </div>
+              </Reveal>
+            ))}
+          </div>
+        </section>
+      )}
 
       <Reviews />
 

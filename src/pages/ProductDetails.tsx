@@ -155,9 +155,20 @@ const ProductDetails = () => {
 
   const reviewsToDisplay = dbReviews.length > 0 ? dbReviews : fallbackReviews;
 
+  const { calculateProductPrice } = useCms();
+  const priceInfo = product ? calculateProductPrice(product) : null;
+  const displayPrice = priceInfo ? priceInfo.finalPrice : (product?.price ?? 0);
+  const displayMrp = priceInfo ? priceInfo.originalPrice : product?.mrp;
+  const discountPercent = priceInfo ? priceInfo.discountPercent : 0;
+  const appliedCampaign = priceInfo?.appliedCampaign;
+
   if (!product) return <Layout><div className="container-px py-32 text-center">Product not found.</div></Layout>;
 
-  const gallery = [product.image, product.image, product.image];
+  const gallery = product.images && product.images.length > 0 ? product.images : [product.image];
+  const VIEW_LABELS = ["Front", "Back", "Side", "Detail", "Model", "Extra"];
+
+  const nextImg = () => setActiveImg((prev) => (prev + 1) % gallery.length);
+  const prevImg = () => setActiveImg((prev) => (prev - 1 + gallery.length) % gallery.length);
 
   return (
     <Layout>
@@ -167,21 +178,33 @@ const ProductDetails = () => {
         </nav>
 
         <div className="grid lg:grid-cols-2 gap-10 lg:gap-16">
-          {/* Gallery */}
-          <div className="grid grid-cols-[80px_1fr] gap-4">
-            <div className="flex flex-col gap-3">
+          {/* Customer-Facing Product Gallery with 4-5 or more images */}
+          <div className="flex flex-col-reverse md:grid md:grid-cols-[96px_1fr] gap-4">
+            {/* Clickable / Hoverable Thumbnail List */}
+            <div className="flex md:flex-col gap-3 overflow-x-auto md:overflow-y-auto max-h-[640px] pb-2 md:pb-0 scrollbar-none">
               {gallery.map((g, i) => (
                 <button
                   key={i}
+                  type="button"
                   onClick={() => setActiveImg(i)}
-                  className={`aspect-[4/5] bg-secondary overflow-hidden border-2 transition-smooth ${activeImg === i ? "border-ink" : "border-transparent opacity-60 hover:opacity-100"}`}
+                  onMouseEnter={() => setActiveImg(i)}
+                  className={`group relative aspect-[4/5] min-w-[72px] md:min-w-0 md:w-full bg-secondary overflow-hidden rounded-md border-2 transition-all duration-200 flex-shrink-0 ${activeImg === i ? "border-gold shadow-md scale-[1.02]" : "border-border/60 opacity-70 hover:opacity-100 hover:border-foreground/50"}`}
+                  aria-label={`View ${VIEW_LABELS[i] || `angle ${i + 1}`}`}
                 >
-                  <img src={g} alt="" className="w-full h-full object-cover" loading="lazy" />
+                  <img src={g} alt="" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" loading="lazy" />
+                  <span className="absolute bottom-1 inset-x-1 text-[9px] uppercase tracking-wider font-bold bg-ink/80 text-white py-0.5 rounded text-center opacity-0 group-hover:opacity-100 transition-opacity">
+                    {VIEW_LABELS[i] || `${i + 1}`}
+                  </span>
+                  {activeImg === i && (
+                    <span className="absolute top-1 right-1 h-2 w-2 rounded-full bg-gold shadow" />
+                  )}
                 </button>
               ))}
             </div>
+
+            {/* Main Product Image Container with Zoom and Swipe Nav */}
             <div
-              className="group aspect-[4/5] bg-secondary overflow-hidden rounded-lg relative shadow-card hover:shadow-elevated transition-shadow duration-500"
+              className="group aspect-[4/5] bg-secondary overflow-hidden rounded-xl relative shadow-card hover:shadow-elevated transition-shadow duration-500 select-none"
               onMouseMove={(e) => {
                 const r = e.currentTarget.getBoundingClientRect();
                 setZoom({ x: ((e.clientX - r.left) / r.width) * 100, y: ((e.clientY - r.top) / r.height) * 100 });
@@ -192,18 +215,50 @@ const ProductDetails = () => {
                 <motion.img
                   key={activeImg}
                   src={gallery[activeImg]}
-                  alt={product.name}
-                  initial={{ opacity: 0, scale: 1.06, filter: "blur(8px)" }}
+                  alt={`${product.name} - ${VIEW_LABELS[activeImg] || "view"}`}
+                  initial={{ opacity: 0, scale: 1.04, filter: "blur(6px)" }}
                   animate={{ opacity: 1, scale: 1, filter: "blur(0px)" }}
-                  exit={{ opacity: 0, filter: "blur(8px)" }}
-                  transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
+                  exit={{ opacity: 0, filter: "blur(6px)" }}
+                  transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1] }}
                   style={{ transformOrigin: `${zoom.x}% ${zoom.y}%` }}
-                  className="absolute inset-0 w-full h-full object-cover transition-transform duration-500 ease-out group-hover:scale-[1.35]"
+                  className="absolute inset-0 w-full h-full object-cover transition-transform duration-300 ease-out md:group-hover:scale-[1.4]"
                 />
               </AnimatePresence>
-              <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/25 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-            </div>
 
+              {/* View label tag on main image */}
+              <div className="absolute top-3 left-3 z-10">
+                <span className="backdrop-blur-md bg-ink/80 text-white text-[10px] uppercase tracking-[0.2em] px-2.5 py-1 rounded shadow font-semibold">
+                  {VIEW_LABELS[activeImg] || `Angle ${activeImg + 1}`} ({activeImg + 1}/{gallery.length})
+                </span>
+              </div>
+
+              {/* Arrows for fast gallery navigation */}
+              {gallery.length > 1 && (
+                <>
+                  <button
+                    type="button"
+                    onClick={(e) => { e.stopPropagation(); prevImg(); }}
+                    className="absolute left-3 top-1/2 -translate-y-1/2 h-10 w-10 rounded-full bg-white/90 text-ink shadow-lg grid place-items-center opacity-80 md:opacity-0 md:group-hover:opacity-100 hover:bg-gold transition-all duration-200 z-10"
+                    aria-label="Previous image"
+                  >
+                    ‹
+                  </button>
+                  <button
+                    type="button"
+                    onClick={(e) => { e.stopPropagation(); nextImg(); }}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 h-10 w-10 rounded-full bg-white/90 text-ink shadow-lg grid place-items-center opacity-80 md:opacity-0 md:group-hover:opacity-100 hover:bg-gold transition-all duration-200 z-10"
+                    aria-label="Next image"
+                  >
+                    ›
+                  </button>
+                </>
+              )}
+
+              {/* Zoom hint on desktop */}
+              <div className="hidden md:flex items-center gap-1.5 absolute bottom-3 right-3 backdrop-blur-md bg-black/60 text-white/90 text-[10px] uppercase tracking-wider px-2.5 py-1 rounded pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity">
+                Hover to Zoom
+              </div>
+            </div>
           </div>
 
           {/* Details */}
@@ -220,13 +275,18 @@ const ProductDetails = () => {
               <span className="text-xs text-muted-foreground">128 reviews</span>
             </div>
             <div className="mt-6 flex items-baseline gap-3 flex-wrap">
-              <p className="text-3xl font-semibold">{formatINR(product.price)}</p>
-              {product.mrp && product.mrp > product.price && (
+              <p className="text-3xl font-bold text-ink">{formatINR(displayPrice)}</p>
+              {displayMrp && displayMrp > displayPrice && (
                 <>
-                  <p className="text-lg text-muted-foreground line-through">{formatINR(product.mrp)}</p>
-                  <span className="text-xs font-semibold text-gold uppercase tracking-wider bg-gold/10 px-2 py-1">
-                    {Math.round(((product.mrp - product.price) / product.mrp) * 100)}% Off
+                  <p className="text-lg text-muted-foreground line-through">{formatINR(displayMrp)}</p>
+                  <span className="text-xs font-black text-ink uppercase tracking-wider bg-gold px-2.5 py-1 rounded shadow-sm">
+                    {discountPercent}% OFF
                   </span>
+                  {appliedCampaign && (
+                    <span className="text-xs font-bold text-white bg-red-cta uppercase tracking-wider px-2.5 py-1 rounded shadow-sm">
+                      {appliedCampaign.display_label || appliedCampaign.name}
+                    </span>
+                  )}
                 </>
               )}
             </div>

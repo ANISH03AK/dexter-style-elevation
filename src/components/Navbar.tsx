@@ -6,6 +6,7 @@ import { AnimatePresence, motion } from "framer-motion";
 import { useCart } from "@/context/CartContext";
 import { useAuth } from "@/hooks/useAuth";
 import { useWishlist } from "@/context/WishlistContext";
+import { useStoreSettings } from "@/context/StoreSettingsContext";
 import dexterLogo from "@/assets/dexter-logo.png";
 import MegaMenu from "./MegaMenu";
 import SearchBar from "./SearchBar";
@@ -36,6 +37,7 @@ const Navbar = () => {
   const { count } = useCart();
   const { count: wishCount } = useWishlist();
   const { user, isAdmin, signOut } = useAuth();
+  const { settings } = useStoreSettings();
   const navigate = useNavigate();
   const [open, setOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
@@ -50,7 +52,11 @@ const Navbar = () => {
     <header className="relative z-40 bg-white text-foreground border-b border-border shadow-sm">
       {/* Announcement strip */}
       <div className="bg-ink text-primary-foreground text-[10px] sm:text-[11px] tracking-[0.2em] uppercase py-1.5 sm:py-2 text-center px-2 font-semibold">
-        Visit our store — Anna Silai, Jayankondam · <span className="text-gold">Call 089252 59787</span>
+        {settings.announcement_text || (
+          <>
+            Visit our store — Anna Silai, Jayankondam · <span className="text-gold">Call 089252 59787</span>
+          </>
+        )}
       </div>
 
       {/* Main navbar row */}
