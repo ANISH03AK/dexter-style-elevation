@@ -41,6 +41,7 @@ const Shop = () => {
     const term = q.trim().toLowerCase();
     let list = products.filter(p =>
       (cats.length === 0 || cats.includes(p.category)) &&
+      (sizes.length === 0 || (p.stockBySize ? sizes.some(s => (p.stockBySize?.[s] ?? 0) > 0) : true)) &&
       p.price <= maxPrice &&
       (term === "" || p.name.toLowerCase().includes(term) || p.category.toLowerCase().includes(term))
     );
